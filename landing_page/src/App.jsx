@@ -9,20 +9,22 @@ import LetsTalk from "./components/LetsTalk";
 import Inventory from "./components/Inventory";
 import Partners from "./components/Partners";
 import FeaturesSection from "./components/FeaturesSection";
+import PopularProducts from "./components/PopularProducts";
 import "./App.css";
 
 
 function App() {
   return (
     <div className="">
-      {/* <Home /> */}
-      <Partners />
-      <Logistics />
+      <Home />
       <CTASection />
       <Inventory />
-      <Services />
+      <PopularProducts />
       <FeaturesSection />
       <Integrations />
+       <Services />
+      <Partners />
+      <Logistics />
       <Testimonials />
       <LetsTalk />
       <Footer />
