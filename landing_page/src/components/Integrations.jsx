@@ -25,7 +25,7 @@ const Integrations = () => {
   ]
 
   return (
-    <section className="bg-gray-50 py-16 px-4">
+    <section className="bg-gray-50 py-16 px-4" style={{ border: "1px solid blue" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">

@@ -26,7 +26,6 @@ const Logistics = () => {
       // height: "400px",
       // width: "90%",
       display: "inline-flex",
-      backgroundColor: "red",
       justifyContent: "center", // typo fixed ✅
       alignItems: "center", // centers images vertically inside red box
       borderRadius: "10px", // optional spacing between images
@@ -36,7 +35,7 @@ const Logistics = () => {
     <img
       src={img1}
       alt="Logistics"
-      style={{ height: "623px",  objectFit: "cover", backgroundColor: "yellow" }}
+      style={{ height: "623px",  objectFit: "cover", }}
     />
     <img src={logistic2} alt="Logistics" style={{ height: "623px", width: "246px", objectFit: "cover" }} />
     <img src={logistic3} alt="Logistics" style={{ height: "623px", width: "246px", objectFit: "cover" }} />

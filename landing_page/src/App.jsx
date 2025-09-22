@@ -7,6 +7,8 @@ import Integrations from "./components/Integrations";
 import Testimonials from "./components/Testimonials";
 import LetsTalk from "./components/LetsTalk";
 import Inventory from "./components/Inventory";
+import Partners from "./components/Partners";
+import FeaturesSection from "./components/FeaturesSection";
 import "./App.css";
 
 
@@ -14,10 +16,12 @@ function App() {
   return (
     <div className="">
       {/* <Home /> */}
+      <Partners />
       <Logistics />
       <CTASection />
       <Inventory />
       <Services />
+      <FeaturesSection />
       <Integrations />
       <Testimonials />
       <LetsTalk />
