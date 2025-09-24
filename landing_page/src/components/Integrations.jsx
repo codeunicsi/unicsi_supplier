@@ -1,4 +1,5 @@
 import { GraduationCap, TrendingUp, FolderOpen, Tag } from "lucide-react"
+import Process from "../assets/images/Process.svg";
 
 const Integrations = () => {
   const steps = [
@@ -46,40 +47,8 @@ const Integrations = () => {
         </div>
 
         {/* Process Flow */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-4">
-          {steps.map((step, index) => {
-            const IconComponent = step.icon
-            return (
-              <div key={index} className="relative">
-                {/* Step Card */}
-                <div className="bg-white border-2 border-yellow-400 rounded-2xl p-6 h-full flex flex-col items-center text-center">
-                  {/* Icon */}
-                  <div className="w-16 h-16 bg-amber-800 rounded-full flex items-center justify-center mb-4">
-                    <IconComponent className="w-8 h-8 text-white" />
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
-
-                  {/* Description */}
-                  <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
-                </div>
-
-                {/* Arrow (hidden on mobile and last item) */}
-                {index < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
-                    <svg className="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+        <div className="grid">
+           <img src={Process} alt="Process Flow" className="w-full h-auto mb-8 lg:mb-0" />
         </div>
       </div>
     </section>

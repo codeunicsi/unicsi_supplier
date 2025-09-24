@@ -1,11 +1,18 @@
-import { Edit, Palette, Megaphone, Users, User, Diamond } from "lucide-react"
+import PencilIcon from "../assets/icons/penIcon.svg"
+import NibIcon from "../assets/icons/nibPencilIcon.svg";
+import PaintIcon from "../assets/icons/pantIcon.svg";
+import SoundIcon from "../assets/icons/soundIcon.svg";
+import HumanIcon from "../assets/icons/humanIcon.svg";
+import DiamondIcon   from "../assets/icons/diamondIcon.svg";
+
+
 
 const services = [
   {
     id: 1,
     title: "Custom Packaging",
     description: "UNICSI help source from cooperated factories in China and assign to you for selling.",
-    icon: Edit,
+    icon: `${PencilIcon}`,
     variant: "primary" 
   },
   {
@@ -13,7 +20,7 @@ const services = [
     title: "Custom Packaging",
     description:
       "Custom Packaging for Dropshipping is turn one-time buyers into loyal customers with packaging that speaks volumes.",
-    icon: Palette,
+    icon: `${NibIcon}`,
     variant: "secondary" 
   },
   {
@@ -21,28 +28,28 @@ const services = [
     title: "3PL Fulfillment",
     description:
       "Enjoy hassle-free order processing and lightning-fast global shipping for your own products stocked in UNICSI's warehouse.",
-    icon: Megaphone,
+    icon: `${SoundIcon}`,
     variant: "secondary" 
   },
   {
     id: 4,
     title: "ODM Power",
     description: "Collaborate with UNICSI's top manufacturers to develop your exclusive, high-quality products",
-    icon: Users,
+    icon: `${PaintIcon}`,
     variant: "secondary"
   },
   {
     id: 5,
     title: "Print on Demand",
     description: "Bring your creative visions to life with custom-printed merchandise.",
-    icon: User,
+    icon: `${HumanIcon}`,
     variant: "secondary" 
   },
   {
     id: 6,
     title: "Bulk Purchase",
     description: "Save on bulk orders with wholesale pricing, flexible terms, and fast global delivery.",
-    icon: Diamond,
+    icon: `${DiamondIcon}`,
     variant: "secondary" 
   }
 ]
@@ -54,7 +61,7 @@ const Services = () => {
         {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-white text-balance">
-            UNICSI Supports You in Every Step of Growth
+            UNICSI Supports You in Every Step <br/> of Growth
           </h2>
         </div>
 
@@ -69,8 +76,8 @@ const Services = () => {
                   rounded-2xl p-8 transition-all duration-300 hover:scale-105
                   ${
                     service.variant === "primary"
-                      ? "bg-gradient-to-br from-amber-600 to-orange-700 text-white"
-                      : "bg-gray-100 text-gray-900"
+                      ? "bg-[#943A09] text-white"
+                      : "bg-gray-100 text-[#0C0C0C]"
                   }
                 `}
               >
@@ -79,22 +86,20 @@ const Services = () => {
                   <div
                     className={`
                     w-16 h-16 rounded-full flex items-center justify-center
-                    ${service.variant === "primary" ? "bg-white/20" : "bg-yellow-200"}
+                    ${service.variant === "primary" ? "bg-[#FFFFFF]" : "bg-[#FFE492]"}
                   `}
                   >
-                    <IconComponent
-                      className={`w-8 h-8 ${service.variant === "primary" ? "text-white" : "text-gray-800"}`}
-                    />
+                    <img src={service.icon} alt={service.title} className="w-8 h-8" />
                   </div>
                 </div>
 
                 {/* Content */}
                 <div>
-                  <h3 className="text-xl font-bold mb-4">{service.title}</h3>
+                  <h3 className={`text-xl font-bold mb-4 ${service.variant === "primary" ? "text-white" : "text-[#0C0C0C]"} `}>{service.title}</h3>
                   <p
                     className={`
                     text-sm leading-relaxed
-                    ${service.variant === "primary" ? "text-white/90" : "text-gray-600"}
+                    ${service.variant === "primary" ? "text-white/90" : "text-[#0C0C0CE5]"}
                   `}
                   >
                     {service.description}

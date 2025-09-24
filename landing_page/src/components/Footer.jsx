@@ -1,10 +1,11 @@
-import { Facebook, Instagram, Linkedin } from "lucide-react";
-
+import Linkedin from "../assets/icons/linkedinIcon.svg"
+import Instagram from "../assets/icons/instaIcon.svg"
+import Facebook from "../assets/icons/facebookIcon.svg"
 const Footer = () => {
   return (
     <footer className="bg-[#000000] text-white">
       {/* Main footer content */}
-      <div className="max-w-5xl mx-auto px-0 py-16">
+      <div className="max-w-7xl mx-auto px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
           {/* Company info */}
           <div className="lg:col-span-1">
@@ -138,7 +139,7 @@ const Footer = () => {
           </div>
 
           {/* Subscribe */}
-          <div>
+          <div className="flex flex-col items-start">
             <h3 className="text-xl font-semibold mb-6 text-[#ffffff]">
               Subscribe
             </h3>
@@ -147,9 +148,9 @@ const Footer = () => {
                 <input
                   type="email"
                   placeholder="Enter your email here"
-                  className=" px-4 py-3 pr-28 rounded-full bg-white text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="px-4 py-3 pr-28 rounded-full bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
-                <button className="absolute top-1/2 right-[-5rem] -translate-y-1/2 px-5 py-2 bg-[#8B2E00] text-white rounded-full hover:bg-[#a33a0a] transition-all duration-200">
+                <button className="absolute top-1/2 right-2 -translate-y-1/2 px-5 py-2 bg-[#8B2E00] text-white rounded-full hover:bg-[#a33a0a] transition-all duration-200">
                   Subscribe
                 </button>
               </div>
@@ -164,22 +165,22 @@ const Footer = () => {
           <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
             {/* Copyright */}
             <div>
-              <h4 className="font-semibold mb-2">Copyright by</h4>
-              <p className="text-gray-300">
+              <h4 className="font-semibold mb-2 text-[#F4F4F4]">Copyright by</h4>
+              <p className="text-[#FBFBFB]">
                 © 2025 UNICSI. All Rights Reserved
               </p>
             </div>
 
             {/* Contact */}
             <div className="text-center lg:text-left">
-              <h4 className="font-semibold mb-2">Contact Us</h4>
-              <p className="text-gray-300">+0 12 457 4578</p>
+              <h4 className="font-semibold mb-2 text-[#FBFBFB]">Contact Us</h4>
+              <p className="text-[#FBFBFB]">+0 12 457 4578</p>
             </div>
 
             {/* Address */}
             <div className="text-center lg:text-left">
-              <h4 className="font-semibold mb-2">Address</h4>
-              <p className="text-gray-300">
+              <h4 className="font-semibold mb-2 text-[#FBFBFB]">Address</h4>
+              <p className="text-[#FBFBFB]">
                 119 Tanglewood Lane Gulfport, MS 39503
               </p>
             </div>
@@ -188,21 +189,21 @@ const Footer = () => {
             <div className="flex gap-4">
               <a
                 href="#"
-                className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-12 h-12 bg-[#FBFBFB] rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
               >
-                <Facebook className="w-5 h-5" />
+                <img src={Facebook} alt="Facebook" className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-12 h-12 bg-[#FBFBFB] rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
               >
-                <Instagram className="w-5 h-5" />
+                <img src={Instagram} alt="Instagram" className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
+                className="w-12 h-12 bg-[#FBFBFB] rounded-full flex items-center justify-center hover:bg-gray-700 transition-colors"
               >
-                <Linkedin className="w-5 h-5" />
+                <img src={Linkedin} alt="LinkedIn" className="w-5 h-5" />
               </a>
             </div>
           </div>

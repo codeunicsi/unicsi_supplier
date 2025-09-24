@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import Integrations from "./components/Integrations";
 import Testimonials from "./components/Testimonials";
 import LetsTalk from "./components/LetsTalk";
-import Inventory from "./components/Inventory";
+import InventorySection from "./components/InventorySection";
 import Partners from "./components/Partners";
 import FeaturesSection from "./components/FeaturesSection";
 import PopularProducts from "./components/PopularProducts";
@@ -18,11 +18,11 @@ function App() {
     <div className="">
       <Home />
       <CTASection />
-      <Inventory />
+      <InventorySection />
       <PopularProducts />
       <FeaturesSection />
       <Integrations />
-       <Services />
+      <Services />
       <Partners />
       <Logistics />
       <Testimonials />
