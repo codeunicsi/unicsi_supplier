@@ -13,7 +13,7 @@ const PopularProducts = () => {
 	</div>
 		
 			<div
-			  className="flex gap-4 overflow-x-scroll hide-scrollbar"
+			  className="flex gap-2 overflow-x-scroll hide-scrollbar"
 			  style={{
 			    // height: "450.7058410644531px",
 			    // border: "1px solid green",
@@ -44,7 +44,7 @@ const PopularProducts = () => {
 			  <p style={{ position: "absolute", top: "397.68px", left: "830.13px", color: "white", fontSize: "22.15px", fontWeight: "bold", lineHeight: "100%" }}>Health & Beauty</p>
 			  <p style={{ position: "absolute", top: "397.68px", left: "1200.13px", color: "white", fontSize: "22.15px", fontWeight: "bold", lineHeight: "100%" }}>Toy’s, Baby</p> */}
 			</div>
-	<div className="flex justify-center" style={{ border : "2px solid blue"}}>
+	<div className="flex justify-center" style={{gap : "20px"}}>
 		<img src={LeftArrow} alt="Left Arrow" className="ml-4 text-[#8E8E8E]" />
 		<img src={RightArrow} alt="Right Arrow" className="mr-4 text-[#8E8E8E]" />
 	</div>		
