@@ -3,47 +3,52 @@ import bgFeaturesServices from "../assets/images/bg-featuresService.jpg";
 
 const FeaturesSection = () => {
   return (
-    <div
-      className="py-12 px-16 bg-[#000000E5]"
-      style={{
-        border: "1px solid green",
-        height: "667px",
-        display: "flex",
-        backgroundImage: `url(${bgFeaturesServices})`,
-        // backgroundSize: "cover",
-        backgroundSize: "-10000%", // zoom in
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center",
-      }}
-    >
-      <div style={{ border: "1px solid red", width: "50%" }}>
-        <img
-          src={FeaturesService}
-          alt="Features"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
-      </div>
-
+    <section className="relative w-full min-h-[500px] bg-black flex items-center overflow-hidden">
       <div
+        className="absolute inset-0 bg-cover bg-center filter blur-[6px] opacity-50"
+        aria-hidden="true"
         style={{
-          border: "1px solid blue",
-          width: "50%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: "20px",
+          backgroundImage: `url(${bgFeaturesServices})`,
         }}
-      >
-        <h1 className="text-[#FFFFFF]">Best Ecommerce Integrations for Dropshipping</h1>
-        <p className="text-[#FBFBFB]">
-          Seamlessly add products to your store and sync orders with top
-          platforms like Shopify, Amazon, eBay, Wix, and more. UNICSI’s
-          integrations save you time and help grow your business.
-        </p>
-        <button type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Default</button>
+      ></div>
+      <div className="absolute inset-0 bg-black opacity-60" aria-hidden="true"></div>
+      <div className="relative max-w-6xl mx-auto w-full flex flex-col-reverse lg:flex-row items-center justify-between px-4 py-16 gap-12">
+        <div className="flex-1 flex items-center justify-center min-h-[340px]">
+          <img
+            alt="Ecommerce Integrations"
+            className="w-full max-w-[400px] object-contain"
+            src={FeaturesService}
+          />
+        </div>
+        <div className="flex-1 flex flex-col items-start justify-center text-white max-w-xl space-y-6">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+            Best Ecommerce Integrations for Dropshipping
+          </h1>
+          <p className="text-lg font-normal text-gray-200">
+            Seamlessly add products to your store and sync orders with top
+            platforms like Shopify, Amazon, eBay, Wix, and more. UNICSI’s
+            integrations save you time and help grow your business.
+          </p>
+          <button className="bg-amber-700 mt-4 font-semibold text-white text-lg px-8 py-3 rounded-full shadow hover:bg-amber-800 transition flex items-center gap-2">
+            Connect my store
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 ml-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"
+              ></path>
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
