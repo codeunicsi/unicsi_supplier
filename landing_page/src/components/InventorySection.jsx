@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
-import inventory1 from "../assets/images/inventory1.svg";
-import inventory2 from "../assets/images/inventory1.svg";
+// import inventory1 from "../assets/images/inventory1.svg";
+// import inventory2 from "../assets/images/inventory1.svg";
 
 
 const InventorySection = () => {
@@ -24,7 +24,7 @@ const InventorySection = () => {
               {/* Top image */}
               <div className="overflow-hidden mb-8">
                 <img
-                  src={inventory1}
+                  src=""
                   alt="Warehouse workers managing inventory"
                   className="w-[22rem] h-60 object-cover"
                 />
@@ -36,7 +36,7 @@ const InventorySection = () => {
               {/* Bottom image - positioned with dotted border */}
               <div className="bg-white rounded-lg shadow-sm overflow-hidden relative ml-auto w-4/5 border-2 border-dashed border-blue-300">
                 <img
-                  src={inventory2}
+                  src=""
                   alt="Order fulfillment process"
                   className="w-full h-50 object-cover"
                 />
