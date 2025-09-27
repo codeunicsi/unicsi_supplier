@@ -1,7 +1,7 @@
 // components/layout/TopBar.jsx
 import notificationIcon from '../../assets/icons/ic_notifications.svg';
 import { Bell, HelpCircle, Search } from "lucide-react"
-import rightIcon from "../../assets/icons/rightIcon.svg"
+// import rightIcon from "../../assets/icons/rightIcon.svg"
 
 export default function TopBar() {
   return (
@@ -9,7 +9,7 @@ export default function TopBar() {
 
         <div className="absolute inset-0 flex items-center justify-start pointer-events-none left-2">
           <h1 className="text-lg font-bold">Manage Products</h1>
-          <img src={rightIcon} alt="Notifications" className="w-5 h-5"/>
+          {/* <img src={rightIcon} alt="Notifications" className="w-5 h-5"/> */}
         </div>
   
       {/* Search */}
