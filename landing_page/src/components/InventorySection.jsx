@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import inventory1 from "../assets/images/inventory1.svg";
-import inventory2 from "../assets/images/inventory2.svg";
+import inventory2 from "../assets/images/inventory1.svg";
 
 
 const InventorySection = () => {
