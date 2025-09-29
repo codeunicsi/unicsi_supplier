@@ -1,16 +1,24 @@
 // components/layout/Sidebar.jsx
-import { Home, ShoppingBag, FileText, Truck, Package, BarChart2, CreditCard, File } from "lucide-react"
+import { Truck, Package, BarChart2, CreditCard, File } from "lucide-react"
+import Home from "../../assets/svg/Home";
+import FileText from "../../assets/svg/FileText";
+import ShoppingBag from "../../assets/svg/ShoppingBag";
+
 
 const menuItems = [
   { name: "Home", icon: <Home size={18} />, active: false },
-  { name: "Manage Orders", icon: <ShoppingBag size={18} />, active: false },
-  { name: "Manage NDR", icon: <FileText size={18} />, active: false },
+  { name: "Manage Orders", icon: <FileText size={18} />, active: false },
+  { name: "Manage NDR", icon: <ShoppingBag size={18} />, active: false },
   { name: "Supplier Re-Routing", icon: <Truck size={18} />, active: false },
   { name: "Source a Product", icon: <Package size={18} />, active: false },
   { name: "RTO Intelligence", icon: <BarChart2 size={18} />, active: false },
   { name: "Manage Products", icon: <Package size={18} />, active: true }, // active page
   { name: "Reports", icon: <FileText size={18} />, active: false },
   { name: "Payments", icon: <CreditCard size={18} />, active: false },
+  { name: "Value Added Services", icon: <File size={18} />, active: false },
+  { name: "Clauts", icon: <File size={18} />, active: false },
+  { name: "Supports", icon: <File size={18} />, active: false },
+  { name: "Help", icon: <File size={18} />, active: false },
   { name: "GST Invoice", icon: <File size={18} />, active: false },
 ]
 

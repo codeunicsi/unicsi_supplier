@@ -11,12 +11,12 @@ const dummyData = [
 export default function ProductTable() {
   return (
     <div className="border rounded-lg bg-white shadow-sm mt-4">
-      <div className="grid grid-cols-5 gap-4 p-3 border-b text-sm font-semibold">
+      <div className="grid grid-cols-5 gap-8 p-3 border-b text-sm font-semibold">
         <span>Product Details</span>
-        <span>Pushed Date</span>
+        <span>Pushed Date & Time</span>
         <span>C-Code</span>
-        <span>Price</span>
-        <span>Actions</span>
+        <span>Clout Price</span>
+        <span>more details</span>
       </div>
       {dummyData.map((product) => (
         <ProductRow key={product.id} product={product} />
