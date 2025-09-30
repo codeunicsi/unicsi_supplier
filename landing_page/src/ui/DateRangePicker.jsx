@@ -15,17 +15,17 @@ export default function DateRangePicker({ onChange, className = "" }) {
     <div className={`flex items-center gap-2 ${className}`}>
       <input
         type="date"
-        value={start}
+        value={start || end}
         onChange={(e) => handleChange(e.target.value, end)}
         className="px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
       />
-      <span className="text-gray-500">to</span>
+      {/* <span className="text-gray-500">to</span>
       <input
         type="date"
         value={end}
         onChange={(e) => handleChange(start, e.target.value)}
         className="px-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-      />
+      /> */}
     </div>
   )
 }

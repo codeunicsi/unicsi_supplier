@@ -4,6 +4,7 @@ import TopBar from "./TopBar"
 import FiltersBar from "../../products/FiltersBar"
 import Tabs from "../../products/Tabs";
 import ManageProductsPage from "../../products/ManageProductsPage";
+import ProductRequirementpage from "../../products/ProductRequirementPage";
 import ProductRows from "../../products/ProductRow";
 import ProductDetailsCard from "../../products/ProductDetailsCard";
 
@@ -15,7 +16,8 @@ export default function MainLayout({ children }) {
         <TopBar />
         <main className="p-4 bg-gray-50">{children}
          
-          <ManageProductsPage />
+          {/* <ManageProductsPage /> */}
+          <ProductRequirementpage />
         </main>
       </div>
     </div>

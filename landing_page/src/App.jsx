@@ -11,6 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/manage-products" element={<ManageProducts />} />
+        <Route path="/product-requirement" element={<ManageProducts />} />
       </Routes>
     </BrowserRouter>
   );

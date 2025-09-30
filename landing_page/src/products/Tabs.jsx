@@ -1,9 +1,9 @@
 // components/products/Tabs.tsx
 import { useState } from "react"
 
-const tabItems = ["Push to Shopify", "Inventory Request"]
+// const tabItems = ["Push to Shopify", "Inventory Request"]
 
-export default function Tabs() {
+export default function Tabs({ tabItems }) {
   const [active, setActive] = useState(tabItems[0])
 
   return (
