@@ -6,22 +6,27 @@ import FileText from "../../assets/svg/FileText"
 import ShoppingBag from "../../assets/svg/ShoppingBag"
 import RightIcon from "../../assets/icons/rightIcon.svg"
 import UnicseLogo from "../../assets/svg/UnicseLogo"
+import Logo from "../../assets/images/Logo.jpeg"
+import { Profile, Faq, Human, Setting, ReportOutline, Payment, BusinessProductSupplier, RecruitmentManagement, Service, Cube, Help, Support,TrainingClass } from "../../assets/svg/index"
+
 
 const menuItems = [
   { name: "Home", icon: <Home size={18} />, active: false },
-  { name: "Manage Orders", icon: <FileText size={18} />, active: false },
+  { name: "Manage Orders", icon: <Cube size={18} />, active: false },
   { name: "Manage NDR", icon: <ShoppingBag size={18} />, active: false },
-  { name: "Supplier Re-Routing", icon: <Truck size={18} />, active: false },
+  { name: "Supplier Re-Routing", icon: <BusinessProductSupplier size="1.5rem" />, active: false },
   { name: "Source a Product", icon: <Package size={18} />, active: false },
   { name: "RTO Intelligence", icon: <BarChart2 size={18} />, active: false },
   { name: "Manage Products", icon: <Package size={18} />, active: true },
-  { name: "Reports", icon: <FileText size={18} />, active: false },
-  { name: "Payments", icon: <CreditCard size={18} />, active: false },
-  { name: "Value Added Services", icon: <File size={18} />, active: false },
-  { name: "Clauts", icon: <File size={18} />, active: false },
-  { name: "Supports", icon: <File size={18} />, active: false },
-  { name: "Help", icon: <File size={18} />, active: false },
-  { name: "GST Invoice", icon: <File size={18} />, active: false },
+  { name: "Reports", icon: <ReportOutline size="1.5rem" />, active: false },
+  { name: "Payments", icon: <Payment size="1.5rem" />, active: false },
+  { name: "Profile", icon: <Profile size="1.5rem" />, active: false },
+  { name: "Value Added Services", icon: <RecruitmentManagement size={18} />, active: false },
+  { name: "Clauts", icon: <TrainingClass size={18} />, active: false },
+  { name: "Supports", icon: <Support size={18} />, active: false },
+  { name: "Setting", icon: <Setting size={18} />, active: false },
+  { name: "Help", icon: <Help size={18} />, active: false },
+  { name: "Faq", icon: <Faq className="w-4 h-4" />, active: false },
 ]
 
 export default function Sidebar() {
@@ -55,7 +60,8 @@ export default function Sidebar() {
             isOpen ? "opacity-100" : "opacity-0"
           }`}
         >
-          <UnicseLogo className="inline-block mr-2" />
+          {/* <UnicseLogo className="inline-block mr-2" /> */}
+          <img src={Logo} alt="Unicsi Logo" className="w-12 h-auto inline-block mr-2 rounded-full" />  {/* Updated to use img tag for logos */}
           UNICSI
         </div>
         <nav className="flex-1 px-2 space-y-1">

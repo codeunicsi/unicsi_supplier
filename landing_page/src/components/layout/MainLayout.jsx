@@ -13,6 +13,7 @@ import ManageProduct from "../../products/ManageProducts";
 import AnalyticsPage from "../../products/AnalyticsPage";
 
 export default function MainLayout({ children }) {
+
   return (
     <div className="flex h-screen">
       <Sidebar />
