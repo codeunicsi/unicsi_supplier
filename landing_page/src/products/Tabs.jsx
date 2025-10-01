@@ -7,7 +7,7 @@ export default function Tabs({ tabItems }) {
   const [active, setActive] = useState(tabItems[0])
 
   return (
-    <div className="flex justify-between gap-4 border-b mb-4">
+    <div className="flex justify-start gap-4 border-b mb-4">
       {tabItems.map((tab) => (
         <button
           key={tab}

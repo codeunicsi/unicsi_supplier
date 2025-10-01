@@ -10,6 +10,7 @@ import ProductRows from "../../products/ProductRow";
 import ProductDetailsCard from "../../products/ProductDetailsCard";
 import ManageOrder from "../../products/ManageOrder";
 import ManageProduct from "../../products/ManageProducts";
+import AnalyticsPage from "../../products/AnalyticsPage";
 
 export default function MainLayout({ children }) {
   return (
@@ -23,7 +24,8 @@ export default function MainLayout({ children }) {
           {/* <ProductRequirementpage /> */}
           {/* <SourceProduct /> */}
           {/* <ManageOrder /> */}
-          <ManageProduct />
+          {/* <ManageProduct /> */}
+          <AnalyticsPage />
 
         </main>
       </div>

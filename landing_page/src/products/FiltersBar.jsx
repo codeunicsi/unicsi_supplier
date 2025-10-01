@@ -55,7 +55,7 @@ export default function FiltersBar({ type }) {
         </>
       )}
 
-      {["manage-product-requirements", "order", "manage-product-2"].includes(
+      {["manage-product-requirements", "order", "manage-product-2", "analytics"].includes(
         type
       ) && (
         <>
