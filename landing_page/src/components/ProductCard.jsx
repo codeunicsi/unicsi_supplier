@@ -3,22 +3,17 @@ import Shoes from "../assets/images/shoes.png";
 export default function ProductCard() {
   return (
     <div
-      className="border w-[219.53524780273438px] h-[257.5px]rounded-lg p-2 shadow-sm bg-white"
-      style={{ border: "2px solid red", borderRadius: "12px" }}
+      className="border w-[219.53524780273438px] h-[257.5px] rounded-lg p-2 shadow-sm bg-white"
     >
       <img
         src={Shoes}
         alt="Product"
-        className="w-[206.87103271484375px] h-[119.22303771972656px] object-cover mb-2 rounded"
+        className="w-[206.87103271484375px] h-[119.22303771972656px] object-cover mb-1 rounded"
       />
       <div>
-        {/* <div className="flex w-full justify-between items-center mb-2" style={{border : "2px solid green"}}>
-           <h2 className="text-lg font-semibold mb-2">Product Name</h2>
-        </div> */}
 
         <div
-          className="flex justify-between mb-2 text-sm text-gray-600"
-          style={{ border: "2px solid blue" }}
+          className="flex justify-between mb-1 text-sm text-gray-600"
         >
           <h4>Nike Shoes - Men</h4>
           <div className="flex items-center gap-1">
@@ -57,16 +52,14 @@ export default function ProductCard() {
 
         {/* Quantity and Price Section */}
         <div
-          style={{ border: "2px solid yellow" }}
-          className="flex justify-between mb-2 text-sm text-gray-600"
+          className="flex justify-between mb-1 text-sm text-gray-600"
         >
           <span>₹ 3,999</span>
         </div>
 
         {/* Sizes Section */}
         <div
-          className="flex justify-between items-center mb-2 text-sm text-gray-600"
-          style={{ border: "2px solid black" }}
+          className="flex justify-between items-center mb-1 text-sm text-gray-600"
         >
           <div className="flex items-center gap-1">
             <svg
@@ -138,7 +131,7 @@ export default function ProductCard() {
         </div>
       </div>
       <div>
-        <button className="w-full bg-[#F1B356] text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+        <button className="w-full bg-[#F1B356] text-white py-2 px-4 rounded transition">
           Add to Cart
         </button>
       </div>

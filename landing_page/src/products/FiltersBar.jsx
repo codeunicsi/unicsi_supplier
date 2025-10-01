@@ -48,10 +48,10 @@ export default function FiltersBar({ type }) {
               />
             </div>
             <div>
-              <Button variant="primary">Show Pending Orders</Button>
+              <Button variant="">Show Pending Orders</Button>
             </div>
             <div>
-              <Button variant="secondary">Clear All Filters</Button>
+              <Button variant="">Clear All Filters</Button>
             </div>
           </div>
         </>

@@ -11,7 +11,7 @@ export default function Button({ children, variant = "primary", onClick, classNa
     <button
       onClick={onClick}
       className={`${base} ${variants[variant]} ${className}`}
-      style={{ border :"2px solid red", ...style }}
+      style={{ ...style }}
     >
       {children}
     </button>
