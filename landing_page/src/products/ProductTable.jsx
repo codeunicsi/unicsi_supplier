@@ -1,24 +1,24 @@
 // components/products/ProductTable.tsx
 import ProductRow from "./ProductRow";
+import React, { useState } from "react";
 
 const dummyData = [
-  { id: 1, name: "Product A", code: "C123", price: "₹1200" },
-  { id: 2, name: "Product B", code: "C456", price: "₹800" },
-  { id: 3, name: "Product C", code: "C789", price: "₹1500" },
-  { id: 4, name: "Product D", code: "C101", price: "₹600" },
+
 ];
 
-export default function ProductTable() {
+export default function ProductTable({TableHeader}) {
+const [products, setProducts] = useState(dummyData);
+const tablehHeaderLength = TableHeader.length;
   return (
     <div className="border rounded-lg bg-white shadow-sm mt-4">
-      <div className="grid grid-cols-5 gap-8 p-3 border-b text-sm font-semibold">
-        <span>Product Details</span>
-        <span>Pushed Date & Time</span>
-        <span>C-Code</span>
-        <span>Clout Price</span>
-        <span>more details</span>
+    <h4 className="p-3 text-sm font-semibold">All orders with at least one failed delivery attempt will be shown here.</h4>
+
+      <div className={`grid grid-cols-${tablehHeaderLength} grid-flow-row-dense py-3 border-b text-sm font-semibold bg-[#FFF4EE]`}>
+        {TableHeader.map((header) => (
+          <span key={header} className="text-center">{header}</span>
+        ))}
       </div>
-      {dummyData.map((product) => (
+      {products.map((product) => (
         <ProductRow key={product.id} product={product} />
       ))}
     </div>

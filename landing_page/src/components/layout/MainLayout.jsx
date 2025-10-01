@@ -4,10 +4,12 @@ import TopBar from "./TopBar"
 import FiltersBar from "../../products/FiltersBar"
 import Tabs from "../../products/Tabs";
 import ManageProductsPage from "../../products/ManageProductsPage";
+import SourceProduct from "../../products/SourceProduct";
 import ProductRequirementpage from "../../products/ProductRequirementPage";
 import ProductRows from "../../products/ProductRow";
 import ProductDetailsCard from "../../products/ProductDetailsCard";
-import SourceProduct from "../../products/SourceProduct";
+import ManageOrder from "../../products/ManageOrder";
+import ManageProduct from "../../products/ManageProducts";
 
 export default function MainLayout({ children }) {
   return (
@@ -17,9 +19,12 @@ export default function MainLayout({ children }) {
         <TopBar />
         <main className="p-4 bg-gray-50">{children}
          
-          <ManageProductsPage />
+          {/* <ManageProductsPage /> */}
           {/* <ProductRequirementpage /> */}
           {/* <SourceProduct /> */}
+          {/* <ManageOrder /> */}
+          <ManageProduct />
+
         </main>
       </div>
     </div>
