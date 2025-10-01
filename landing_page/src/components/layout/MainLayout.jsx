@@ -24,9 +24,9 @@ export default function MainLayout({ children }) {
           {/* <ManageProductsPage /> */}
           {/* <ProductRequirementpage /> */}
           {/* <SourceProduct /> */}
-          {/* <ManageOrder /> */}
+          <ManageOrder />
           {/* <ManageProduct /> */}
-          <AnalyticsPage />
+          {/* <AnalyticsPage /> */}
 
         </main>
       </div>
