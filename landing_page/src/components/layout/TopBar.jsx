@@ -1,8 +1,7 @@
 // components/layout/TopBar.jsx
 import notificationIcon from "../../assets/icons/ic_notifications.svg";
 import { Bell, HelpCircle, Search } from "lucide-react";
-import CameraIcon from "../../assets/svg/CameraSvg";
-import SearchIcon from "../../assets/svg/SearchIcon";
+import {CameraIcon, SearchIcon} from "../../assets/svg/index";
 import Button from "../../ui/Button";
 // import rightIcon from "../../assets/icons/rightIcon.svg"
 
@@ -53,10 +52,10 @@ export default function TopBar() {
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center gap-6">
-        <button className="p-2 rounded-full hover:bg-gray-100">
+      <div className="flex items-center gap-6" style={{ border : "2px solid red"}}>
+        <Button className="p-2 rounded-full hover:bg-gray-100">
           <HelpCircle size={20} className="text-gray-600" />
-        </button>
+        </Button>
         <button className="p-2 rounded-full hover:bg-gray-100 relative">
           {/* <Bell size={20} className="text-gray-600" /> */}
           <img src={notificationIcon} alt="Notifications" className="w-5 h-5" />

@@ -1,12 +1,7 @@
-import hero from "../assets/images/hero.svg";
 import React, { useState } from "react";
-import { Search, Heart, Camera } from "lucide-react";
-import BagImg from "../assets/images/bagImg.svg";
-import SearchIcon from "../assets/icons/searchIcon.svg";
-import CameraIcon from "../assets/icons/solar_camera-linear.svg";
-import HeartIcon from "../assets/icons/heartIcon.svg";
-import LeftArrow from "../assets/icons/leftArrow.svg";
-import StarIcon from "../assets/icons/starIcon.svg";
+import hero from "../assets/images/hero.png";
+import BagImg from "../assets/images/bgImg.png";
+import { SearchIcon, CameraIcon, Heart, Star} from "../assets/svg/index";
 
 const Hero = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -104,7 +99,7 @@ const Hero = () => {
 
         <div className="max-w-[1060px] mx-auto mb-16 mt-[0px]">
           <div className="bg-white/50 backdrop-blur-md rounded-[17.71px] p-5 flex items-center shadow-2xl border-white/30">
-            <img src={SearchIcon} alt="Search" className="ml-3 mr-4" />
+            <SearchIcon className="ml-3 mr-4" size={17.527957916259766} />
             <input
               type="text"
               placeholder="Find the product you're looking for"
@@ -114,7 +109,7 @@ const Hero = () => {
             />
             <div className="flex items-center mr-3">
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors mr-2">
-                <img src={CameraIcon} alt="Camera" className="text-gray-500" />
+                <CameraIcon className="text-gray-500" size="24px" />
               </button>
               <button
                 className="bg-[#943A09] hover:bg-orange-700 text-white px-10 py-3 rounded-full font-bold text-[17.71px] transition-colors"
@@ -158,7 +153,7 @@ const Hero = () => {
                 />
                 {/* <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-gray- 100 transition-colors"> */}
                 <div className="absolute top-2 right-2 p-2">
-                  <img src={HeartIcon} alt="Heart" className="w-6 h-6" />
+                  <Heart className="w-6 h-6" size="" />
                 </div>
 
                 {/* </button> */}
@@ -170,12 +165,8 @@ const Hero = () => {
                 </p>
                 <div>
                   <div className="flex items-center mt-1 gap-2 text-gray-600">
-                    <img
-                      src={StarIcon}
-                      alt="Star"
-                      className="w-[26.56869888305664px] h-[26.56869888305664px] inline-block"
-                    />
-                    <p className="font-normal">4.5</p>
+                    <Star className="w-[21.975034713745117px] h-[20.98503875732422px] inline-block" />
+                    <p className="font-normal w-[21.975034713745117px] h-[20.98503875732422px]">4.5</p>
                   </div>
                 </div>
                 <div className="PriceSection flex items-center space-x-4">
