@@ -1,4 +1,4 @@
-import profileImg from "../assets/images/profileImg.svg";
+import profileImg from "../assets/images/profile.jpg";
 const Testimonials = () => {
   return (
     <section className="bg-gray-100 py-12">

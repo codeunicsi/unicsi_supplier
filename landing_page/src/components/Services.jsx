@@ -1,10 +1,4 @@
-import PencilIcon from "../assets/icons/penIcon.svg"
-import NibIcon from "../assets/icons/nibPencilIcon.svg";
-import PaintIcon from "../assets/icons/pantIcon.svg";
-import SoundIcon from "../assets/icons/soundIcon.svg";
-import HumanIcon from "../assets/icons/humanIcon.svg";
-import DiamondIcon   from "../assets/icons/diamondIcon.svg";
-
+import { Pencil, NibPen, Sound, Paint, HumanIcon, Diamond } from "../assets/svg"
 
 
 const services = [
@@ -12,7 +6,7 @@ const services = [
     id: 1,
     title: "Custom Packaging",
     description: "UNICSI help source from cooperated factories in China and assign to you for selling.",
-    icon: `${PencilIcon}`,
+    icon: <Pencil />,
     variant: "primary" 
   },
   {
@@ -20,37 +14,37 @@ const services = [
     title: "Custom Packaging",
     description:
       "Custom Packaging for Dropshipping is turn one-time buyers into loyal customers with packaging that speaks volumes.",
-    icon: `${NibIcon}`,
-    variant: "secondary" 
+    icon: <NibPen />,
+    variant: "secondary"
   },
   {
     id: 3,
     title: "3PL Fulfillment",
     description:
       "Enjoy hassle-free order processing and lightning-fast global shipping for your own products stocked in UNICSI's warehouse.",
-    icon: `${SoundIcon}`,
-    variant: "secondary" 
+    icon: <Sound />,
+    variant: "secondary"
   },
   {
     id: 4,
     title: "ODM Power",
     description: "Collaborate with UNICSI's top manufacturers to develop your exclusive, high-quality products",
-    icon: `${PaintIcon}`,
+    icon: <Paint />,
     variant: "secondary"
   },
   {
     id: 5,
     title: "Print on Demand",
     description: "Bring your creative visions to life with custom-printed merchandise.",
-    icon: `${HumanIcon}`,
-    variant: "secondary" 
+    icon: <HumanIcon />,
+    variant: "secondary"
   },
   {
     id: 6,
     title: "Bulk Purchase",
     description: "Save on bulk orders with wholesale pricing, flexible terms, and fast global delivery.",
-    icon: `${DiamondIcon}`,
-    variant: "secondary" 
+    icon: <Diamond />,
+    variant: "secondary"
   }
 ]
 
@@ -89,7 +83,7 @@ const Services = () => {
                     ${service.variant === "primary" ? "bg-[#FFFFFF]" : "bg-[#FFE492]"}
                   `}
                   >
-                    <img src={service.icon} alt={service.title} className="w-8 h-8" />
+                    {IconComponent}
                   </div>
                 </div>
 

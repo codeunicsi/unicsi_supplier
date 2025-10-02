@@ -17,5 +17,14 @@ import Heart from './Heart';
 import Star from './Star';
 import Arrow from './Arrow';
 import Plus from './Plus';
+import CircleUpRightArrow from './CircleUpRightArrow';
+import LeftArrowLine from './LeftArrowLine';
+import RightArrowLine from './RightArrowLine';
+import Diamond from './Diamond';
+import Paint from './Paint';
+import Sound from './Sound';
+import NibPen from './NibPen';
+import HumanIcon from './Human';
+import Pencil from './Pencil';
 
-export { Profile, Faq, Human, Setting, ReportOutline, Payment, BusinessProductSupplier, Cube, Service, RecruitmentManagement, Help, Support, TrainingClass, SearchIcon, CameraIcon, Heart, Star, Arrow, Plus };
+export { Profile, Faq, Human, Setting, ReportOutline, Payment, BusinessProductSupplier, Cube, Service, RecruitmentManagement, Help, Support, TrainingClass, SearchIcon, CameraIcon, Heart, Star, Arrow, Plus, CircleUpRightArrow, LeftArrowLine, RightArrowLine, Diamond, Paint, Sound, NibPen, HumanIcon, Pencil };

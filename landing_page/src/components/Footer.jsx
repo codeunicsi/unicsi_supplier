@@ -1,6 +1,6 @@
-import Linkedin from "../assets/icons/linkedinIcon.svg"
-import Instagram from "../assets/icons/instaIcon.svg"
-import Facebook from "../assets/icons/facebookIcon.svg"
+import Linkedin from "../assets/images/linkedinIcon.png"
+import Instagram from "../assets/images/instaIcon.png"
+import Facebook from "../assets/images/facebookIcon.png"
 const Footer = () => {
   return (
     <footer className="bg-[#000000] text-white">

@@ -21,7 +21,7 @@ const FeaturesSection = () => {
           />
         </div>
         <div className="flex-1 flex flex-col items-start justify-center text-white max-w-xl space-y-6">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl text-white font-bold">
             Best Ecommerce Integrations for Dropshipping
           </h1>
           <p className="text-lg font-normal text-gray-200">

@@ -1,5 +1,5 @@
 import { GraduationCap, TrendingUp, FolderOpen, Tag } from "lucide-react"
-import Process from "../assets/images/Process.svg";
+import Process from "../assets/images/Process.png";
 
 const Integrations = () => {
   const steps = [

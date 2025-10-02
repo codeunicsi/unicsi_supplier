@@ -1,8 +1,8 @@
-import img1 from "../assets/images/img1.svg";
-import logistic2 from "../assets/images/logistic2.svg";
-import logistic3 from "../assets/images/logistic3.svg";
-import logistic4 from "../assets/images/logistic4.svg";
-import logistic5 from "../assets/images/logistic5.svg";
+import logistic from "../assets/images/logistic.jpg";
+import logistic2 from "../assets/images/logistic2.jpg";
+import logistic3 from "../assets/images/logistic3.jpg";
+import logistic4 from "../assets/images/logistic4.jpg";
+import logistic5 from "../assets/images/logistic5.jpg";  //
 const Logistics = () => {
   return (
 <div
@@ -33,9 +33,9 @@ const Logistics = () => {
     }}
   >
     <img
-      src={img1}
+      src={logistic}
       alt="Logistics"
-      style={{ height: "623px",  objectFit: "cover", }}
+      style={{ height: "623px", width: "246px", objectFit: "cover", }}
     />
     <img src={logistic2} alt="Logistics" style={{ height: "623px", width: "246px", objectFit: "cover" }} />
     <img src={logistic3} alt="Logistics" style={{ height: "623px", width: "246px", objectFit: "cover" }} />

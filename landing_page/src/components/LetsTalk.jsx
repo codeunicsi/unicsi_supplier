@@ -1,4 +1,4 @@
-import call from "../assets/images/call.svg"
+import call from "../assets/images/call.png"
 const LetsTalk = () => {
   return (
 <section className="bg-gray-100 py-12">
