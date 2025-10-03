@@ -42,7 +42,7 @@ const tableHeaderLength = TableHeader.length;
     <div className="border rounded-lg bg-white shadow-sm mt-4">
     <h4 className="p-3 text-sm font-semibold">All orders with at least one failed delivery attempt will be shown here.</h4>
 
-      <div className={`grid grid-cols-${tableHeaderLength} grid-flow-row-dense py-3 border-b text-sm font-semibold bg-[#FFF4EE]`}>
+      <div className={`grid grid-cols-7 py-3 border-b text-sm font-semibold bg-[#FFF4EE]`}>
         {TableHeader.map((header) => (
           <span key={header} className="text-center">{header}</span>
         ))}

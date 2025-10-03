@@ -5,12 +5,12 @@ import ProductTable from "./ProductTable"
 import Pagination from "../ui/Pagination"
 import ProductCard from "../components/ProductCard";
 
-export default function ManageProductsPage() {
+export default function ProductRequirementPage() {
   return (
     <div className="">
-      <h1 className="text-xl font-bold mb-2">Manage Products</h1>
+      <h1 className="text-xl font-bold mb-2">Product Requirement</h1>
       <p className="text-gray-600 mb-4">
-        Manage all your products and inventory from here.
+        Manage all your product requirements from here.
       </p>
       <FiltersBar type="manage-product-requirements" />
       <div>

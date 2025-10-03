@@ -6,7 +6,7 @@ import FiltersBar from "./FiltersBar";
 import AnalyticsCard from "../components/AnalyticsCard";
 import DashboardChart from "../analytics/DashboardChart";
 
-export default function ManageProducts() {
+export default function AnalyticsPage() {
   return (
     <div className="">
       <h2 className="text-lg font-semibold mb-4">

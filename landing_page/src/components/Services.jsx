@@ -50,7 +50,7 @@ const services = [
 
 const Services = () => {
   return (
-    <section className="py-16 px-4 bg-gray-900">
+    <section className="py-16 px-4 bg-gray-900" style={{ border: "1px solid blue" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -67,11 +67,11 @@ const Services = () => {
               <div
                 key={service.id}
                 className={`
-                  rounded-2xl p-8 transition-all duration-300 hover:scale-105
+                  rounded-2xl p-8 transition-all duration-300 hover:scale-105 hover:bg-[#943A09]
                   ${
                     service.variant === "primary"
                       ? "bg-[#943A09] text-white"
-                      : "bg-gray-100 text-[#0C0C0C]"
+                      : "bg-gray-100 text-[#000]"
                   }
                 `}
               >

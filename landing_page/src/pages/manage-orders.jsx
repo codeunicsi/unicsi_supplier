@@ -1,6 +1,6 @@
 import MainLayout from "../components/layout/MainLayout"
 
-export default function ProductRequirement() {
+export default function ManageOrders() {
   return (
     <MainLayout>
       {/* Put your page content here */}

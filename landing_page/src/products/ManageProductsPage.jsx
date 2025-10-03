@@ -14,7 +14,7 @@ export default function ManageProductsPage() {
 
       <Tabs tabItems={["Push to Shopify", "Inventory Request"]} />
       <FiltersBar type="manage-product" />
-      <ProductTable />
+      <ProductTable TableHeader={["Date & Time", "Product Details", "Payment", "Shipment Details", "Customer Details", "Delivery Attempts", "Actions", ]} />
       <Pagination />
     </div>
   )

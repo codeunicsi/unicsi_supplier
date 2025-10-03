@@ -26,5 +26,6 @@ import Sound from './Sound';
 import NibPen from './NibPen';
 import HumanIcon from './Human';
 import Pencil from './Pencil';
+import Cart from './Cart';
 
-export { Profile, Faq, Human, Setting, ReportOutline, Payment, BusinessProductSupplier, Cube, Service, RecruitmentManagement, Help, Support, TrainingClass, SearchIcon, CameraIcon, Heart, Star, Arrow, Plus, CircleUpRightArrow, LeftArrowLine, RightArrowLine, Diamond, Paint, Sound, NibPen, HumanIcon, Pencil };
+export { Profile, Faq, Human, Setting, ReportOutline, Payment, BusinessProductSupplier, Cube, Service, RecruitmentManagement, Help, Support, TrainingClass, SearchIcon, CameraIcon, Heart, Star, Arrow, Plus, CircleUpRightArrow, LeftArrowLine, RightArrowLine, Diamond, Paint, Sound, NibPen, HumanIcon, Pencil, Cart };
