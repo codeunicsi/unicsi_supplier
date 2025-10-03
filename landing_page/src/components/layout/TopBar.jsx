@@ -37,7 +37,7 @@ export default function TopBar() {
         {/* Camera + Button Section */}
         <div
           className="absolute top-0 flex items-center justify-end gap-3 px-2"
-          style={{ width: "200px", height: "40px", right: "0px" }}
+          style={{ width: "200px", height: "40px", right: "0px", border : "2px solid red" }}
         >
           <CameraIcon className="w-5 h-5 text-gray-400" />
           <button
@@ -52,10 +52,10 @@ export default function TopBar() {
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center gap-6" style={{ border : "2px solid red"}}>
-        <Button className="p-2 rounded-full hover:bg-gray-100">
+      <div className="flex items-center gap-6">
+   
           <HelpCircle size={20} className="text-gray-600" />
-        </Button>
+      
         <button className="p-2 rounded-full hover:bg-gray-100 relative">
           {/* <Bell size={20} className="text-gray-600" /> */}
           <img src={notificationIcon} alt="Notifications" className="w-5 h-5" />

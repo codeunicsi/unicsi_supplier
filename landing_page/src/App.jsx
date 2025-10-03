@@ -5,6 +5,7 @@ import ManageProducts from "./pages/manage-products"
 import ManageOrders from "./pages/manage-orders"
 import Analytics from "./pages/analytics"
 import ProductRequirement from "./pages/product-requirement"
+import NotFound from "./pages/NotFound"
 
 import "./App.css";
 
@@ -18,7 +19,7 @@ function App() {
         <Route path="/rto-returns/overview" element={<Analytics />} />
         <Route path="/listings/new" element={<ProductRequirement />} />
         <Route path="/manage-products" element={<ManageProducts />} />
-          <Route path="*" element={<div>404 - Not Found</div>} />
+          <Route path="*" element={<NotFound />} />
       </Routes>
       
     </BrowserRouter>

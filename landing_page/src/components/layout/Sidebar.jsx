@@ -66,7 +66,7 @@ export default function Sidebar({ activePage, setActivePage }) {
       {/* Toggle button */}
       <div
         className="absolute top-[86px] z-50 transition-all duration-300 ease-in-out"
-        style={{ left: isOpen ? "348px" : "80px" }}
+        style={{ left: isOpen ? "300px" : "80px" }}
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -79,8 +79,8 @@ export default function Sidebar({ activePage, setActivePage }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static top-0 left-0  bg-[#F0E6E6] border-r shadow-lg flex flex-col mt-2 ml-4 transition-all duration-300 ease-in-out
-          ${isOpen ? "w-[348px]" : "w-[80px]"} h-auto
+        className={`fixed lg:static top-0 left-0 bg-[#F0E6E6] border-r shadow-lg flex flex-col mt-2 ml-4 transition-all duration-300 ease-in-out
+          ${isOpen ? "w-[300px]" : "w-[80px]"} h-screen overflow-y-auto hide-scrollbar
         `}
         style={{ borderRadius: "28px", border: "0.5px solid #F0E6E6" }}
       >
@@ -98,32 +98,23 @@ export default function Sidebar({ activePage, setActivePage }) {
         </div>
 
         <nav className="flex-1 px-2 space-y-1">
-          {menuItems.map((item, idx) => (
-            <Link
-              key={idx}
-              to={item.path}
-              className={`flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-medium transition ${
-                location.pathname === item.path
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <button
-                key={idx}
-                onClick={() => setActivePage(item.name)}
-                className={`flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-medium transition ${
-                  activePage === item.name
-                    ? "bg-blue-100 text-blue-700"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                {item.icon}
-                <span className={`${isOpen ? "inline" : "hidden"}`}>
-                  {item.name}
-                </span>
-              </button>
-            </Link>
-          ))}
+       {menuItems.map((item, idx) => (
+    <Link
+      key={idx}
+      to={item.path}
+      onClick={() => setActivePage(item.name)} // handle active state here
+      className={`flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm font-medium transition ${
+        activePage === item.name
+          ? "bg-blue-100 text-blue-700"
+          : "text-gray-700 hover:bg-gray-100"
+      }`}
+    >
+      {item.icon}
+      <span className={`${isOpen ? "inline" : "hidden"}`}>
+        {item.name}
+      </span>
+    </Link>
+  ))}
         </nav>
       </aside>
     </div>

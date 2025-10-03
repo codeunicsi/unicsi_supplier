@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+
+.testing {
+  height: 100%;
+  overflow-y: hidden; /* prevent vertical body scrolling */
+}
+
 /* Hide scrollbar but keep scrolling */
 .hide-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
@@ -12,3 +18,43 @@
   display: none; /* Chrome, Safari, Opera */
 }
 
+
+@keyframes infiniteScroll {
+  from {transform: translateX(0)}
+  to {transform: translateX(-50%)}
+}
+.partner {
+  width: 100%;
+  overflow-x: hidden;
+}
+.horizontal-scrolling-items {
+  width: 2600px;
+  animation-name: infiniteScroll;
+  animation-duration: 20s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+.horizontal-scrolling-items__item {
+  white-space: nowrap;
+}
+
+/* Opposite direction classes */
+.partner-reverse {
+  width: 100%;
+  overflow-x: hidden;
+}
+.horizontal-scrolling-items-reverse {
+  width: 2600px;
+  animation-name: infiniteScrollReverse;
+  animation-duration: 20s; /* Faster speed */
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+.horizontal-scrolling-items-reverse__item {
+  white-space: nowrap;
+}
+
+@keyframes infiniteScrollReverse {
+  from { transform: translateX(-50%) }
+  to { transform: translateX(0) }
+}

@@ -2,7 +2,6 @@
 import { useState } from "react"
 import Sidebar from "./Sidebar"
 import TopBar from "./TopBar"
-import ManageProductsPage from "../../products/ManageProductsPage"
 import SourceProduct from "../../products/SourceProduct"
 import ProductRequirementpage from "../../products/ProductRequirementPage"
 import ManageOrder from "../../products/ManageOrder"
@@ -33,11 +32,16 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen overflow-hidden" style={{ borderRadius: "16px" }}>
+      {/* Sidebar scrolls independently */}
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
-      <div className="flex flex-col flex-1">
+
+      {/* Content area */}
+      <div className="flex flex-col flex-1 h-full">
         <TopBar />
-        <main className="p-4 bg-gray-50">
+
+        {/* Only main content scrolls */}
+        <main className="flex-1 overflow-y-auto p-4 bg-gray-50 hide-scrollbar">
           {renderPage()}
         </main>
       </div>
