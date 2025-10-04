@@ -19,7 +19,7 @@ function App() {
         <Route path="/rto-returns/overview" element={<Analytics />} />
         <Route path="/listings/new" element={<ProductRequirement />} />
         <Route path="/manage-products" element={<ManageProducts />} />
-          <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       
     </BrowserRouter>

@@ -8,8 +8,8 @@ import DashboardChart from "../analytics/DashboardChart";
 
 export default function AnalyticsPage() {
   return (
-    <div className="border border-red-900 ">
-      <h2 className="text-lg font-semibold mb-4 border border-green-900">
+    <div className=" ">
+      <h2 className="text-lg font-semibold mb-4 ">
         Get detailed insights about your Orders, Margins, GMV, RTO% etc.
       </h2>
       <Tabs tabItems={["Overall", "Products"]} />
