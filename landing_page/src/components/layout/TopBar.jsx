@@ -8,7 +8,7 @@ import Button from "../../ui/Button";
 export default function TopBar() {
   return (
     <header
-      className="flex items-center justify-end bg-white pl-4 pr-8 py-3 my-4 mx-6 shadow-lg relative"
+      className="flex items-center justify-end bg-[] pl-4 mr-6 pr-8 py-8 my-4 mb-10 shadow-lg border border-red-600 relative"
       style={{ borderRadius: "20px" }}
     >
       <div className="absolute inset-0 flex items-center justify-start pointer-events-none left-2">
@@ -37,7 +37,7 @@ export default function TopBar() {
         {/* Camera + Button Section */}
         <div
           className="absolute top-0 flex items-center justify-end gap-3 px-2"
-          style={{ width: "200px", height: "40px", right: "0px", border : "2px solid red" }}
+          style={{ width: "200px", height: "40px", right: "0px", }}
         >
           <CameraIcon className="w-5 h-5 text-gray-400" />
           <button

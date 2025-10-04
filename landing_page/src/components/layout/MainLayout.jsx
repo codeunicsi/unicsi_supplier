@@ -32,16 +32,16 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ borderRadius: "16px" }}>
+    <div className="flex bg-[#F3F4F8] h-screen overflow-hidden rounded-tl-[28px]">
       {/* Sidebar scrolls independently */}
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
 
       {/* Content area */}
-      <div className="flex flex-col flex-1 h-full">
+      <div className="flex flex-col flex-1 h-full ml-8">
         <TopBar />
 
         {/* Only main content scrolls */}
-        <main className="flex-1 overflow-y-auto p-4 bg-gray-50 hide-scrollbar">
+        <main className="flex-1 overflow-y-auto p-4 hide-scrollbar mr-6" style={{ borderRadius: "24px", backgroundColor: "rgba(255, 255, 255, 0.7)", }}>
           {renderPage()}
         </main>
       </div>
