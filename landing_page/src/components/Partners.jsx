@@ -1,4 +1,5 @@
-import Framer from "../assets/images/framer.png";
+// import Framer from "../assets/images/framer.png";
+import Framer from "../assets/images/Framer.png";
 import Pipedrive from "../assets/images/pipedrive.png";
 import Rippling from "../assets/images/rippling.png";
 import HashiCorp from "../assets/images/hashicop.png";
@@ -49,47 +50,43 @@ const Partners = () => {
       <div className="space-y-6">
         {/* Top Row */}
         <div className="partner">
-        <div className="horizontal-scrolling-items__item">
-                    <div className="flex items-center md:gap-12 flex-wrap horizontal-scrolling-items">
-            {[...topRowLogos, ...topRowLogos].map((company, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-center min-w-[80px]"
-              >
-                <img
-                  src={company.logo}
-                  alt={company.name}
-                  className="h-8 md:h-10 object-contain"
-                />
-              </div>
-            ))}
+          <div className="horizontal-scrolling-items__item">
+            <div className="flex items-center md:gap-12 flex-wrap horizontal-scrolling-items">
+              {[...topRowLogos, ...topRowLogos].map((company, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-center min-w-[80px]"
+                >
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="h-8 md:h-10 object-contain"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-
         </div>
 
         {/* Bottom Row */}
         <div className="partner-reverse">
-        <div className="horizontal-scrolling-items-reverse__item">
-                 <div className="flex items-center md:gap-12 horizontal-scrolling-items-reverse ">
-          {[...bottomRowLogos, ...bottomRowLogos,].map((company, index) => (
-            <div  
-              key={index}
-              className="flex items-center justify-center min-w-[80px] "
-            >
-              <img
-                src={company.logo}
-                alt={company.name}
-                className="h-8 md:h-10 object-contain"
-              />
+          <div className="horizontal-scrolling-items-reverse__item">
+            <div className="flex items-center md:gap-12 horizontal-scrolling-items-reverse ">
+              {[...bottomRowLogos, ...bottomRowLogos].map((company, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-center min-w-[80px] "
+                >
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="h-8 md:h-10 object-contain"
+                  />
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-
-        </div>
-
-        </div>
-
       </div>
     </div>
   );

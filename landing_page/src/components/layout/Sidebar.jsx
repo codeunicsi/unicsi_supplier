@@ -22,6 +22,9 @@ import {
   Help,
   Support,
   TrainingClass,
+  RetoIntelligence,
+  ManageProducts,
+  GstIcon,
 } from "../../assets/svg/index";
 
 // components/layout/Sidebar.jsx
@@ -31,26 +34,19 @@ export default function Sidebar({ activePage, setActivePage }) {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const menuItems = [
-    { name: "Home", icon: <Home size={24} activePage={activePage}/>, path: "/" },
-    { name: "Manage Orders", icon: <Cube size={24} activePage={activePage}/>, path: "/order" },
     {
-      name: "Manage RTO / Returns",
-      icon: <ReportOutline size="1.5rem" activePage={activePage}/>,
-      path: "/rto-returns/overview",
+      name: "Home",
+      icon: <Home size={24} activePage={activePage} />,
+      path: "/",
     },
     {
-      name: "Product Requirement",
-      icon: <RecruitmentManagement size={24} activePage={activePage} />,
-      path: "/listings/new",
-    },
-    {
-      name: "Manage Products",
-      icon: <Package size={24} activePage={activePage} />,
-      path: "/manage-products",
+      name: "Manage Orders",
+      icon: <FileText size={24} activePage={activePage} />,
+      path: "/order",
     },
     {
       name: "Manage NDR",
-      icon: <ShoppingBag size={24} activePage={activePage}  />,
+      icon: <ShoppingBag size={24} activePage={activePage} />,
       path: "/manage-ndr",
     },
     {
@@ -60,45 +56,106 @@ export default function Sidebar({ activePage, setActivePage }) {
     },
     {
       name: "Source a Product",
-      icon: <Package size={24} activePage={activePage} />,
+      icon: <Cube size={24} activePage={activePage} />,
       path: "/source-product",
     },
     {
       name: "RTO Intelligence",
-      icon: <BarChart2 size={24} activePage={activePage} />,
+      icon: <RetoIntelligence size={24} activePage={activePage} />,
       path: "/rto-intelligence",
     },
-
-    { name: "Reports", icon: <FileText size={24} activePage={activePage} />, path: "/reports" },
-    { name: "Invoices", icon: <File size={24} activePage={activePage} />, path: "/invoices" },
-    { name: "Payments", icon: <Payment size={24} activePage={activePage} />, path: "/payments" },
     {
-      name: "Service Requests",
+      name: "Manage Products",
+      icon: <ManageProducts size={24} activePage={activePage} />,
+      path: "/manage-products",
+    },
+    {
+      name: "Reports",
+      icon: <FileText size={24} activePage={activePage} />,
+      path: "/reports",
+    },
+    {
+      name: "Payments",
+      icon: <Payment size={24} activePage={activePage} />,
+      path: "/payments",
+    },
+    {
+      name: "GST Invoice",
+      icon: <GstIcon size={24} activePage={activePage} />,
+      path: "/invoices",
+    },
+
+    {
+      name: "Value Added Services",
       icon: <Service size={24} activePage={activePage} />,
       path: "/service-requests",
     },
     {
-      name: "Team Management",
-      icon: <Human size={24} activePage={activePage} />,
-      path: "/team-management",
+      name: "Clouts",
+      icon: <TrainingClass size={24} activePage={activePage} />,
+      path: "/clauts",
     },
     {
-      name: "User Management",
-      icon: <CreditCard size={24} activePage={activePage} />,
-      path: "/user-management",
+      name: "Supports",
+      icon: <Support size={24} activePage={activePage} />,
+      path: "/supports",
     },
-    {
-      name: "Recruitment Management",
-      icon: <RecruitmentManagement size={24} activePage={activePage} />,
-      path: "/recruitment-management",
-    },
-    { name: "Profile", icon: <Profile size={24} activePage={activePage} />, path: "/profile" },
 
-    { name: "Clauts", icon: <TrainingClass size={24} activePage={activePage} />, path: "/clauts" },
-    { name: "Supports", icon: <Support size={24} activePage={activePage} />, path: "/supports" },
-    { name: "Setting", icon: <Setting size={24} activePage={activePage} />, path: "/setting" },
-    { name: "Help", icon: <Help size={24} activePage={activePage} />, path: "/help" },
-    { name: "Faq", icon: <Faq className="w-4 h-4" activePage={activePage} />, path: "/faq" },
+    {
+      name: "Help",
+      icon: <Help size={24} activePage={activePage} />,
+      path: "/help",
+    },
+    // {
+    //   name: "Team Management",
+    //   icon: <Human size={24} activePage={activePage} />,
+    //   path: "/team-management",
+    // },
+    // {
+    //   name: "User Management",
+    //   icon: <CreditCard size={24} activePage={activePage} />,
+    //   path: "/user-management",
+    // },
+    // {
+    //   name: "Recruitment Management",
+    //   icon: <RecruitmentManagement size={24} activePage={activePage} />,
+    //   path: "/recruitment-management",
+    // },
+    // {
+    //   name: "Profile",
+    //   icon: <Profile size={24} activePage={activePage} />,
+    //   path: "/profile",
+    // },
+    // {
+    //   name: "Manage RTO / Returns",
+    //   icon: <ReportOutline size="1.5rem" activePage={activePage} />,
+    //   path: "/rto-returns/overview",
+    // },
+    // {
+    //   name: "Product Requirement",
+    //   icon: <RecruitmentManagement size={24} activePage={activePage} />,
+    //   path: "/listings/new",
+    // },
+    // {
+    //   name: "Source a Product",
+    //   icon: <Package size={24} activePage={activePage} />,
+    //   path: "/source-product",
+    // },
+    // {
+    //   name: "RTO Intelligence",
+    //   icon: <BarChart2 size={24} activePage={activePage} />,
+    //   path: "/rto-intelligence",
+    // },
+    // {
+    //   name: "Setting",
+    //   icon: <Setting size={24} activePage={activePage} />,
+    //   path: "/setting",
+    // },
+    // {
+    //   name: "Faq",
+    //   icon: <Faq className="w-4 h-4" activePage={activePage} />,
+    //   path: "/faq",
+    // },
   ];
 
   useEffect(() => {
@@ -114,7 +171,7 @@ export default function Sidebar({ activePage, setActivePage }) {
       {/* Toggle button */}
       <div
         className="absolute top-[86px] z-50 transition-all duration-300 ease-in-out"
-        style={{ left: isOpen ? "348px" : "80px", }}
+        style={{ left: isOpen ? "348px" : "80px" }}
       >
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -136,7 +193,7 @@ export default function Sidebar({ activePage, setActivePage }) {
         <div
           className={`flex items-center gap-2 px-4 pb-6 pt-[66px] transition-all duration-300 ease-in-out
           }`}
-        > 
+        >
           <img
             src={Logo}
             alt="Unicsi Logo"
@@ -152,25 +209,30 @@ export default function Sidebar({ activePage, setActivePage }) {
         </div>
 
         <nav className="flex-1 px-2 space-y-1">
-      {menuItems.map((item, idx) => (
-        <NavLink
-          key={idx}
-          onClick={() => setActivePage(item.name)}
-          to={item.path}
-          className={
-            `flex items-center gap-2 w-[293px] px-4 py-5 rounded-xl transition
-              ${activePage === item.name
-                ? "bg-[#943A09] text-white cursor-pointer"
-                : "hover:bg-[#943A09] hover:text-white text-white"
-              }`
-          }
-        >
-            {item.icon}
-          <span className={`${isOpen ? "inline" : "hidden"} text-[16px] font-medium leading-[100%] ${activePage === item.name ? "text-white" : "text-[#000000]"}`}>
-            {item.name}
-          </span>
-        </NavLink>
-      ))}
+          {menuItems.map((item, idx) => (
+            <NavLink
+              key={idx}
+              onClick={() => setActivePage(item.name)}
+              to={item.path}
+              className={`flex items-center gap-2 w-[293px] px-4 py-5 rounded-xl transition
+              ${
+                activePage === item.name
+                  ? "bg-[#943A09] text-white cursor-pointer"
+                  : "hover:bg-[#943A09] hover:text-white text-white"
+              }`}
+            >
+              {item.icon}
+              <span
+                className={`${
+                  isOpen ? "inline" : "hidden"
+                } text-[16px] font-medium leading-[100%] ${
+                  activePage === item.name ? "text-white" : "text-[#000000]"
+                }`}
+              >
+                {item.name}
+              </span>
+            </NavLink>
+          ))}
         </nav>
       </aside>
     </div>

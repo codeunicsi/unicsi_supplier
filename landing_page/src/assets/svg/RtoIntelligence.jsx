@@ -1,0 +1,18 @@
+import React from "react";
+
+export default function RetoIntelligence({ size = "1.5rem", activePage }) {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12.65 12.854V24C18.692 23.675 23.573 18.895 23.98 12.875H12.65V12.854ZM11.146 12.854H0.02C0.447 18.794 5.186 23.553 11.125 23.959V12.854H11.146ZM12.651 11.349H24C23.675 5.247 18.753 0.325 12.65 0L12.651 11.349ZM11.146 11.349V0C5.106 0.427 0.326 5.308 0 11.35L11.146 11.349Z"
+        fill="black"
+      />
+    </svg>
+  );
+}
