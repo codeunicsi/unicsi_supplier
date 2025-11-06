@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import hero from "../assets/images/hero.png";
 import BagImg from "../assets/images/bgImg.png";
-import { SearchIcon, CameraIcon, Heart, Star} from "../assets/svg/index";
-
+import { SearchIcon, CameraIcon, Heart, Star } from "../assets/svg/index";
+import { useNavigate } from "react-router-dom";
 const Hero = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   return (
     <div style={{ position: "relative", overflow: "hidden" }}>
@@ -63,11 +64,15 @@ const Hero = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="text-white hover:text-blue-300 transition-colors font-Montserrat text-[14px] font-[600] semibold">
+            <button
+              className="text-white hover:text-blue-300 transition-colors font-Montserrat text-[14px] font-[600] semibold"
+              onClick={() => navigate("/login")}
+            >
               Login
             </button>
             <button
               className="text-white px-6 py-2 rounded-full font-medium transition-colors font-Montserrat SemiBold text-[14px]"
+              onClick={() => navigate("/signup")}
               style={{
                 backgroundColor: "#943A09",
                 hoverBackgroundColor: "#7A2E07",
@@ -166,12 +171,18 @@ const Hero = () => {
                 <div>
                   <div className="flex items-center mt-1 gap-2 text-gray-600">
                     <Star className="w-[21.975034713745117px] h-[20.98503875732422px] inline-block" />
-                    <p className="font-normal w-[21.975034713745117px] h-[20.98503875732422px]">4.5</p>
+                    <p className="font-normal w-[21.975034713745117px] h-[20.98503875732422px]">
+                      4.5
+                    </p>
                   </div>
                 </div>
                 <div className="PriceSection flex items-center space-x-4">
-                  <span className="Price line-through text-[#000000] font-light text-[17.71px]">$19.99</span>
-                  <span className="OldPrice font-bold text-[#000000] text-[26.57px]">$39.99</span>
+                  <span className="Price line-through text-[#000000] font-light text-[17.71px]">
+                    $19.99
+                  </span>
+                  <span className="OldPrice font-bold text-[#000000] text-[26.57px]">
+                    $39.99
+                  </span>
                 </div>
               </div>
             </div>
