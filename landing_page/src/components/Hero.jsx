@@ -1,13 +1,3 @@
-<<<<<<< HEAD
-import React, { useState } from "react";
-import hero from "../assets/images/hero.png";
-import BagImg from "../assets/images/bgImg.png";
-import { SearchIcon, CameraIcon, Heart, Star } from "../assets/svg/index";
-import { useNavigate } from "react-router-dom";
-const Hero = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
-=======
 "use client"
 
 import { useState } from "react"
@@ -19,7 +9,6 @@ const Hero = () => {
 
   const heroImage = "/modern-dropshipping-hero-background.jpg"
   const productImage = "/luxury-leather-messenger-bag.jpg"
->>>>>>> be5be01 (page responsive)
 
   return (
     <div className="relative w-full overflow-hidden">
@@ -61,22 +50,6 @@ const Hero = () => {
               </a>
             </div>
           </div>
-<<<<<<< HEAD
-          <div className="flex items-center space-x-4">
-            <button
-              className="text-white hover:text-blue-300 transition-colors font-Montserrat text-[14px] font-[600] semibold"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-            <button
-              className="text-white px-6 py-2 rounded-full font-medium transition-colors font-Montserrat SemiBold text-[14px]"
-              onClick={() => navigate("/signup")}
-              style={{
-                backgroundColor: "#943A09",
-                hoverBackgroundColor: "#7A2E07",
-              }}
-=======
 
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -93,7 +66,6 @@ const Hero = () => {
             <button
               className="text-white px-4 sm:px-6 py-2 rounded-full font-medium transition-colors text-xs sm:text-sm md:text-base whitespace-nowrap"
               style={{ backgroundColor: "#943A09" }}
->>>>>>> be5be01 (page responsive)
             >
               Sign up
             </button>
@@ -204,52 +176,6 @@ const Hero = () => {
           </a>
         </div>
 
-<<<<<<< HEAD
-        {/* Product Cards */}
-        <div
-          className="flex space-x-6 mt-8 px-8 pb-4 overflow-x-scroll hide-scrollbar"
-          style={{ maxWidth: "1600px" }}
-        >
-          {[1, 2, 3, 4, 5, 6, 7].map((product) => (
-            <div
-              key={product}
-              className="bg-white rounded-lg shadow-md p-4 min-w-[378.6039733886719px] hover:shadow-xl transition-shadow"
-              style={{ height: "487.68060302734375px" }}
-            >
-              <div className="relative">
-                <img
-                  src={BagImg}
-                  alt={`Product ${product}`}
-                  className="w-[350.35491943359375px] h-[262.76617431640625px] object-cover rounded-md"
-                />
-                {/* <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow hover:bg-gray- 100 transition-colors"> */}
-                <div className="absolute top-2 right-2 p-2">
-                  <Heart className="w-6 h-6" size="" />
-                </div>
-
-                {/* </button> */}
-              </div>
-
-              <div>
-                <p className="mt-4 description text-[26.57px] font-regular">
-                  Simple Oil Wax Leather Messenger Shoulder Bags
-                </p>
-                <div>
-                  <div className="flex items-center mt-1 gap-2 text-gray-600">
-                    <Star className="w-[21.975034713745117px] h-[20.98503875732422px] inline-block" />
-                    <p className="font-normal w-[21.975034713745117px] h-[20.98503875732422px]">
-                      4.5
-                    </p>
-                  </div>
-                </div>
-                <div className="PriceSection flex items-center space-x-4">
-                  <span className="Price line-through text-[#000000] font-light text-[17.71px]">
-                    $19.99
-                  </span>
-                  <span className="OldPrice font-bold text-[#000000] text-[26.57px]">
-                    $39.99
-                  </span>
-=======
         {/* Product Cards Carousel */}
         <div className="w-full overflow-x-auto hide-scrollbar">
           <div className="flex gap-4 sm:gap-6 pb-4 min-w-min">
@@ -283,7 +209,6 @@ const Hero = () => {
                     <span className="line-through text-sm sm:text-base text-gray-500 font-light">$19.99</span>
                     <span className="font-bold text-lg sm:text-xl md:text-2xl text-gray-800">$39.99</span>
                   </div>
->>>>>>> be5be01 (page responsive)
                 </div>
               </div>
             ))}
