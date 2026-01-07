@@ -8,7 +8,7 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    role: "vendor",
+    role: "SUPPLIER" || "RESELLER",
     otp: "",
   });
 
@@ -127,11 +127,10 @@ const Signup = () => {
             type="button"
             onClick={handleSendOtp}
             disabled={loading || otpSent}
-            className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold ${
-              otpSent
-                ? "bg-green-600 text-white cursor-not-allowed"
-                : "bg-[#943A09] text-white hover:bg-amber-800"
-            }`}
+            className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold ${otpSent
+              ? "bg-green-600 text-white cursor-not-allowed"
+              : "bg-[#943A09] text-white hover:bg-amber-800"
+              }`}
           >
             {otpSent ? "Sent" : loading ? "Sending..." : "Send OTP"}
           </button>
@@ -155,11 +154,10 @@ const Signup = () => {
               type="button"
               onClick={handleVerifyOtp}
               disabled={loading || otpVerified}
-              className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold ${
-                otpVerified
-                  ? "bg-green-600 text-white cursor-not-allowed"
-                  : "bg-blue-700 text-white hover:bg-blue-800"
-              }`}
+              className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold ${otpVerified
+                ? "bg-green-600 text-white cursor-not-allowed"
+                : "bg-blue-700 text-white hover:bg-blue-800"
+                }`}
             >
               {otpVerified ? "Verified" : loading ? "Verifying..." : "Verify"}
             </button>
@@ -185,8 +183,8 @@ const Signup = () => {
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2"
           >
-            <option value="vendor">Vendor</option>
-            <option value="seller">Seller</option>
+            <option value="SUPPLIER">Supplier</option>
+            <option value="RESELLER">Reseller</option>
           </select>
         </div>
 
@@ -194,11 +192,10 @@ const Signup = () => {
         <button
           type="submit"
           disabled={!otpVerified || loading}
-          className={`w-full py-2 rounded-lg font-medium ${
-            otpVerified
-              ? "bg-[#943A09] text-white hover:bg-amber-800"
-              : "bg-gray-400 text-white cursor-not-allowed"
-          }`}
+          className={`w-full py-2 rounded-lg font-medium ${otpVerified
+            ? "bg-[#943A09] text-white hover:bg-amber-800"
+            : "bg-gray-400 text-white cursor-not-allowed"
+            }`}
         >
           {loading ? "Processing..." : "Sign Up"}
         </button>

@@ -1,16 +1,22 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React from "react";
+
 import { Home } from "./pages/Home";
-import ManageProducts from "./pages/manage-products";
-import ManageOrders from "./pages/manage-orders";
-import Analytics from "./pages/analytics";
-import ProductRequirement from "./pages/product-requirement";
-import NotFound from "./pages/NotFound";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
-import SellerDashboard from "./pages/SellerDashboard";
-import VendorDashboard from "./pages/VendorDashboard";
+import NotFound from "./pages/NotFound";
+
+import ManageProducts from "./products/ManageProducts";
+import ManageOrders from "./products/ManageOrder";
+import Analytics from "./products/AnalyticsPage";
+import ProductRequirement from "./products/ProductRequirementPage";
+// import SellerDashboard from "./pages/SellerDashboard";
+// import VendorDashboard from "./pages/VendorDashboard";
+import ProfilePage from "./pages/profile";
+
 import ProtectedRoute from "./components/ProtectedRoute";
+import MainLayout from "./components/layout/MainLayout";
+
 import "./App.css";
 
 function App() {
@@ -22,59 +28,23 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-        {/* Seller-Specific Protected Routes */}
+        {/* SUPPLIER PANEL (with layout) */}
         <Route
-          path="/order"
           element={
-            <ProtectedRoute allowedRoles={["seller"]}>
-              <ManageOrders />
+            <ProtectedRoute allowedRoles={["SUPPLIER"]}>
+              <MainLayout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/rto-returns/overview"
-          element={
-            <ProtectedRoute allowedRoles={["seller"]}>
-              <Analytics />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Vendor-Specific Protected Routes */}
-        <Route
-          path="/manage-products"
-          element={
-            <ProtectedRoute allowedRoles={["vendor"]}>
-              <ManageProducts />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/listings/new"
-          element={
-            <ProtectedRoute allowedRoles={["vendor"]}>
-              <ProductRequirement />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Dashboards */}
-        <Route
-          path="/seller"
-          element={
-            <ProtectedRoute allowedRoles={["seller"]}>
-              <SellerDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/vendor"
-          element={
-            <ProtectedRoute allowedRoles={["vendor"]}>
-              <VendorDashboard />
-            </ProtectedRoute>
-          }
-        />
+        >
+          {/* <Route path="/seller" element={<SellerDashboard />} />
+          <Route path="/vendor" element={<VendorDashboard />} /> */}
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/order" element={<ManageOrders />} />
+          <Route path="/manage-products" element={<ManageProducts />} />
+          <Route path="/product-requirement" element={<ProductRequirement />} />
+          <Route path="/source-product" element={<ProductRequirement />} />
+          <Route path="/rto-returns/overview" element={<Analytics />} />
+        </Route>
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

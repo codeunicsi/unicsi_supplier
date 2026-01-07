@@ -13,10 +13,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
   // Role mismatch protection
   if (allowedRoles && !allowedRoles.includes(role)) {
-    if (role === "vendor") {
-      window.location.href = "https://unicse.pages.dev/marketplace";
+    if (role === "SUPPLIER") {
+      window.location.href = "localhost:5173/order";
     } else {
-      return <Navigate to="/order" replace />;
+      window.location.href = "localhost:5173/order";
     }
   }
 

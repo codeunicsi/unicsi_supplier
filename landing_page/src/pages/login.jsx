@@ -23,10 +23,10 @@ const Login = () => {
       localStorage.setItem("userRole", data.role);
 
       // Redirect based on role
-      if (data.role === "vendor") {
-        window.location.href = "https://unicse.pages.dev/marketplace";
+      if (data.role === "SUPPLIER") {
+        window.location.href = "/order";
       } else {
-        navigate("/order");
+        window.location.href = "/order";
       }
     } catch (error) {
       setMessage(error.response?.data?.message || "Login failed");

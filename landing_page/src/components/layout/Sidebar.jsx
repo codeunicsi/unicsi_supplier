@@ -1,240 +1,265 @@
-// components/layout/Sidebar.jsx
-import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { Truck, Package, BarChart2, CreditCard, File } from "lucide-react";
-import Home from "../../assets/svg/Home";
-import FileText from "../../assets/svg/FileText";
-import ShoppingBag from "../../assets/svg/ShoppingBag";
-import RightIcon from "../../assets/icons/rightIcon.svg";
-import UnicseLogo from "../../assets/svg/UnicseLogo";
-import Logo from "../../assets/images/Logo.jpeg";
+"use client"
+
+import React from "react"
+
+import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import {
-  Profile,
-  Faq,
-  Human,
-  Setting,
-  ReportOutline,
-  Payment,
-  BusinessProductSupplier,
-  RecruitmentManagement,
-  Service,
-  Cube,
-  Help,
-  Support,
-  TrainingClass,
-  RetoIntelligence,
-  ManageProducts,
-  GstIcon,
-} from "../../assets/svg/index";
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Box,
+  IconButton,
+  Avatar,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material"
+import MenuIcon from "@mui/icons-material/Menu"
+import CloseIcon from "@mui/icons-material/Close"
+import HomeIcon from "@mui/icons-material/Home"
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart"
+import WarehouseIcon from "@mui/icons-material/Warehouse"
+import TrendingUpIcon from "@mui/icons-material/TrendingUp"
+import PaymentIcon from "@mui/icons-material/Payment"
+import ReceiptIcon from "@mui/icons-material/Receipt"
+import SettingsIcon from "@mui/icons-material/Settings"
+import HelpIcon from "@mui/icons-material/Help"
+import SupportAgentIcon from "@mui/icons-material/SupportAgent"
+import PersonIcon from "@mui/icons-material/Person"
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline"
 
-// components/layout/Sidebar.jsx
-export default function Sidebar({ activePage, setActivePage }) {
-  const [isOpen, setIsOpen] = useState(true);
-  const location = useLocation();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const menuItems = [
-    {
-      name: "Home",
-      icon: <Home size={24} activePage={activePage} />,
-      path: "/",
-    },
-    {
-      name: "Manage Orders",
-      icon: <FileText size={24} activePage={activePage} />,
-      path: "/order",
-    },
-    {
-      name: "Manage NDR",
-      icon: <ShoppingBag size={24} activePage={activePage} />,
-      path: "/manage-ndr",
-    },
-    {
-      name: "Supplier Re-Routing",
-      icon: <BusinessProductSupplier size={24} activePage={activePage} />,
-      path: "/supplier-re-routing",
-    },
-    {
-      name: "Source a Product",
-      icon: <Cube size={24} activePage={activePage} />,
-      path: "/source-product",
-    },
-    {
-      name: "RTO Intelligence",
-      icon: <RetoIntelligence size={24} activePage={activePage} />,
-      path: "/rto-intelligence",
-    },
-    {
-      name: "Manage Products",
-      icon: <ManageProducts size={24} activePage={activePage} />,
-      path: "/manage-products",
-    },
-    {
-      name: "Reports",
-      icon: <FileText size={24} activePage={activePage} />,
-      path: "/reports",
-    },
-    {
-      name: "Payments",
-      icon: <Payment size={24} activePage={activePage} />,
-      path: "/payments",
-    },
-    {
-      name: "GST Invoice",
-      icon: <GstIcon size={24} activePage={activePage} />,
-      path: "/invoices",
-    },
 
-    {
-      name: "Value Added Services",
-      icon: <Service size={24} activePage={activePage} />,
-      path: "/service-requests",
-    },
-    {
-      name: "Clouts",
-      icon: <TrainingClass size={24} activePage={activePage} />,
-      path: "/clauts",
-    },
-    {
-      name: "Supports",
-      icon: <Support size={24} activePage={activePage} />,
-      path: "/supports",
-    },
+const DRAWER_WIDTH = 280
+const DRAWER_WIDTH_COLLAPSED = 80
 
-    {
-      name: "Help",
-      icon: <Help size={24} activePage={activePage} />,
-      path: "/help",
-    },
-    // {
-    //   name: "Team Management",
-    //   icon: <Human size={24} activePage={activePage} />,
-    //   path: "/team-management",
-    // },
-    // {
-    //   name: "User Management",
-    //   icon: <CreditCard size={24} activePage={activePage} />,
-    //   path: "/user-management",
-    // },
-    // {
-    //   name: "Recruitment Management",
-    //   icon: <RecruitmentManagement size={24} activePage={activePage} />,
-    //   path: "/recruitment-management",
-    // },
-    // {
-    //   name: "Profile",
-    //   icon: <Profile size={24} activePage={activePage} />,
-    //   path: "/profile",
-    // },
-    // {
-    //   name: "Manage RTO / Returns",
-    //   icon: <ReportOutline size="1.5rem" activePage={activePage} />,
-    //   path: "/rto-returns/overview",
-    // },
-    // {
-    //   name: "Product Requirement",
-    //   icon: <RecruitmentManagement size={24} activePage={activePage} />,
-    //   path: "/listings/new",
-    // },
-    // {
-    //   name: "Source a Product",
-    //   icon: <Package size={24} activePage={activePage} />,
-    //   path: "/source-product",
-    // },
-    // {
-    //   name: "RTO Intelligence",
-    //   icon: <BarChart2 size={24} activePage={activePage} />,
-    //   path: "/rto-intelligence",
-    // },
-    // {
-    //   name: "Setting",
-    //   icon: <Setting size={24} activePage={activePage} />,
-    //   path: "/setting",
-    // },
-    // {
-    //   name: "Faq",
-    //   icon: <Faq className="w-4 h-4" activePage={activePage} />,
-    //   path: "/faq",
-    // },
-  ];
+const menuItems = [
+  { name: "Home", icon: <HomeIcon />, path: "/" },
+  { name: "Manage Orders", icon: <ShoppingCartIcon />, path: "/order" },
+  { name: "Manage NDR", icon: <WarehouseIcon />, path: "/manage-ndr" },
+  { name: "Supplier Re-Routing", icon: <TrendingUpIcon />, path: "/supplier-re-routing" },
+  { name: "Source a Product", icon: <ShoppingCartIcon />, path: "/source-product" },
+  { name: "RTO Intelligence", icon: <TrendingUpIcon />, path: "/rto-intelligence" },
+  { name: "Manage Products", icon: <WarehouseIcon />, path: "/manage-products" },
+  { name: "Reports", icon: <TrendingUpIcon />, path: "/reports" },
+  { name: "Payments", icon: <PaymentIcon />, path: "/payments" },
+  { name: "GST Invoice", icon: <ReceiptIcon />, path: "/invoices" },
+  { name: "Value Added Services", icon: <SettingsIcon />, path: "/service-requests" },
+  { name: "Clouts", icon: <WarehouseIcon />, path: "/clauts" },
+  { name: "Supports", icon: <SupportAgentIcon />, path: "/supports" },
+  { name: "Help", icon: <HelpOutlineIcon />, path: "/help" },
+  { name: "Profile", icon: <PersonIcon />, path: "/profile" },
+  { name: "FAQs", icon: <HelpIcon />, path: "/faqs" },
+]
+
+export default function Sidebar() {
+  const [open, setOpen] = useState(true)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const pathname = usePathname()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
   useEffect(() => {
-    const currentPath = location.pathname;
-    const currentItem = menuItems.find((item) => item.path === currentPath);
-    if (currentItem) {
-      setActivePage(currentItem.name);
+    setMobileOpen(false)
+  }, [pathname])
+
+  const toggleDrawer = () => {
+    if (isMobile) {
+      setMobileOpen(!mobileOpen)
+    } else {
+      setOpen(!open)
     }
-  }, [location, setActivePage, menuItems]);
+  }
+
+  const desktopSidebar = (
+    <Box
+      sx={{
+        width: open ? DRAWER_WIDTH : DRAWER_WIDTH_COLLAPSED,
+        transition: "width 0.3s ease-in-out",
+        bgcolor: "#F0E6E6",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        borderRight: "1px solid #e0e0e0",
+        overflowY: "auto",
+      }}
+    >
+      {/* Header with logo and toggle */}
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: open ? "space-between" : "center",
+          borderBottom: "1px solid #e0e0e0",
+          minHeight: 80,
+        }}
+      >
+        {open && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Avatar src="/logo.jpeg" alt="Logo" sx={{ width: 40, height: 40 }} />
+            <span style={{ fontWeight: "bold", color: "#000", whiteSpace: "nowrap" }}>UNICSI</span>
+          </Box>
+        )}
+        <IconButton
+          onClick={toggleDrawer}
+          size="small"
+          sx={{
+            color: "#943A09",
+            border: "1px solid #943A09",
+          }}
+        >
+          {open ? <CloseIcon /> : <MenuIcon />}
+        </IconButton>
+      </Box>
+
+      {/* Navigation menu */}
+      <List sx={{ flex: 1, px: 1 }}>
+        {menuItems.map((item, idx) => {
+          const isActive = pathname === item.path
+          return (
+            <ListItemButton
+              key={idx}
+              href={item.path}
+              component="a"
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                bgcolor: isActive ? "#943A09" : "transparent",
+                color: isActive ? "#fff" : "#000",
+                "&:hover": {
+                  bgcolor: "#943A09",
+                  color: "#fff",
+                },
+                justifyContent: open ? "flex-start" : "center",
+                px: open ? 2 : 1,
+                py: 1.5,
+                transition: "all 0.2s ease",
+                minHeight: open ? "auto" : 56,
+              }}
+              title={!open ? item.name : ""}
+            >
+              <ListItemIcon
+                sx={{
+                  color: "inherit",
+                  minWidth: open ? 40 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              {open && (
+                <ListItemText
+                  primary={item.name}
+                  primaryTypographyProps={{
+                    sx: {
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: "0.95rem",
+                      whiteSpace: "nowrap",
+                    },
+                  }}
+                />
+              )}
+            </ListItemButton>
+          )
+        })}
+      </List>
+    </Box>
+  )
+
+  const mobileSidebar = (
+    <Drawer
+      anchor="left"
+      open={mobileOpen}
+      onClose={() => setMobileOpen(false)}
+      sx={{
+        "& .MuiDrawer-paper": {
+          width: 280,
+          bgcolor: "#F0E6E6",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid #e0e0e0",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Avatar src="/logo.jpeg" alt="Logo" sx={{ width: 40, height: 40 }} />
+          <span style={{ fontWeight: "bold", color: "#000" }}>UNICSI</span>
+        </Box>
+        <IconButton onClick={() => setMobileOpen(false)} size="small">
+          <CloseIcon />
+        </IconButton>
+      </Box>
+
+      <List sx={{ px: 1 }}>
+        {menuItems.map((item, idx) => {
+          const isActive = pathname === item.path
+          return (
+            <ListItemButton
+              key={idx}
+              href={item.path}
+              component="a"
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                bgcolor: isActive ? "#943A09" : "transparent",
+                color: isActive ? "#fff" : "#000",
+                "&:hover": {
+                  bgcolor: "#943A09",
+                  color: "#fff",
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  color: "inherit",
+                  minWidth: 40,
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.name}
+                primaryTypographyProps={{
+                  sx: {
+                    fontWeight: isActive ? 600 : 500,
+                    fontSize: "0.95rem",
+                  },
+                }}
+              />
+            </ListItemButton>
+          )
+        })}
+      </List>
+    </Drawer>
+  )
 
   return (
-    <div className="flex">
-      {/* Toggle button */}
-      <div
-        className="absolute top-[86px] z-50 transition-all duration-300 ease-in-out"
-        style={{ left: isOpen ? "348px" : "80px" }}
-      >
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="p-2 bg-[#FFFFFF] rounded-[50%] shadow-md transition-all duration-300 ease-in-out"
-          style={{ border: "0.5px solid #943A09" }}
-        >
-          <img src={RightIcon} alt="Toggle Icon" />
-        </button>
-      </div>
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed lg:static top-0 left-0 bg-[#F0E6E6] border-r shadow-lg flex flex-col mt-2 ml-4 transition-all duration-300 ease-in-out
-          ${
-            isOpen ? "w-[348px]" : "w-[80px]"
-          } h-auto overflow-y-auto hide-scrollbar backdrop-blur-xs drop-shadow-md rounded-tl-[28px] rounded-tr-[28px]
-        `}
-      >
-        <div
-          className={`flex items-center gap-2 px-4 pb-6 pt-[66px] transition-all duration-300 ease-in-out
-          }`}
-        >
-          <img
-            src={Logo}
-            alt="Unicsi Logo"
-            className="w-12 h-12 rounded-full inline-block mr-2"
-          />
-          <span
-            className={`text-xl font-bold text-[#000000] whitespace-nowrap transition-opacity duration-300 ease-in-out ${
-              isOpen ? "opacity-100" : "opacity-0 hidden"
-            }`}
+    <>
+      {isMobile ? (
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <IconButton
+            onClick={toggleDrawer}
+            sx={{
+              p: 2,
+              color: "#943A09",
+            }}
           >
-            UNICSI
-          </span>
-        </div>
-
-        <nav className="flex-1 px-2 space-y-1">
-          {menuItems.map((item, idx) => (
-            <NavLink
-              key={idx}
-              onClick={() => setActivePage(item.name)}
-              to={item.path}
-              className={`flex items-center gap-2 w-[293px] px-4 py-5 rounded-xl transition
-              ${
-                activePage === item.name
-                  ? "bg-[#943A09] text-white cursor-pointer"
-                  : "hover:bg-[#943A09] hover:text-white text-white"
-              }`}
-            >
-              {item.icon}
-              <span
-                className={`${
-                  isOpen ? "inline" : "hidden"
-                } text-[16px] font-medium leading-[100%] ${
-                  activePage === item.name ? "text-white" : "text-[#000000]"
-                }`}
-              >
-                {item.name}
-              </span>
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-    </div>
-  );
+            <MenuIcon />
+          </IconButton>
+          {mobileSidebar}
+        </Box>
+      ) : (
+        desktopSidebar
+      )}
+    </>
+  )
 }
