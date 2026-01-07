@@ -1,4 +1,6 @@
 // components/layout/TopBar.jsx
+import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
 import notificationIcon from "../../assets/icons/ic_notifications.svg";
 import { Bell, HelpCircle, Search } from "lucide-react";
 import { CameraIcon, SearchIcon } from "../../assets/svg/index";
@@ -6,8 +8,21 @@ import Button from "../../ui/Button";
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 // import rightIcon from "../../assets/icons/rightIcon.svg"
+// import { AuthContext } from "";
+import { useAuth } from "../../auth/Authcontext";
+
+  
 
 export default function TopBar() {
+ const { isAuthenticated, getUserRole, logout } = useAuth();
+ const navigate = useNavigate();
+
+ if(!isAuthenticated()) {
+    navigate("/login")
+ }
+
+  // console.log(isAuthenticated(), getUserRole(), logout())
+  // console.log(logout)
   return (
     <header
       className="flex items-center justify-end bg-[] pl-4 mr-6 pr-8 py-8 my-4 mb-10 h-[91px] shadow-lg relative"
@@ -88,6 +103,7 @@ export default function TopBar() {
 
 //profile drop down
 function profileDropDown() {
+    const { logout, isAuthenticated, getUserRole } = useAuth();
   return (
     <Menu as="div" className="relative inline-block" style={{ border: "2px solid #ccc" }}>
       <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white inset-ring-1 inset-ring-white/5 hover:bg-white/20">
@@ -114,16 +130,16 @@ function profileDropDown() {
               Profile
             </a>
           </MenuItem>
-          <form action="#" method="POST">
-            <MenuItem>
-              <button
-                type="submit"
-                className="block w-full px-4 py-2 text-left text-sm text-white data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
-              >
-                Sign out
-              </button>
-            </MenuItem>
-          </form>
+
+          <MenuItem>
+            <button
+              onClick={() => logout()}
+              className="block w-full px-4 py-2 text-left text-sm text-white data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
+            >
+              Log out
+            </button>
+          </MenuItem>
+
         </div>
       </MenuItems>
     </Menu>

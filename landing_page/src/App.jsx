@@ -16,12 +16,14 @@ import ProfilePage from "./pages/profile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
+import { AuthProvider } from "./auth/Authcontext";
 
 import "./App.css";
 
 function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
@@ -49,6 +51,7 @@ function App() {
         {/* 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

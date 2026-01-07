@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Box, Grid, TextField, Alert } from "@mui/material"
+import { Box, Grid, TextField, Alert, Button } from "@mui/material"
+import { updatePersonalDetails } from "../../../services/prodile/profile.service"
 
 export default function PersonalDetails() {
     const [formData, setFormData] = useState({
@@ -17,6 +18,16 @@ export default function PersonalDetails() {
             ...prev,
             [name]: value,
         }))
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        try {
+            const response = await updatePersonalDetails(formData)
+            console.log(response)
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     return (
@@ -73,6 +84,15 @@ export default function PersonalDetails() {
                     </Alert>
                 </Grid>
             </Grid>
+            <Box>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    onClick={handleSubmit}
+                >
+                    Update
+                </Button>
+            </Box>
         </Box>
     )
 }

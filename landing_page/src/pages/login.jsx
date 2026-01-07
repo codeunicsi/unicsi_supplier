@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 import InputField from "../components/InputField";
+import { login, isAuthenticated } from "../utils/auth";
 
 const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -19,12 +20,11 @@ const Login = () => {
       const { token, data } = res.data;
 
       // Save login data
-      localStorage.setItem("token", token);
-      localStorage.setItem("userRole", data.role);
+      login(token, data.role);
 
       // Redirect based on role
       if (data.role === "SUPPLIER") {
-        window.location.href = "/order";
+        window.location.href = "/profile";
       } else {
         window.location.href = "/order";
       }
@@ -32,6 +32,13 @@ const Login = () => {
       setMessage(error.response?.data?.message || "Login failed");
     }
   };
+
+
+  useEffect(() => {
+    if(isAuthenticated()) {
+        navigate("/profile");
+    }
+  },[])
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">

@@ -8,7 +8,7 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    role: "SUPPLIER" || "RESELLER",
+    role: "SUPPLIER" || "RESELLER" || "ADMIN",
     otp: "",
   });
 
@@ -185,6 +185,7 @@ const Signup = () => {
           >
             <option value="SUPPLIER">Supplier</option>
             <option value="RESELLER">Reseller</option>
+            <option value="ADMIN">Admin</option>
           </select>
         </div>
 
