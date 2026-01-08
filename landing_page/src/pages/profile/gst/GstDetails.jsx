@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Box, Button, Grid, TextField, Typography } from "@mui/material"
+import { Box, Button, Grid, TextField, Typography, Divider } from "@mui/material"
+import { updateGstDetails, fetchProfile } from "../../../services/prodile/profile.service"
 
 export default function GstDetails() {
     const [formData, setFormData] = useState({
@@ -19,56 +20,95 @@ export default function GstDetails() {
     }
 
     return (
-        <Box>
-            <Grid container spacing={3}>
-                <Grid item xs={12}>
-                    <TextField
-                        fullWidth
-                        label="Name (As per GST Certificate)"
-                        name="gstName"
-                        value={formData.gstName}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
+        <div>
+            <Grid container spacing={3} height="100%">
 
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        fullWidth
-                        label="GST Provisional ID"
-                        name="gstId"
-                        value={formData.gstId}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
+                {/* Name Information */}
+             <label className="mb-[5px] inline-block mb-4 font-medium text-[#424242]">Name (As per printed on GST Certificate)</label>
+            
+                <div className="flex gap-4 justify-start w-full">
+                    <Grid item size={8}>
+                        <TextField
+                            label="GST Name"
+                            name="gstName"
+                            fullWidth
+                            value={formData.gstName}
+                            onChange={handleChange}
+                            size="small"
+                            disabled
+                        />
+                    </Grid>
+                </div>
 
-                <Grid item xs={12} md={6}>
-                    <FileInput label="Upload GST Certificate Photo" name="gstCert" onChange={handleChange} />
-                </Grid>
+                
 
-                <Grid item xs={12} md={6}>
-                    <TextField
-                        fullWidth
-                        label="PAN Card No."
-                        name="panCard"
-                        value={formData.panCard}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
+                {/* Gst Information */}
+                <div className="col-span-2">
+                    <hr className="w-[100%] border-[1px] border-[#E0E0E0] mb-[20px] mt-[6px]"/>
+                    <p className="inline-block text-[14px] leading-[16px]">GST Information</p>
+                    </div>
+                <div className="flex gap-4 justify-end w-full">
 
-                <Grid item xs={12} md={6}>
-                    <FileInput label="Upload PAN Card Photo" name="panPhoto" onChange={handleChange} />
-                </Grid>
+                    <Grid item size={6}>
+                        <TextField
+                            label="GST ID"
+                            name="gstId"
+                            fullWidth
+                            value={formData.gstId}
+                            onChange={handleChange}
+                            size="small"
+                            enabled
+                        />
+                    </Grid>
+                    <Grid item size={6}>
+                        <FileInput
+                            // label="Pan Card"
+                            // name="panCard"
+                            onChange={handleChange}
+                        />
+                    </Grid>
+                </div>
 
-                <Grid item xs={12}>
-                    <Button variant="contained" color="primary">
+                <Divider />
+
+                {/* Pan Card Information */}
+                <label className="col-span-2">Pan Card Information</label>
+                <div className="flex gap-4 justify-end w-full">
+                    <Grid item size={6}>
+                        <TextField
+                            label="Pan Card"
+                            name="panCard"
+                            fullWidth
+                            value={formData.panCard}
+                            onChange={handleChange}
+                            size="small"
+                            enabled
+                        />
+                    </Grid>
+                    <Grid item size={6}>
+                        <FileInput
+                            // label="Pan Card"
+                            // name="panCard"
+                            onChange={handleChange}
+                        />
+                    </Grid>
+                </div>
+
+                {/* update button */}
+                <div className="flex justify-end w-full">
+
+                    {/* left bottom button */}
+                    <Button
+                        variant="contained"
+                        className=""
+                    // onClick={handleSubmit}
+                    >
                         Update
                     </Button>
-                </Grid>
+                </div>
+
             </Grid>
-        </Box>
+        </div>
     )
 }
 

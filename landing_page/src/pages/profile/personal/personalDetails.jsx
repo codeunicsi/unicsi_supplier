@@ -1,98 +1,150 @@
 "use client"
 
-import { useState } from "react"
-import { Box, Grid, TextField, Alert, Button } from "@mui/material"
-import { updatePersonalDetails } from "../../../services/prodile/profile.service"
+import { useState, useEffect } from "react"
+import {
+  Box,
+  Grid,
+  TextField,
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  Divider,
+  Stack
+} from "@mui/material"
+import { updatePersonalDetails, fetchProfile } from "../../../services/prodile/profile.service"
 
 export default function PersonalDetails() {
-    const [formData, setFormData] = useState({
-        supplierId: "8016330938",
-        phoneNumber: "9220774381",
-        storeName: "Shop20774381",
-        storeEmail: "niyamul.haque98@gmail.com",
-    })
+  const [editMode, setEditMode] = useState(false)
 
-    const handleChange = (e) => {
-        const { name, value } = e.target
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }))
+  const [formData, setFormData] = useState({
+    supplierId: "",
+    phoneNumber: "",
+    storeName: "",
+    storeEmail: "",
+  })
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async () => {
+    try {
+      await updatePersonalDetails(formData)
+      setEditMode(false)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      const res = await fetchProfile()
+      const data = res.data.data
+
+      setFormData({
+        supplierId: data.supplierId || "SUP-XXXX",
+        phoneNumber: data.number || "",
+        storeName: data.name || "",
+        storeEmail: data.email || "",
+      })
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        try {
-            const response = await updatePersonalDetails(formData)
-            console.log(response)
-        } catch (error) {
-            console.error(error)
-        }
-    }
+    loadProfile()
+  }, [])
 
-    return (
-        <Box>
-            <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={4}>
-                    <TextField
-                        fullWidth
-                        label="Supplier Id"
-                        name="supplierId"
-                        value={formData.supplierId}
-                        onChange={handleChange}
-                        disabled
-                        size="small"
-                    />
-                </Grid>
+  return (
+    <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
+      <CardHeader
+        title="Personal Details"
+        subheader="Manage your store information"
+      />
 
-                <Grid item xs={12} sm={6} md={4}>
-                    <TextField
-                        fullWidth
-                        label="Phone Number"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
+      <Divider />
 
-                <Grid item xs={12} sm={6} md={4}>
-                    <TextField
-                        fullWidth
-                        label="Store Name (As per GST)"
-                        name="storeName"
-                        value={formData.storeName}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
+      <CardContent>
+        <Grid container spacing={3}>
+          <Grid item size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextField
+              label="Supplier ID"
+              fullWidth
+              value={formData.supplierId}
+              size="small"
+              disabled
+            />
+          </Grid>
 
-                <Grid item xs={12} sm={6} md={4}>
-                    <TextField
-                        fullWidth
-                        label="Store Email"
-                        name="storeEmail"
-                        value={formData.storeEmail}
-                        onChange={handleChange}
-                        size="small"
-                    />
-                </Grid>
+          <Grid item size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextField
+              label="Phone Number"
+              name="phoneNumber"
+              fullWidth
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              size="small"
+              disabled={!editMode}
+            />
+          </Grid>
 
-                <Grid item xs={12}>
-                    <Alert severity="success" sx={{ mt: 2 }}>
-                        Email is verified
-                    </Alert>
-                </Grid>
-            </Grid>
-            <Box>
-                <Button
-                    type="submit"
-                    variant="contained"
-                    onClick={handleSubmit}
-                >
-                    Update
-                </Button>
-            </Box>
-        </Box>
-    )
+          <Grid item size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextField
+              label="Store Name (As per GST)"
+              name="storeName"
+              fullWidth
+              value={formData.storeName}
+              onChange={handleChange}
+              size="small"
+              disabled={!editMode}
+            />
+          </Grid>
+
+          <Grid item size={{ xs: 12, sm: 6, md: 4 }}>
+            <TextField
+              label="Store Email"
+              name="storeEmail"
+              fullWidth
+              value={formData.storeEmail}
+              onChange={handleChange}
+              size="small"
+              disabled
+            />
+          </Grid>
+
+          <Grid item size={{ xs: 12, sm: 6, md: 4 }}>
+            <Alert severity="success">
+              Email is verified ✔
+            </Alert>
+          </Grid>
+        </Grid>
+
+        <Stack direction="row" spacing={2} justifyContent="flex-end" mt={4}>
+          {!editMode ? (
+            <Button
+              variant="outlined"
+              onClick={() => setEditMode(true)}
+            >
+              Edit Details
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="text"
+                onClick={() => setEditMode(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+              >
+                Save Changes
+              </Button>
+            </>
+          )}
+        </Stack>
+      </CardContent>
+    </Card>
+  )
 }

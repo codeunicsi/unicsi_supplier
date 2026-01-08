@@ -2,7 +2,11 @@
 import api from "../../api";
 
 export const fetchProfile = () => {
-  return api.get("/supplier/stores/profile");
+  return api.get("/suppliers/profile/personalDetails");
+};
+
+export const fetchBankDetails = () => {
+  return api.get("/suppliers/stores/bankAccountDetails");
 };
 
 export const updatePersonalDetails = (data) => {
@@ -10,9 +14,9 @@ export const updatePersonalDetails = (data) => {
 };
 
 export const updateBankDetails = (data) => {
-  return api.put("/suppliers/profile/bank", data);
+  return api.post("/suppliers/stores/bankAccountDetails", data);
 };
 
 export const updateGstDetails = (data) => {
-  return api.put("/suppliers/profile/gst", data);
+  return api.put("/suppliers/stores/gstDetails", data);
 };
