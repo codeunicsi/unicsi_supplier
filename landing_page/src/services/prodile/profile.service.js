@@ -13,8 +13,12 @@ export const updatePersonalDetails = (data) => {
   return api.put("/suppliers/profile/personalDetails", data);
 };
 
-export const updateBankDetails = (data) => {
+export const AddBankDetails = (data) => {
   return api.post("/suppliers/stores/bankAccountDetails", data);
+};
+
+export const updateBankDetails = (data) => {
+  return api.put("/suppliers/stores/bankAccountDetails", data);
 };
 
 export const updateGstDetails = (data) => {

@@ -13,7 +13,7 @@ import {
   Divider,
 } from "@mui/material"
 
-import { updateBankDetails, fetchBankDetails } from "../../../services/prodile/profile.service"
+import { AddBankDetails, updateBankDetails, fetchBankDetails } from "../../../services/prodile/profile.service"
 
 /**
  * UI States:
@@ -90,8 +90,14 @@ export default function BankDetails() {
     loadBankDetails()
   }, [])
 
-  const handleSave = () => {
+  const handleAddBankDetails = () => {
     // console.log("bankData", bankData)
+    AddBankDetails(bankData)
+    if (bankData.accountNumber !== bankData.reAccountNumber) return
+    setMode(MODES.VIEW)
+  }
+
+  const handleUpdateBankDetails = () => {
     updateBankDetails(bankData)
     if (bankData.accountNumber !== bankData.reAccountNumber) return
     setMode(MODES.VIEW)
@@ -273,7 +279,8 @@ export default function BankDetails() {
         <Button
           fullWidth
           variant="contained"
-          onClick={handleSave}
+          onClick={bankData.bank_details_status === false ? handleAddBankDetails : handleUpdateBankDetails}
+
           disabled={
             !bankData.holderName ||
             !bankData.accountNumber ||

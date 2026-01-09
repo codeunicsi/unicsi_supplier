@@ -17,6 +17,8 @@ import ProfilePage from "./pages/profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
 import { AuthProvider } from "./auth/Authcontext";
+import AddProductForm from "./pages/add-product-form";
+import ProductsList from "./pages/products-list";
 
 import "./App.css";
 
@@ -42,6 +44,10 @@ function App() {
           <Route path="/vendor" element={<VendorDashboard />} /> */}
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/order" element={<ManageOrders />} />
+          <Route path="/products" element={<ProductsList />} />
+          <Route path="/products/add" element={<AddProductForm />} />
+          <Route path="/edit-product/:id" element={<AddProductForm />} />
+          <Route path="/products/:id/clone" element={<AddProductForm />} />
           <Route path="/manage-products" element={<ManageProducts />} />
           <Route path="/product-requirement" element={<ProductRequirement />} />
           <Route path="/source-product" element={<ProductRequirement />} />

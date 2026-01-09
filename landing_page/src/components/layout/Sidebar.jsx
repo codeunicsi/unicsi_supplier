@@ -29,6 +29,7 @@ import HelpIcon from "@mui/icons-material/Help"
 import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import PersonIcon from "@mui/icons-material/Person"
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"
+import AddIcon from "@mui/icons-material/Add"
 
 
 
@@ -38,6 +39,7 @@ const DRAWER_WIDTH_COLLAPSED = 80
 const menuItems = [
   { name: "Home", icon: <HomeIcon />, path: "/" },
   { name: "Manage Orders", icon: <ShoppingCartIcon />, path: "/order" },
+  { name: "Add Product", icon: <AddIcon />, path: "/products" },
   { name: "Manage NDR", icon: <WarehouseIcon />, path: "/manage-ndr" },
   { name: "Supplier Re-Routing", icon: <TrendingUpIcon />, path: "/supplier-re-routing" },
   { name: "Source a Product", icon: <ShoppingCartIcon />, path: "/source-product" },
