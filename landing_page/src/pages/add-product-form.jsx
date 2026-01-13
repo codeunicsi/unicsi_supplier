@@ -1,6 +1,6 @@
 "use client"
 
-
+import { useNavigate } from "react-router-dom";
 import { useState } from "react"
 import {
   Box,
@@ -23,10 +23,12 @@ import { Plus, Trash2, Upload, ChevronDown } from "lucide-react"
 
 
 
+
 export default function AddProductForm({
   initialProduct,
   onSuccess,
 }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0)
   const [formData, setFormData] = useState(
     initialProduct || {
@@ -82,9 +84,9 @@ export default function AddProductForm({
       variants: prev.variants.map((v) =>
         v.id === id
           ? {
-              ...v,
-              dimensionsCm: { ...v.dimensionsCm, [dimension]: value },
-            }
+            ...v,
+            dimensionsCm: { ...v.dimensionsCm, [dimension]: value },
+          }
           : v,
       ),
     }))
@@ -124,7 +126,9 @@ export default function AddProductForm({
 
     localStorage.setItem("products", JSON.stringify(products))
     alert("Product saved as draft successfully!")
+    navigate("/products")
     onSuccess?.()
+    
   }
 
   const handleSubmit = (e) => {
@@ -152,6 +156,7 @@ export default function AddProductForm({
 
     localStorage.setItem("products", JSON.stringify(products))
     alert("Product submitted successfully!")
+    navigate("/products")
     setFormData({
       title: "",
       description: "",
@@ -161,6 +166,7 @@ export default function AddProductForm({
       status: "draft",
     })
     onSuccess?.()
+    navigate("/products")
   }
 
   return (

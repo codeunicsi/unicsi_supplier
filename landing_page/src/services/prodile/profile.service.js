@@ -21,6 +21,15 @@ export const updateBankDetails = (data) => {
   return api.put("/suppliers/stores/bankAccountDetails", data);
 };
 
+export const AddGstDetails = (data) => {
+  return api.post("/suppliers/stores/gstDetails", data);
+};
+
+export const getGstDetails = () => {
+  return api.get("/suppliers/stores/gstDetails");
+};
+    
+
 export const updateGstDetails = (data) => {
   return api.put("/suppliers/stores/gstDetails", data);
 };
