@@ -15,6 +15,7 @@ import {
   Avatar,
   useMediaQuery,
   useTheme,
+  
 } from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu"
 import CloseIcon from "@mui/icons-material/Close"
@@ -30,6 +31,7 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent"
 import PersonIcon from "@mui/icons-material/Person"
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"
 import AddIcon from "@mui/icons-material/Add"
+// import SettingsIcon from '@mui/icons-material/Settings';
 
 
 
@@ -37,23 +39,24 @@ const DRAWER_WIDTH = 280
 const DRAWER_WIDTH_COLLAPSED = 80
 
 const menuItems = [
-  { name: "Home", icon: <HomeIcon />, path: "/" },
+  // { name: "Home", icon: <HomeIcon />, path: "/" },
   { name: "Manage Orders", icon: <ShoppingCartIcon />, path: "/order" },
-  { name: "Add Product", icon: <AddIcon />, path: "/products" },
-  { name: "Manage NDR", icon: <WarehouseIcon />, path: "/manage-ndr" },
-  { name: "Supplier Re-Routing", icon: <TrendingUpIcon />, path: "/supplier-re-routing" },
-  { name: "Source a Product", icon: <ShoppingCartIcon />, path: "/source-product" },
   { name: "RTO Intelligence", icon: <TrendingUpIcon />, path: "/rto-intelligence" },
+  { name: "Add Product", icon: <AddIcon />, path: "/products" },
+  // { name: "Manage NDR", icon: <WarehouseIcon />, path: "/manage-ndr" },
+  // { name: "Supplier Re-Routing", icon: <TrendingUpIcon />, path: "/supplier-re-routing" },
+  // { name: "Source a Product", icon: <ShoppingCartIcon />, path: "/source-product" },
   { name: "Manage Products", icon: <WarehouseIcon />, path: "/manage-products" },
   { name: "Reports", icon: <TrendingUpIcon />, path: "/reports" },
   { name: "Payments", icon: <PaymentIcon />, path: "/payments" },
-  { name: "GST Invoice", icon: <ReceiptIcon />, path: "/invoices" },
-  { name: "Value Added Services", icon: <SettingsIcon />, path: "/service-requests" },
-  { name: "Clouts", icon: <WarehouseIcon />, path: "/clauts" },
-  { name: "Supports", icon: <SupportAgentIcon />, path: "/supports" },
-  { name: "Help", icon: <HelpOutlineIcon />, path: "/help" },
+  // { name: "GST Invoice", icon: <ReceiptIcon />, path: "/invoices" },
+  // { name: "Value Added Services", icon: <SettingsIcon />, path: "/service-requests" },
+  // { name: "Clouts", icon: <WarehouseIcon />, path: "/clauts" },
+
   { name: "Profile", icon: <PersonIcon />, path: "/profile" },
+  { name: "Setting", icon: <SettingsIcon />, path: "/Setting" },
   { name: "FAQs", icon: <HelpIcon />, path: "/faqs" },
+  { name: "Supports", icon: <SupportAgentIcon />, path: "/supports" }
 ]
 
 export default function Sidebar() {
