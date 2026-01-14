@@ -1,12 +1,13 @@
 import Shoes from "../assets/images/shoes.png";
 
-export default function ProductCard() {
+export default function ProductCard({ product }) {
+  console.log(product);
   return (
     <div
       className="border w-[219.53524780273438px] h-[257.5px] rounded-lg p-2 shadow-sm bg-white"
     >
       <img
-        src={Shoes}
+        src={product?.images[0]?.image_url}
         alt="Product"
         className="w-[206.87103271484375px] h-[119.22303771972656px] object-cover mb-1 rounded"
       />
@@ -15,7 +16,7 @@ export default function ProductCard() {
         <div
           className="flex justify-between mb-1 text-sm text-gray-600"
         >
-          <h4>Nike Shoes - Men</h4>
+          <h4> {product?.title}</h4>
           <div className="flex items-center gap-1">
             <svg
               width="12"
@@ -132,7 +133,7 @@ export default function ProductCard() {
       </div>
       <div>
         <button className="w-full bg-[#F1B356] text-white py-2 px-4 rounded transition">
-          Add to Cart
+          Start Selling
         </button>
       </div>
     </div>

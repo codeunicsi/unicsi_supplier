@@ -19,6 +19,7 @@ import MainLayout from "./components/layout/MainLayout";
 import { AuthProvider } from "./auth/Authcontext";
 import AddProductForm from "./pages/add-product-form";
 import ProductsList from "./pages/products-list";
+import Settings from "./pages/settings";
 
 import "./App.css";
 
@@ -52,6 +53,7 @@ function App() {
           <Route path="/product-requirement" element={<ProductRequirement />} />
           <Route path="/source-product" element={<ProductRequirement />} />
           <Route path="/rto-returns/overview" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         {/* 404 */}

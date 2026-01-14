@@ -1,6 +1,6 @@
 "use client"
 
-import { useNavigate } from "react-router-dom";
+import React from "react"
 import { useState } from "react"
 import {
   Box,
@@ -20,24 +20,54 @@ import {
   Stack,
 } from "@mui/material"
 import { Plus, Trash2, Upload, ChevronDown } from "lucide-react"
+import { addProduct, getProducts } from "../services/product/product.service"
 
+// interface Variant {
+//   id: string
+//   sku: string
+//   variant_name: string
+//   variant_price: number
+//   variant_stock: number
+//   attributes: {
+//     color: string
+//     size: string
+//   }
+//   weight_grams: number
+//   hsn_code: string
+//   is_active: boolean
+//   dimensions_cm: {
+//     l: number
+//     w: number
+//     h: number
+//   }
+// }
 
-
+// interface ProductFormData {
+//   id?: string
+//   title: string
+//   description: string
+//   brand: string
+//   category_id: string
+//   approval_status?: "draft" | "submitted"
+//   productGallery: File[]
+//   variants: Variant[]
+//   createdAt?: string
+// }
 
 export default function AddProductForm({
   initialProduct,
   onSuccess,
 }) {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0)
   const [formData, setFormData] = useState(
-    initialProduct || {
+       {
       title: "",
       description: "",
       brand: "",
-      categoryId: "",
+      category_id: "",
+      approval_status: "draft",
+      productGallery: [],
       variants: [],
-      status: "draft",
     },
   )
 
@@ -54,16 +84,17 @@ export default function AddProductForm({
     const newVariant = {
       id: Date.now().toString(),
       sku: "",
-      variantName: "",
-      variantPrice: 0,
-      variantStock: 0,
-      color: "",
-      size: "",
-      weightGrams: 0,
-      hsnCode: "",
-      isActive: true,
-      dimensionsCm: { l: 0, w: 0, h: 0 },
-      images: [],
+      variant_name: "",
+      variant_price: 0,
+      variant_stock: 0,
+      attributes: {
+        color: "",
+        size: "",
+      },
+      weight_grams: 0,
+      hsn_code: "",
+      is_active: true,
+      dimensions_cm: { l: 0, w: 0, h: 0 },
     }
     setFormData((prev) => ({
       ...prev,
@@ -78,15 +109,29 @@ export default function AddProductForm({
     }))
   }
 
+  const updateVariantAttribute = (id, attribute, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: prev.variants.map((v) =>
+        v.id === id
+          ? {
+              ...v,
+              attributes: { ...v.attributes, [attribute]: value },
+            }
+          : v,
+      ),
+    }))
+  }
+
   const updateVariantDimension = (id, dimension, value) => {
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((v) =>
         v.id === id
           ? {
-            ...v,
-            dimensionsCm: { ...v.dimensionsCm, [dimension]: value },
-          }
+              ...v,
+              dimensions_cm: { ...v.dimensions_cm, [dimension]: value },
+            }
           : v,
       ),
     }))
@@ -99,39 +144,55 @@ export default function AddProductForm({
     }))
   }
 
-  const handleVariantImageUpload = (id, files) => {
+  const handleProductImageUpload = (files) => {
+    console.log(files)
     if (files) {
       const fileArray = Array.from(files)
-      updateVariant(id, "images", fileArray)
+      console.log(fileArray)
+      setFormData((prev) => ({
+        ...prev,
+        productGallery: [...prev.productGallery, ...fileArray],
+      }))
     }
   }
 
-  const handleSaveDraft = (e) => {
+  const removeProductImage = (index) => {
+    setFormData((prev) => ({
+      ...prev,
+      productGallery: prev.productGallery.filter((_, i) => i !== index),
+    }))
+  }
+
+  const handleSaveDraft = async (e) => {
     e.preventDefault()
     const products = JSON.parse(localStorage.getItem("products") || "[]")
 
-    if (formData.id) {
-      // Update existing draft
-      const index = products.findIndex((p) => p.id === formData.id)
-      products[index] = { ...formData, status: "draft", updatedAt: new Date().toISOString() }
-    } else {
-      // Create new draft
-      products.push({
-        ...formData,
-        id: Date.now().toString(),
-        status: "draft",
-        createdAt: new Date().toISOString(),
-      })
+    const payload = {
+      ...formData,
+      approval_status: "draft",
+      id: formData.id || Date.now().toString(),
+      updatedAt: new Date().toISOString(),
     }
 
-    localStorage.setItem("products", JSON.stringify(products))
+    if (formData.id) {
+      const index = products.findIndex((p) => p.id === formData.id)
+      products[index] = payload
+    } else {
+      payload.createdAt = new Date().toISOString()
+      products.push(payload)
+    }
+
+    // localStorage.setItem("products", JSON.stringify(products))
+    try {
+      await addProduct(payload)
+    } catch (error) {
+      console.log(error)
+    }
     alert("Product saved as draft successfully!")
-    navigate("/products")
     onSuccess?.()
-    
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
 
     if (formData.variants.length === 0) {
@@ -141,32 +202,60 @@ export default function AddProductForm({
 
     const products = JSON.parse(localStorage.getItem("products") || "[]")
 
-    if (formData.id) {
-      const index = products.findIndex((p) => p.id === formData.id)
-      products[index] = { ...formData, status: "submitted", submittedAt: new Date().toISOString() }
-    } else {
-      products.push({
-        ...formData,
-        id: Date.now().toString(),
-        status: "submitted",
-        createdAt: new Date().toISOString(),
-        submittedAt: new Date().toISOString(),
-      })
+    const payload = {
+      ...formData,
+      approval_status: "submitted",
+      id: formData.id || Date.now().toString(),
+      submittedAt: new Date().toISOString(),
+
+      
     }
 
+    console.log("payload",payload)
+
+    const productData = new FormData()
+    productData.append("title", payload.title)
+    productData.append("description", payload.description)
+    productData.append("brand", payload.brand)
+    productData.append("category_id", payload.category_id)
+    productData.append("approval_status", payload.approval_status)
+    productData.append("variants", JSON.stringify(payload.variants));
+
+      // Append product images
+  if (payload.productGallery?.length > 0) {
+    payload.productGallery.forEach((file) => {
+      productData.append("images", file)
+    })
+  }
+
+    console.log("payload",productData)
+
+    if (formData.id) {
+      const index = products.findIndex((p) => p.id === formData.id)
+      products[index] = payload
+    } else {
+      payload.createdAt = new Date().toISOString()
+      products.push(payload)
+    }
+    // console.log("setting-producgs-data",products)
+
     localStorage.setItem("products", JSON.stringify(products))
+    try {
+      await addProduct(productData)
+    } catch (error) {
+      console.log(error)
+    }
     alert("Product submitted successfully!")
-    navigate("/products")
     setFormData({
       title: "",
       description: "",
       brand: "",
-      categoryId: "",
+      category_id: "",
+      approval_status: "draft",
+      productGallery: [],
       variants: [],
-      status: "draft",
     })
     onSuccess?.()
-    navigate("/products")
   }
 
   return (
@@ -185,7 +274,6 @@ export default function AddProductForm({
 
         <form>
           <Paper elevation={2} sx={{ borderRadius: 2 }}>
-            {/* Material UI Tabs */}
             <Tabs
               value={activeTab}
               onChange={(e, newValue) => setActiveTab(newValue)}
@@ -231,10 +319,10 @@ export default function AddProductForm({
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Category"
-                      placeholder="Select category"
-                      value={formData.categoryId}
-                      onChange={(e) => handleProductChange("categoryId", e.target.value)}
+                      label="Category ID"
+                      placeholder="b2f5b1c9-9c22-4c7a-8e10-90c21c4c3e91"
+                      value={formData.category_id}
+                      onChange={(e) => handleProductChange("category_id", e.target.value)}
                       variant="outlined"
                     />
                   </Grid>
@@ -251,6 +339,60 @@ export default function AddProductForm({
                       multiline
                       rows={5}
                     />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
+                      Product Gallery
+                    </Typography>
+                    <Paper
+                      variant="outlined"
+                      sx={{
+                        p: 3,
+                        textAlign: "center",
+                        border: "2px dashed #ccc",
+                        bgcolor: "#fafafa",
+                        cursor: "pointer",
+                        transition: "all 0.2s",
+                        "&:hover": { borderColor: "#1976d2", bgcolor: "#f0f7ff" },
+                      }}
+                    >
+                      <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: "#999" }} />
+                      <Typography variant="body2" sx={{ mb: 1, color: "#666" }}>
+                        Drag and drop images or click to upload
+                      </Typography>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => handleProductImageUpload(e.target.files)}
+                        className="hidden"
+                        id="product-image-upload"
+                      />
+                      <label htmlFor="product-image-upload" style={{ cursor: "pointer" }}>
+                        <Button
+                          component="span"
+                          variant="outlined"
+                          size="small"
+                          startIcon={<Upload className="w-4 h-4" />}
+                        >
+                          Select Images
+                        </Button>
+                      </label>
+                    </Paper>
+                    {formData.productGallery.length > 0 && (
+                      <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}>
+                        {formData.productGallery.map((img, idx) => (
+                          <Chip
+                            key={idx}
+                            label={img.name}
+                            size="small"
+                            variant="outlined"
+                            onDelete={() => removeProductImage(idx)}
+                          />
+                        ))}
+                      </Stack>
+                    )}
                   </Grid>
                 </Grid>
 
@@ -314,7 +456,7 @@ export default function AddProductForm({
                             <Box>
                               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                                 Variant {index + 1}
-                                {variant.variantName && ` - ${variant.variantName}`}
+                                {variant.variant_name && ` - ${variant.variant_name}`}
                               </Typography>
                               {variant.sku && (
                                 <Typography variant="caption" sx={{ color: "#999" }}>
@@ -324,7 +466,7 @@ export default function AddProductForm({
                             </Box>
                           </Box>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                            {variant.isActive && <Chip label="Active" color="success" size="small" />}
+                            {variant.is_active && <Chip label="Active" color="success" size="small" />}
                             <ChevronDown
                               className="w-5 h-5"
                               style={{
@@ -354,8 +496,8 @@ export default function AddProductForm({
                                   fullWidth
                                   label="Variant Name"
                                   placeholder="e.g., Black Medium"
-                                  value={variant.variantName}
-                                  onChange={(e) => updateVariant(variant.id, "variantName", e.target.value)}
+                                  value={variant.variant_name}
+                                  onChange={(e) => updateVariant(variant.id, "variant_name", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -365,8 +507,8 @@ export default function AddProductForm({
                                   fullWidth
                                   label="Color"
                                   placeholder="Black"
-                                  value={variant.color}
-                                  onChange={(e) => updateVariant(variant.id, "color", e.target.value)}
+                                  value={variant.attributes.color}
+                                  onChange={(e) => updateVariantAttribute(variant.id, "color", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -375,8 +517,8 @@ export default function AddProductForm({
                                   fullWidth
                                   label="Size"
                                   placeholder="M"
-                                  value={variant.size}
-                                  onChange={(e) => updateVariant(variant.id, "size", e.target.value)}
+                                  value={variant.attributes.size}
+                                  onChange={(e) => updateVariantAttribute(variant.id, "size", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -387,9 +529,9 @@ export default function AddProductForm({
                                   label="Price"
                                   type="number"
                                   placeholder="345"
-                                  value={variant.variantPrice}
+                                  value={variant.variant_price}
                                   onChange={(e) =>
-                                    updateVariant(variant.id, "variantPrice", Number.parseFloat(e.target.value))
+                                    updateVariant(variant.id, "variant_price", Number.parseFloat(e.target.value))
                                   }
                                   size="small"
                                   inputProps={{ step: "0.01" }}
@@ -401,9 +543,9 @@ export default function AddProductForm({
                                   label="Stock"
                                   type="number"
                                   placeholder="45"
-                                  value={variant.variantStock}
+                                  value={variant.variant_stock}
                                   onChange={(e) =>
-                                    updateVariant(variant.id, "variantStock", Number.parseInt(e.target.value))
+                                    updateVariant(variant.id, "variant_stock", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -415,9 +557,9 @@ export default function AddProductForm({
                                   label="Weight (grams)"
                                   type="number"
                                   placeholder="350"
-                                  value={variant.weightGrams}
+                                  value={variant.weight_grams}
                                   onChange={(e) =>
-                                    updateVariant(variant.id, "weightGrams", Number.parseInt(e.target.value))
+                                    updateVariant(variant.id, "weight_grams", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -427,8 +569,8 @@ export default function AddProductForm({
                                   fullWidth
                                   label="HSN Code"
                                   placeholder="6109"
-                                  value={variant.hsnCode}
-                                  onChange={(e) => updateVariant(variant.id, "hsnCode", e.target.value)}
+                                  value={variant.hsn_code}
+                                  onChange={(e) => updateVariant(variant.id, "hsn_code", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -445,7 +587,7 @@ export default function AddProductForm({
                                   label="Length"
                                   type="number"
                                   placeholder="30"
-                                  value={variant.dimensionsCm.l}
+                                  value={variant.dimensions_cm.l}
                                   onChange={(e) =>
                                     updateVariantDimension(variant.id, "l", Number.parseInt(e.target.value))
                                   }
@@ -458,7 +600,7 @@ export default function AddProductForm({
                                   label="Width"
                                   type="number"
                                   placeholder="20"
-                                  value={variant.dimensionsCm.w}
+                                  value={variant.dimensions_cm.w}
                                   onChange={(e) =>
                                     updateVariantDimension(variant.id, "w", Number.parseInt(e.target.value))
                                   }
@@ -471,7 +613,7 @@ export default function AddProductForm({
                                   label="Height"
                                   type="number"
                                   placeholder="3"
-                                  value={variant.dimensionsCm.h}
+                                  value={variant.dimensions_cm.h}
                                   onChange={(e) =>
                                     updateVariantDimension(variant.id, "h", Number.parseInt(e.target.value))
                                   }
@@ -479,62 +621,13 @@ export default function AddProductForm({
                                 />
                               </Grid>
 
-                              {/* Image Upload */}
-                              <Grid item xs={12}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
-                                  Variant Images
-                                </Typography>
-                                <Paper
-                                  variant="outlined"
-                                  sx={{
-                                    p: 3,
-                                    textAlign: "center",
-                                    border: "2px dashed #ccc",
-                                    bgcolor: "#fafafa",
-                                    cursor: "pointer",
-                                    transition: "all 0.2s",
-                                    "&:hover": { borderColor: "#1976d2", bgcolor: "#f0f7ff" },
-                                  }}
-                                >
-                                  <Upload className="w-8 h-8 mx-auto mb-2" style={{ color: "#999" }} />
-                                  <Typography variant="body2" sx={{ mb: 1, color: "#666" }}>
-                                    Drag and drop images or click to upload
-                                  </Typography>
-                                  <input
-                                    type="file"
-                                    multiple
-                                    accept="image/*"
-                                    onChange={(e) => handleVariantImageUpload(variant.id, e.target.files)}
-                                    className="hidden"
-                                    id={`image-upload-${variant.id}`}
-                                  />
-                                  <label htmlFor={`image-upload-${variant.id}`} style={{ cursor: "pointer" }}>
-                                    <Button
-                                      component="span"
-                                      variant="outlined"
-                                      size="small"
-                                      startIcon={<Upload className="w-4 h-4" />}
-                                    >
-                                      Select Images
-                                    </Button>
-                                  </label>
-                                </Paper>
-                                {variant.images.length > 0 && (
-                                  <Stack direction="row" spacing={1} sx={{ mt: 2, flexWrap: "wrap" }}>
-                                    {variant.images.map((img, idx) => (
-                                      <Chip key={idx} label={img.name} size="small" variant="outlined" />
-                                    ))}
-                                  </Stack>
-                                )}
-                              </Grid>
-
                               {/* Active Status */}
                               <Grid item xs={12}>
                                 <FormControlLabel
                                   control={
                                     <Checkbox
-                                      checked={variant.isActive}
-                                      onChange={(e) => updateVariant(variant.id, "isActive", e.target.checked)}
+                                      checked={variant.is_active}
+                                      onChange={(e) => updateVariant(variant.id, "is_active", e.target.checked)}
                                     />
                                   }
                                   label="Mark as Active"

@@ -43,6 +43,7 @@ const menuItems = [
   { name: "Manage Orders", icon: <ShoppingCartIcon />, path: "/order" },
   { name: "RTO Intelligence", icon: <TrendingUpIcon />, path: "/rto-intelligence" },
   { name: "Add Product", icon: <AddIcon />, path: "/products" },
+  { name: "Product Requirement", icon: <AddIcon />, path: "/product-requirement" },
   // { name: "Manage NDR", icon: <WarehouseIcon />, path: "/manage-ndr" },
   // { name: "Supplier Re-Routing", icon: <TrendingUpIcon />, path: "/supplier-re-routing" },
   // { name: "Source a Product", icon: <ShoppingCartIcon />, path: "/source-product" },
@@ -54,7 +55,7 @@ const menuItems = [
   // { name: "Clouts", icon: <WarehouseIcon />, path: "/clauts" },
 
   { name: "Profile", icon: <PersonIcon />, path: "/profile" },
-  { name: "Setting", icon: <SettingsIcon />, path: "/Setting" },
+  { name: "Setting", icon: <SettingsIcon />, path: "/settings" },
   { name: "FAQs", icon: <HelpIcon />, path: "/faqs" },
   { name: "Supports", icon: <SupportAgentIcon />, path: "/supports" }
 ]

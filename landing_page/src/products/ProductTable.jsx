@@ -1,55 +1,49 @@
 // components/products/ProductTable.tsx
-import ProductRow from "./ProductRow";
-import React, { useState } from "react";
+import React from "react";
+import { DataGrid } from "@mui/x-data-grid";
+// const { getProducts } = require("../api/products");
 
-const dummyData = [
-  {
-    id: 1,
-    name: "Product 1",
-    description: "Description for Product 1",
-    price: "$10.00",
-    status: "In Stock",
-  },
-  {
-    id: 2,
-    name: "Product 2",
-    description: "Description for Product 2",
-    price: "$20.00",
-    status: "Out of Stock",
-  },
-  {
-    id: 3,
-    name: "Product 3",
-    description: "Description for Product 3",
-    price: "$15.00",
-    status: "In Stock",
-  },
-  {
-    id: 4,
-    name: "Product 4",
-    description: "Description for Product 4",
-    price: "$25.00",
-    status: "In Stock",
-  },    
-
+const columns = [
+  { field: "productDetails", headerName: "Product Details", width: 150 },
+  { field: "skuId", headerName: "SKU ID", width: 130 },
+  { field: "businessTag", headerName: "Business Tag", width: 130 },
+  { field: "QtyInStock", headerName: "Qty In Stock", type: "number", width: 120 },
+  { field: "transferPrice", headerName: "Transfer Price", width: 130 },
+  {field: "appPrice", headerName: "App Price", width: 120},
+  { field: "autoShipment", headerName: "Auto Shipment", width: 140 },
+  { field: "volumetricWeightAndDimensions", headerName: "Volumetric Weight & Dim", width: 200 },
+  { field: "deadWeight", headerName: "Dead Weight", width: 120 },
+  { field: "actions", headerName: "Actions", width: 100 },
 ];
 
-export default function ProductTable({TableHeader}) {
-const [products, setProducts] = useState(dummyData);
-console.log(TableHeader);
-const tableHeaderLength = TableHeader.length;
-  return (
-    <div className="border rounded-lg bg-white shadow-sm mt-4">
-    <h4 className="p-3 text-sm font-semibold">All orders with at least one failed delivery attempt will be shown here.</h4>
+const rows = [
+  {
+    id: 1,
+    productDetails: "Product 1",
+    skuId: "SKU 1",
+    businessTag: "Business Tag 1",
+    QtyInStock: 10,
+    transferPrice: 100,
+    autoShipment: true,
+    volumetricWeightAndDimensions: "10 x 10 x 10",
+    deadWeight: 10,
+    actions: "Edit",
+    appPrice: 100,
+  },
+];
 
-      <div className={`grid grid-cols-7 py-3 border-b text-sm font-semibold bg-[#FFF4EE]`}>
-        {TableHeader.map((header) => (
-          <span key={header} className="text-center">{header}</span>
-        ))}
-      </div>
-      {products.map((product) => (
-        <ProductRow key={product.id} product={product} />
-      ))}
+const paginationModel = { page: 0, pageSize: 5 };
+
+export default function ProductTable() {
+  return (
+    <div style={{ height: 400, width: "100%" }}>
+      <DataGrid
+        rows={rows}
+        columns={columns}
+        initialState={{ pagination: { paginationModel } }}
+        pageSizeOptions={[5, 10]}
+        checkboxSelection
+      />
     </div>
   );
 }
