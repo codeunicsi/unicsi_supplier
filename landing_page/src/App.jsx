@@ -47,8 +47,8 @@ function App() {
           <Route path="/order" element={<ManageOrders />} />
           <Route path="/products" element={<ProductsList />} />
           <Route path="/products/add" element={<AddProductForm />} />
-          <Route path="/edit-product/:id" element={<AddProductForm />} />
-          <Route path="/products/:id/clone" element={<AddProductForm />} />
+          <Route path="/edit-product/:product_id" element={<AddProductForm />} />
+          <Route path="/products/:product_id/clone" element={<AddProductForm />} />
           <Route path="/manage-products" element={<ManageProducts />} />
           <Route path="/product-requirement" element={<ProductRequirement />} />
           <Route path="/source-product" element={<ProductRequirement />} />

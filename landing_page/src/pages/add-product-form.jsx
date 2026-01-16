@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Box,
   Button,
@@ -19,8 +19,10 @@ import {
   Paper,
   Stack,
 } from "@mui/material"
+import { useQuery } from "@tanstack/react-query"
+import { useParams } from "react-router-dom"
 import { Plus, Trash2, Upload, ChevronDown } from "lucide-react"
-import { addProduct, getProducts } from "../services/product/product.service"
+import { addProduct, getSingleProduct } from "../services/product/product.service"
 
 // interface Variant {
 //   id: string
@@ -58,6 +60,7 @@ export default function AddProductForm({
   initialProduct,
   onSuccess,
 }) {
+  const params = useParams()
   const [activeTab, setActiveTab] = useState(0)
   const [formData, setFormData] = useState(
        {
@@ -79,6 +82,31 @@ export default function AddProductForm({
       [field]: value,
     }))
   }
+  const productId = params.product_id;
+
+  console.log("productId==> idd 87",productId)
+
+  const { data: product, isLoading, error } = useQuery({
+    queryKey: ["product", productId],
+    queryFn: () => getSingleProduct(productId),
+    enabled: !!productId,
+  })
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        title: product?.data?.title,
+        description: product?.data?.description,
+        brand: product?.data?.brand,
+        category_id: product?.data?.category_id,
+        approval_status: product?.data?.approval_status,
+        productGallery: product?.data?.images,
+        variants: product?.data?.variants,
+      })
+    }
+  }, [product])
+
+  console.log("product==> idd 87",product?.data)
 
   const addVariant = () => {
     const newVariant = {
@@ -239,7 +267,7 @@ export default function AddProductForm({
     }
     // console.log("setting-producgs-data",products)
 
-    localStorage.setItem("products", JSON.stringify(products))
+    // localStorage.setItem("products", JSON.stringify(products))
     try {
       await addProduct(productData)
     } catch (error) {
@@ -263,10 +291,10 @@ export default function AddProductForm({
       <Container maxWidth="lg">
         <Box sx={{ mb: 4 }}>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1, color: "#1a1a1a" }}>
-            {formData.id ? "Edit Product" : "Add New Product"}
+            {productId ? "Edit Product" : "Add New Product"}
           </Typography>
           <Typography variant="body1" sx={{ color: "#666" }}>
-            {formData.id
+            {productId
               ? "Update your product details and variants"
               : "Create a new product with variants and specifications"}
           </Typography>
@@ -436,10 +464,10 @@ export default function AddProductForm({
                 ) : (
                   <Stack spacing={2}>
                     {formData.variants.map((variant, index) => (
-                      <Card key={variant.id} sx={{ overflow: "hidden" }}>
+                      <Card key={variant.variant_id} sx={{ overflow: "hidden" }}>
                         {/* Variant Header */}
                         <Box
-                          onClick={() => setExpandedVariant(expandedVariant === variant.id ? null : variant.id)}
+                          onClick={() => setExpandedVariant(expandedVariant === variant.variant_id ? null : variant.variant_id)}
                           sx={{
                             bgcolor: "#f5f5f5",
                             p: 2,
@@ -478,7 +506,7 @@ export default function AddProductForm({
                         </Box>
 
                         {/* Variant Content */}
-                        {expandedVariant === variant.id && (
+                        {expandedVariant === variant.variant_id && (
                           <CardContent sx={{ pt: 3 }}>
                             <Grid container spacing={2}>
                               <Grid item xs={12} sm={6}>
@@ -487,7 +515,7 @@ export default function AddProductForm({
                                   label="SKU"
                                   placeholder="TS-BLK-M"
                                   value={variant.sku}
-                                  onChange={(e) => updateVariant(variant.id, "sku", e.target.value)}
+                                  onChange={(e) => updateVariant(variant.variant_id, "sku", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -497,7 +525,7 @@ export default function AddProductForm({
                                   label="Variant Name"
                                   placeholder="e.g., Black Medium"
                                   value={variant.variant_name}
-                                  onChange={(e) => updateVariant(variant.id, "variant_name", e.target.value)}
+                                  onChange={(e) => updateVariant(variant.variant_id, "variant_name", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -508,7 +536,7 @@ export default function AddProductForm({
                                   label="Color"
                                   placeholder="Black"
                                   value={variant.attributes.color}
-                                  onChange={(e) => updateVariantAttribute(variant.id, "color", e.target.value)}
+                                  onChange={(e) => updateVariantAttribute(variant.variant_id, "color", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -518,7 +546,7 @@ export default function AddProductForm({
                                   label="Size"
                                   placeholder="M"
                                   value={variant.attributes.size}
-                                  onChange={(e) => updateVariantAttribute(variant.id, "size", e.target.value)}
+                                  onChange={(e) => updateVariantAttribute(variant.variant_id, "size", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -531,7 +559,7 @@ export default function AddProductForm({
                                   placeholder="345"
                                   value={variant.variant_price}
                                   onChange={(e) =>
-                                    updateVariant(variant.id, "variant_price", Number.parseFloat(e.target.value))
+                                    updateVariant(variant.variant_id, "variant_price", Number.parseFloat(e.target.value))
                                   }
                                   size="small"
                                   inputProps={{ step: "0.01" }}
@@ -545,7 +573,7 @@ export default function AddProductForm({
                                   placeholder="45"
                                   value={variant.variant_stock}
                                   onChange={(e) =>
-                                    updateVariant(variant.id, "variant_stock", Number.parseInt(e.target.value))
+                                    updateVariant(variant.variant_id, "variant_stock", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -559,7 +587,7 @@ export default function AddProductForm({
                                   placeholder="350"
                                   value={variant.weight_grams}
                                   onChange={(e) =>
-                                    updateVariant(variant.id, "weight_grams", Number.parseInt(e.target.value))
+                                    updateVariant(variant.variant_id, "weight_grams", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -570,7 +598,7 @@ export default function AddProductForm({
                                   label="HSN Code"
                                   placeholder="6109"
                                   value={variant.hsn_code}
-                                  onChange={(e) => updateVariant(variant.id, "hsn_code", e.target.value)}
+                                  onChange={(e) => updateVariant(variant.variant_id, "hsn_code", e.target.value)}
                                   size="small"
                                 />
                               </Grid>
@@ -589,7 +617,7 @@ export default function AddProductForm({
                                   placeholder="30"
                                   value={variant.dimensions_cm.l}
                                   onChange={(e) =>
-                                    updateVariantDimension(variant.id, "l", Number.parseInt(e.target.value))
+                                    updateVariantDimension(variant.variant_id, "l", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -602,7 +630,7 @@ export default function AddProductForm({
                                   placeholder="20"
                                   value={variant.dimensions_cm.w}
                                   onChange={(e) =>
-                                    updateVariantDimension(variant.id, "w", Number.parseInt(e.target.value))
+                                    updateVariantDimension(variant.variant_id, "w", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -615,7 +643,7 @@ export default function AddProductForm({
                                   placeholder="3"
                                   value={variant.dimensions_cm.h}
                                   onChange={(e) =>
-                                    updateVariantDimension(variant.id, "h", Number.parseInt(e.target.value))
+                                    updateVariantDimension(variant.variant_id, "h", Number.parseInt(e.target.value))
                                   }
                                   size="small"
                                 />
@@ -627,7 +655,7 @@ export default function AddProductForm({
                                   control={
                                     <Checkbox
                                       checked={variant.is_active}
-                                      onChange={(e) => updateVariant(variant.id, "is_active", e.target.checked)}
+                                      onChange={(e) => updateVariant(variant.variant_id, "is_active", e.target.checked)}
                                     />
                                   }
                                   label="Mark as Active"
@@ -640,7 +668,7 @@ export default function AddProductForm({
                                   variant="outlined"
                                   color="error"
                                   startIcon={<Trash2 className="w-4 h-4" />}
-                                  onClick={() => removeVariant(variant.id)}
+                                  onClick={() => removeVariant(variant.variant_id)}
                                   fullWidth
                                 >
                                   Delete Variant

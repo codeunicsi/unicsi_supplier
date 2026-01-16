@@ -22,28 +22,23 @@ import {
 import { Edit, Trash2, Copy } from "lucide-react"
 import { Link } from "react-router-dom"
 import ProductFormData from "./add-product-form"
+import { useQuery } from "@tanstack/react-query"
+import { getProducts } from "../services/product/product.service"
 
 export default function ProductsList() {
-  const [products, setProducts] = useState([])
   const [openDialog, setOpenDialog] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
 
-  useEffect(() => {
-    loadProducts()
-  }, [])
+  const { data: productData, isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  })
 
-  const loadProducts = () => {
-    const stored = localStorage.getItem("products")
-    if (stored) {
-      setProducts(JSON.parse(stored))
-    }
-  }
+  console.log("products-data==>", productData?.data?.products, error, isLoading)
 
   const handleDelete = () => {
     if (selectedProduct) {
       const updated = products.filter((p) => p.id !== selectedProduct)
-      localStorage.setItem("products", JSON.stringify(updated))
-      setProducts(updated)
       setOpenDialog(false)
       setSelectedProduct(null)
     }
@@ -58,12 +53,41 @@ export default function ProductsList() {
       status: "draft",
     }
     const updated = [...products, clonedProduct]
-    localStorage.setItem("products", JSON.stringify(updated))
-    setProducts(updated)
     alert("Product cloned successfully!")
   }
 
-  if (products.length === 0) {
+  if (isLoading) {
+    return (
+      <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", py: 4 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 1, color: "#1a1a1a" }}>
+              Products
+            </Typography>
+            <Typography variant="body1" sx={{ color: "#666" }}>
+              Manage your products, drafts, and submissions
+            </Typography>
+          </Box>
+
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 6,
+              textAlign: "center",
+              border: "2px dashed #ccc",
+              bgcolor: "#fafafa",
+            }}
+          >
+            <Typography variant="body1" sx={{ mb: 3, color: "#666" }}>
+              Loading products...
+            </Typography>
+          </Paper>
+        </Container>
+      </Box>
+    )
+  }
+
+  if (productData?.data?.products?.length === 0) {
     return (
       <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", py: 4 }}>
         <Container maxWidth="lg">
@@ -133,7 +157,7 @@ export default function ProductsList() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {products.map((product) => (
+              {productData?.data?.products?.map((product) => (
                 <TableRow key={product.id} sx={{ "&:hover": { bgcolor: "#f9f9f9" } }}>
                   <TableCell sx={{ fontWeight: 500 }}>{product.title}</TableCell>
                   <TableCell>{product.brand}</TableCell>
@@ -149,7 +173,7 @@ export default function ProductsList() {
                   <TableCell>{new Date(product.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell align="right">
                     <Stack direction="row" spacing={1} sx={{ justifyContent: "flex-end" }}>
-                      <Link to={`/edit-product/${product.id}`}>
+                      <Link to={`/edit-product/${product?.product_id}`}>
                         <Button
                           size="small"
                           variant="outlined"

@@ -33,4 +33,19 @@ export const getProducts = async () => {
     }
 }
 
+
+// get single product
+export const getSingleProduct = async (productId) => {
+    try {
+        const response = await axios.get(`http://localhost:3000/api/v1/suppliers/stores/products/${productId}`, {
+            headers: {
+                "Content-Type": "application/json",
+                authorization: "Bearer " + getToken(),
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
     
