@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
 import { isAuthenticated, getUserRole, logout, login } from "../utils/auth";
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 // Custom hook to use auth context with error handling
 export const useAuth = () => {
@@ -12,7 +12,7 @@ export const useAuth = () => {
     return context;
 };
 
-const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children }) => {
     return (
         <AuthContext.Provider value={{
             isAuthenticated,
@@ -24,5 +24,3 @@ const AuthProvider = ({ children }) => {
         </AuthContext.Provider>
     );
 };
-
-export { AuthContext, AuthProvider };
