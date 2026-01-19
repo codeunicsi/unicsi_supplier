@@ -13,15 +13,15 @@ const Testimonials = () => {
                 className="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0"
               />
               <div className="flex flex-col">
-                <h4 className="font-semibold text-base md:text-lg">Jenny Wilson</h4>
-                <p className="text-gray-500 text-sm md:text-base">CEO, TechCorp</p>
+                <h4 className="font-semibold text-base md:text-lg">Veena</h4>
+                <p className="text-gray-500 text-sm md:text-base">Dropshipper</p>
               </div>
             </div>
 
             <p className="text-gray-700 text-sm md:text-base mb-3 md:mb-4">
-              "Unicsi transformed our supply chain management. Their solutions are top-notch!"
+              “Finding winning products was always difficult until I joined Unicsi. Their product selection and Seller support genuinely stand out.”
             </p>
-            <div className="text-xs md:text-sm text-gray-500">- John Doe, CEO of Acme Corp</div>
+            <div className="text-xs md:text-sm text-gray-500">Veena, Dropshipper</div>
           </div>
           <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <div className="flex gap-2 md:gap-3 mb-4">
@@ -31,14 +31,14 @@ const Testimonials = () => {
                 className="w-12 h-12 md:w-16 md:h-16 rounded-full flex-shrink-0"
               />
               <div className="flex flex-col">
-                <h4 className="font-semibold text-base md:text-lg">Jenny Wilson</h4>
-                <p className="text-gray-500 text-sm md:text-base">CEO, TechCorp</p>
+                <h4 className="font-semibold text-base md:text-lg">Ram</h4>
+                <p className="text-gray-500 text-sm md:text-base">Dropshipper</p>
               </div>
             </div>
             <p className="text-gray-700 text-sm md:text-base mb-3 md:mb-4">
-              "The team at Unicsi is incredibly knowledgeable and responsive. Highly recommend!"
+              “Unicsi made dropshipping simple for me. Unique products, fast dispatch, and clear communication. Perfect for Indian Dropshipper who want to scale without headaches.”
             </p>
-            <div className="text-xs md:text-sm text-gray-500">- Jane Smith, Operations Manager at Beta Inc</div>
+            <div className="text-xs md:text-sm text-gray-500">Ram, Dropshipper</div>
           </div>
         </div>
       </div>

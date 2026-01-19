@@ -129,13 +129,13 @@ const Footer = () => {
             {/* Contact */}
             <div className="text-center lg:text-left">
               <h4 className="font-semibold mb-1 md:mb-2 text-[#FBFBFB] text-sm md:text-base">Contact Us</h4>
-              <p className="text-[#FBFBFB] text-sm md:text-base">+0 12 457 4578</p>
+              <p className="text-[#FBFBFB] text-sm md:text-base">+919771622333</p>
             </div>
 
             {/* Address */}
             <div className="text-center lg:text-left">
               <h4 className="font-semibold mb-1 md:mb-2 text-[#FBFBFB] text-sm md:text-base">Address</h4>
-              <p className="text-[#FBFBFB] text-sm md:text-base">119 Tanglewood Lane Gulfport, MS 39503</p>
+              <p className="text-[#FBFBFB] text-sm md:text-base">R5/130, WING B, NAWADA HOUSING COMPLEX, <br /> UTTAM NAGAR, WEST DELHI, DELHI, 110059</p>
             </div>
 
             {/* Social Icons */}

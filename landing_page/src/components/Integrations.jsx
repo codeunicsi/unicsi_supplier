@@ -1,4 +1,5 @@
 import { GraduationCap, TrendingUp, FolderOpen, Tag } from "lucide-react"
+import businessProcessFlowDiagram from "../assets/images/Process.png"
 
 const Integrations = () => {
   const steps = [
@@ -48,7 +49,7 @@ const Integrations = () => {
 
         <div className="grid px-2 sm:px-4 md:px-0">
           <img
-            src="/business-process-flow-diagram-learn-research-sourc.jpg"
+            src={businessProcessFlowDiagram}
             alt="Process Flow showing Learn, Research, Source, and Sell steps"
             className="w-full h-auto mb-4 sm:mb-6 md:mb-8 lg:mb-0 rounded-lg shadow-sm"
           />

@@ -2,31 +2,34 @@
 
 import { useState } from "react"
 import { SearchIcon, CameraIcon, Heart, Star, MenuIcon, XIcon } from "@/lib/icons"
+import banner from "../assets/images/Banner.png"
+import productImage from "../assets/images/productImage.png"
 
 const Hero = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  const heroImage = "/modern-dropshipping-hero-background.jpg"
-  const productImage = "/luxury-leather-messenger-bag.jpg"
+  // const heroImage = "/modern-dropshipping-hero-background.jpg"
+  // const productImage = "/luxury-leather-messenger-bag.jpg"
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div className="relative w-full overflow-hidden p-4">
       {/* Main Hero Section */}
       <div
-        className="relative w-full mx-auto rounded-2xl border border-black overflow-hidden my-4 sm:my-6 md:my-8 lg:my-10"
-        style={{
-          minHeight: "400px",
-          marginLeft: "auto",
-          marginRight: "auto",
-        }}
+        className="relative w-full h-[930px] mx-auto rounded-[24px]  overflow-hidden"
+        // style={{
+        //   minHeight: "600px",
+        //   marginLeft: "auto",
+        //   marginRight: "auto",
+        //   border : "2px solid red"
+          
+        // }}
       >
         {/* Background Image */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-          }}
+          className="absolute inset-0 bg-cover bg-no-repeat"
+          style={{ backgroundImage: `url(${banner})` }}
+       
         />
 
         {/* Dark Overlay */}
@@ -165,7 +168,7 @@ const Hero = () => {
       </div>
 
       {/* Popular Products Section */}
-      <div className="relative w-full mt-8 sm:mt-12 md:mt-20 lg:mt-32 px-4 sm:px-6 md:px-8">
+      <div className="relative w-full mt-[-300px] sm:mt-12 md:mt-[-250px] lg:mt-[-250px] px-4 sm:px-6 md:px-8" style={{ border : "2px solid red"}}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 md:mb-8">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Popular Products</h2>
           <a
