@@ -9,7 +9,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 // import rightIcon from "../../assets/icons/rightIcon.svg"
 // import { AuthContext } from "";
-import { useAuth } from "../../auth/Authcontext";
+import { useAuth } from "../../auth/AuthContext";
 
   
 
