@@ -12,7 +12,7 @@ const CTASection = () => {
       }}
       className="min-h-screen md:min-h-[547px] py-8 md:py-4"
     >
-      <div className="w-full flex flex-col md:flex-row gap-8 md:gap-0 px-4 sm:px-6 md:px-12 lg:mx-24 my-4">
+      <div className="w-full flex flex-col md:flex-row gap-8 md:gap-0 px-4 sm:px-6 md:px-12 lg:mx-0 my-4">
         {/* Left Section - Stats */}
         <div
           style={{

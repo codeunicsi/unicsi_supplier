@@ -16,7 +16,7 @@ import ProfilePage from "./pages/profile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import MainLayout from "./components/layout/MainLayout";
-import { AuthProvider } from "./auth/Authcontext";
+import { AuthProvider } from "./auth/AuthContext";
 import AddProductForm from "./pages/add-product-form";
 import ProductsList from "./pages/products-list";
 import Settings from "./pages/settings";

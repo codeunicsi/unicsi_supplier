@@ -168,7 +168,7 @@ const Hero = () => {
       </div>
 
       {/* Popular Products Section */}
-      <div className="relative w-full mt-[-300px] sm:mt-12 md:mt-[-250px] lg:mt-[-250px] px-4 sm:px-6 md:px-8" style={{ border : "2px solid red"}}>
+      <div className="relative w-full mt-[-300px] sm:mt-12 md:mt-[-250px] lg:mt-[-250px] px-4 sm:px-6 md:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 md:mb-8">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Popular Products</h2>
           <a
