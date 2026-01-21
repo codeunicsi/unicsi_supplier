@@ -4,10 +4,33 @@ import { useState } from "react"
 import { SearchIcon, CameraIcon, Heart, Star, MenuIcon, XIcon } from "@/lib/icons"
 import banner from "../assets/images/Banner.png"
 import productImage from "../assets/images/productImage.png"
+import sample1 from "../assets/images/sample1.jpeg"
+import sample2 from "../assets/images/sample2.jpeg"
+import sample3 from "../assets/images/sample3.jpeg"
+import sample4 from "../assets/images/sample4.jpeg"
+import sample5 from "../assets/images/sample5.jpeg"
+import sample6 from "../assets/images/sample6.jpeg"
+import sample7 from "../assets/images/sample7.jpeg"
+import sample8 from "../assets/images/sample8.jpeg"
+import sample9 from "../assets/images/sample9.jpeg"
+import { useNavigate } from "react-router-dom"
+
+const products = [
+  { id: 1, name: "Modern Classic Four Seasons Pet Kennel with Summer Cool Mat Bite Resistant Thickened Dog Sofa for Large", discountedPrice: "₹ 985", originalPrice: "₹ 1200", rating: 4.5, reviews: 120, image: sample1 },
+  { id: 2, name: "Modern Classic Four Seasons Pet Kennel with Summer Cool Mat Bite Resistant Thickened Dog Sofa for Large", discountedPrice: "₹ 985", originalPrice: "₹ 1200", rating: 4.2, reviews: 85, image: sample2 },
+  { id: 3, name: "Modern Classic Four Seasons Pet Kennel with Summer Cool Mat Bite Resistant Thickened Dog Sofa for Large", discountedPrice: "₹ 985", originalPrice: "₹ 1200", rating: 4.8, reviews: 200, image: sample3 },
+  { id: 4, name: "New Hot Selling Ride on Children's Kid's Girl Boy Baby Children Kids Toy Twisted Twisting Wiggle Twist Swing Car", discountedPrice: "Rs. 889/-", originalPrice: "₹ 1600", rating: 4.6, reviews: 150, image: sample4 },
+  { id: 5, name: "New Hot Selling Ride on Children's Kid's Girl Boy Baby Children Kids Toy Twisted Twisting Wiggle Twist Swing Car", discountedPrice: "Rs. 889/-", originalPrice: "₹ 1600", rating: 4.3, reviews: 95, image: sample5 },
+  { id: 6, name: "New Hot Selling Ride on Children's Kid's Girl Boy Baby Children Kids Toy Twisted Twisting Wiggle Twist Swing Car", discountedPrice: "Rs. 889/-", originalPrice: "₹ 1600", rating: 4.7, reviews: 180, image: sample6 },
+  { id: 7, name: "New 3-in-1 IPL Laser Epilator Painless Ice Cool Hair Removal Device with Ice Cooling System for Home Use", discountedPrice: "Rs. 789/-", originalPrice: "₹ 2000", rating: 4.4, reviews: 110, image: sample7 },
+  { id: 8, name: "New 3-in-1 IPL Laser Epilator Painless Ice Cool Hair Removal Device with Ice Cooling System for Home Use", discountedPrice: "Rs. 789/-", originalPrice: "₹ 2000", rating: 4.9, reviews: 220, image: sample8 },
+  { id: 9, name: "New 3-in-1 IPL Laser Epilator Painless Ice Cool Hair Removal Device with Ice Cooling System for Home Use", discountedPrice: "Rs. 789/-", originalPrice: "₹ 2000", rating: 4.1, reviews: 75, image: sample9 },
+];
 
 const Hero = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const navigate = useNavigate()
 
   // const heroImage = "/modern-dropshipping-hero-background.jpg"
   // const productImage = "/luxury-leather-messenger-bag.jpg"
@@ -16,7 +39,7 @@ const Hero = () => {
     <div className="relative w-full overflow-hidden p-4">
       {/* Main Hero Section */}
       <div
-        className="relative w-full h-[930px] mx-auto rounded-[24px]  overflow-hidden"
+        className="relative w-full h-[97vh] md:h-[930px] mx-auto rounded-[24px]  overflow-hidden"
         // style={{
         //   minHeight: "600px",
         //   marginLeft: "auto",
@@ -63,11 +86,12 @@ const Hero = () => {
           </button>
 
           <div className="flex items-center gap-2 sm:gap-4 ml-auto">
-            <button className="text-white hover:text-blue-300 transition-colors font-medium text-xs sm:text-sm md:text-base whitespace-nowrap">
+            <button className="text-white hover:text-blue-300 transition-colors font-medium text-xs sm:text-sm md:text-base whitespace-nowrap" onClick={() => navigate("/login")}>
               Login
             </button>
             <button
               className="text-white px-4 sm:px-6 py-2 rounded-full font-medium transition-colors text-xs sm:text-sm md:text-base whitespace-nowrap"
+              
               style={{ backgroundColor: "#943A09" }}
             >
               Sign up
@@ -146,7 +170,7 @@ const Hero = () => {
 
         {/* Search Bar */}
         <div className="relative z-40 px-4 sm:px-6 md:px-8 pb-6 sm:pb-8 md:pb-12 flex justify-center">
-          <div className="w-full max-w-2xl md:max-w-5xl bg-white/50 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 shadow-2xl border border-white/30">
+          <div className="w-full max-w-2xl md:max-w-5xl bg-white/50 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 flex flex-row sm:flex-row items-center gap-3 sm:gap-4 shadow-2xl border border-white/30">
             <SearchIcon className="ml-2 sm:ml-3 mr-2 sm:mr-4 flex-shrink-0" size={18} />
             <input
               type="text"
@@ -168,28 +192,28 @@ const Hero = () => {
       </div>
 
       {/* Popular Products Section */}
-      <div className="relative w-full mt-[-300px] sm:mt-12 md:mt-[-250px] lg:mt-[-250px] px-4 sm:px-6 md:px-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 md:mb-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">Popular Products</h2>
+      <div className="relative w-full mt-[-250px] sm:mt-12 md:mt-[-250px] lg:mt-[-250px] px-4 sm:px-6 md:px-8">
+        <div className="flex flex-row sm:flex-row justify-between items-center sm:items-center gap-4 sm:gap-0 mb-6 md:mb-8">
+          <h2 className="text-xl sm:text-3xl md:text-4xl font-normal text-white">Popular Products</h2>
           <a
             href="#"
             className="text-orange-400 hover:text-orange-300 transition-colors text-sm sm:text-base md:text-lg font-medium underline"
           >
-            view more
+            View more
           </a>
         </div>
 
         {/* Product Cards Carousel */}
         <div className="w-full overflow-x-auto hide-scrollbar">
           <div className="flex gap-4 sm:gap-6 pb-4 min-w-min">
-            {[1, 2, 3, 4, 5, 6, 7].map((product) => (
+            {products.map((product) => (
               <div
-                key={product}
+                key={product.id}
                 className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow p-3 sm:p-4 flex-shrink-0 w-60 sm:w-72 md:w-80"
               >
                 <div className="relative mb-3 sm:mb-4">
                   <img
-                    src={productImage || "/placeholder.svg"}
+                    src={product.image || "/placeholder.svg"}
                     alt={`Product ${product}`}
                     className="w-full h-40 sm:h-48 md:h-56 object-cover rounded-md"
                   />
@@ -200,17 +224,17 @@ const Hero = () => {
 
                 <div className="space-y-2">
                   <p className="text-base sm:text-lg md:text-xl font-medium text-gray-800 line-clamp-2">
-                    Simple Oil Wax Leather Messenger Shoulder Bags
+                      {product.name}
                   </p>
 
                   <div className="flex items-center gap-2">
                     <Star size={20} className="text-yellow-400" />
-                    <p className="text-sm sm:text-base text-gray-600 font-medium">4.5</p>
+                    <p className="text-sm sm:text-base text-gray-600 font-medium">{product.rating}</p>
                   </div>
 
                   <div className="flex items-center gap-3 pt-2">
-                    <span className="line-through text-sm sm:text-base text-gray-500 font-light">$19.99</span>
-                    <span className="font-bold text-lg sm:text-xl md:text-2xl text-gray-800">$39.99</span>
+                    <span className="line-through text-sm sm:text-base text-gray-500 font-light">{product.originalPrice}</span>
+                    <span className="font-bold text-lg sm:text-xl md:text-2xl text-gray-800">{product.discountedPrice}</span>
                   </div>
                 </div>
               </div>

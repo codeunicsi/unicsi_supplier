@@ -1,7 +1,7 @@
 import call from "../assets/images/call.png"
 const LetsTalk = () => {
   return (
-    <section className="bg-gray-100 py-8 md:py-12">
+    <section className="bg-gray-100 px-3 py-8 md:py-12">
       <div className="container mx-auto relative rounded-xl overflow-hidden">
         {/* Background Image */}
         <img src={call || "/placeholder.svg"} alt="Call Icon" className="w-full h-48 md:h-56 lg:h-64 object-cover" />

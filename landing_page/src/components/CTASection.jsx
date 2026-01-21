@@ -1,9 +1,11 @@
 import inventory from "../assets/images/InvtMang.png"
 import inventory2 from "../assets/images/inventory2.png"
 import { Arrow } from "../assets/svg"
+import { useNavigate } from "react-router-dom"
 
 import Button from "../ui/Button"
 const CTASection = () => {
+  const navigate = useNavigate()
   return (
     <div
       style={{
@@ -99,6 +101,7 @@ const CTASection = () => {
                 borderRadius: "50px",
                 backgroundColor: "#943A09",
               }}
+              onClick={() => navigate("/signup")}
             >
               Connect my store
               <Arrow className="inline-block" />

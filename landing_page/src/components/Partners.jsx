@@ -13,26 +13,34 @@ import Afterpay from "../assets/images/afterplay.png"
 import Discord from "../assets/images/discord.png"
 import LauncghDarkly from "../assets/images/launchDarkly.png"
 import Medium from "../assets/images/medium.png"
+import ekart from "../assets/images/ekart.png"
+import del from "../assets/images/del.png"
+import express from "../assets/images/express.png"
+import blue from "../assets/images/blue.png"
+import shadow from "../assets/images/shadow.png"
 
 const Partners = () => {
   const topRowLogos = [
-    { name: "Framer", logo: Framer },
-    { name: "Pipedrive", logo: Pipedrive },
-    { name: "Rippling", logo: Rippling },
-    { name: "HashiCorp", logo: HashiCorp },
-    { name: "Square", logo: Square },
-    { name: "Mailchimp", logo: Mailchip },
-    { name: "Notion", logo: Notion },
+    { name: "ekart", logo: ekart },
+    { name: "del", logo: del },
+    { name: "express", logo: express },
+    { name: "blue", logo: blue },
+    { name: "shadow", logo: shadow },
+    { name: "del", logo: del },
+    { name: "express", logo: express },
+    { name: "blue", logo: blue }
   ]
 
   const bottomRowLogos = [
-    { name: "Intercom", logo: Intercomp },
-    { name: "Toggl", logo: Toggl },
-    { name: "Culture Amp", logo: CultureAmp },
-    { name: "Afterpay", logo: Afterpay },
-    { name: "Discord", logo: Discord },
-    { name: "LaunchDarkly", logo: LauncghDarkly },
-    { name: "Medium", logo: Medium },
+    { name: "shadow", logo: shadow },
+    { name: "blue", logo: blue },
+    { name: "express", logo: express },
+    { name: "del", logo: del },
+    { name: "ekart", logo: ekart },
+    { name: "shadow", logo: shadow },
+    { name: "blue", logo: blue },
+    { name: "express", logo: express },
+
   ]
 
   return (
