@@ -12,7 +12,7 @@ import {
 } from "@mui/material"
 
 
-export default function ProductTable({ data, isLoading, error }) {
+export default function ProductTable({ data, isLoading, error, updateInventory }) {
   const [open, setOpen] = useState(false)
   const [selectedRow, setSelectedRow] = useState(null)
   const [stock, setStock] = useState("")
@@ -39,15 +39,27 @@ export default function ProductTable({ data, isLoading, error }) {
     )
   }, [data?.data?.products])
 
-  const handleSave = () => {
-    console.log("Updated Stock:", stock)
-    console.log("Variant ID:", selectedRow.id)
+const handleSave = async () => {
+  let action = "";
+  let quantity = Math.abs(stock - selectedRow.QtyInStock);
 
-    // 🔜 API call here
-    // updateStock({ variantId: selectedRow.id, stock })
-
-    setOpen(false)
+  if (stock > selectedRow.QtyInStock) {
+    action = "add";
+  } else if (stock < selectedRow.QtyInStock) {
+    action = "deduct";
+  } else {
+    return; // no change
   }
+
+  await updateInventory({
+    sku: selectedRow.skuId,
+    quantity,
+    action,
+  });
+
+  setOpen(false);
+};
+
 
   const handleEdit = (row) => {
     setSelectedRow(row)

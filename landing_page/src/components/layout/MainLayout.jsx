@@ -61,7 +61,6 @@ export default function MainLayout() {
   return (
 <div
   className="flex bg-[#F3F4F8] h-screen overflow-hidden rounded-tl-[28px]"
-  style={{ border: "2px solid red" }}
 >
   <Sidebar />
 
@@ -74,7 +73,6 @@ export default function MainLayout() {
       style={{
         borderRadius: "24px",
         backgroundColor: "rgba(255, 255, 255, 0.7)",
-        border: "2px solid red",
       }}
     >
       <Outlet />
