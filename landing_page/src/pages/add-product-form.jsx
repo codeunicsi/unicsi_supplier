@@ -22,7 +22,7 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import { Plus, Trash2, Upload, ChevronDown } from "lucide-react"
-import { addProduct, getSingleProduct } from "../services/product/product.service"
+import { addProduct, updateProduct, getSingleProduct } from "../services/product/product.service"
 
 // interface Variant {
 //   id: string
@@ -110,7 +110,6 @@ export default function AddProductForm({
 
   const addVariant = () => {
     const newVariant = {
-      id: Date.now().toString(),
       sku: "",
       variant_name: "",
       variant_price: 0,
@@ -133,7 +132,7 @@ export default function AddProductForm({
   const updateVariant = (id, field, value) => {
     setFormData((prev) => ({
       ...prev,
-      variants: prev.variants.map((v) => (v.id === id ? { ...v, [field]: value } : v)),
+      variants: prev.variants.map((v) => (v.variant_id === id ? { ...v, [field]: value } : v)),
     }))
   }
 
@@ -258,9 +257,8 @@ export default function AddProductForm({
 
     console.log("payload",productData)
 
-    if (formData.id) {
-      const index = products.findIndex((p) => p.id === formData.id)
-      products[index] = payload
+    if (productId) {
+      products.push(payload);
     } else {
       payload.createdAt = new Date().toISOString()
       products.push(payload)
@@ -269,7 +267,11 @@ export default function AddProductForm({
 
     // localStorage.setItem("products", JSON.stringify(products))
     try {
-      await addProduct(productData)
+      if(productId){
+        await updateProduct(productId,productData);
+      }else{
+        await addProduct(productData)
+      }
     } catch (error) {
       console.log(error)
     }

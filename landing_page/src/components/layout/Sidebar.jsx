@@ -91,6 +91,7 @@ export default function Sidebar() {
         borderRight: "1px solid #e0e0e0",
         overflowY: "auto",
       }}
+      style={{ border : "2px solid red"}}
     >
       {/* Header with logo and toggle */}
       <Box

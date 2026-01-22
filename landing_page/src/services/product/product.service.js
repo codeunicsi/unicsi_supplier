@@ -48,4 +48,25 @@ export const getSingleProduct = async (productId) => {
         throw error;
     }
 }
+
+
+// update product
+export const updateProduct = async (productId, productData) => {
+    try {
+        const response = await axios.put(`http://localhost:3000/api/v1/suppliers/stores/products/${productId}`, 
+            productData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    authorization: "Bearer " + getToken(),
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+    
+
     

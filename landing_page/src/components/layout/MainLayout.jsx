@@ -59,24 +59,29 @@ import TopBar from "./TopBar";
 
 export default function MainLayout() {
   return (
-    <div className="flex bg-[#F3F4F8] h-screen overflow-hidden rounded-tl-[28px]">
-      <Sidebar />
+<div
+  className="flex bg-[#F3F4F8] h-screen overflow-hidden rounded-tl-[28px]"
+  style={{ border: "2px solid red" }}
+>
+  <Sidebar />
 
-      <div className="flex flex-col flex-1 h-full ml-8">
-        <TopBar />
+  {/* ⭐ FIX IS HERE */}
+  <div className="flex flex-col flex-1 h-full ml-8 min-w-0">
+    <TopBar />
 
-        <main
-          className="flex-1 overflow-y-auto p-4 hide-scrollbar mr-6"
-          style={{
-            borderRadius: "24px",
-            backgroundColor: "rgba(255, 255, 255, 0.7)",
-            border : "2px solid #ccc"
-          }}
-        >
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    <main
+      className="flex-1 overflow-y-auto p-4 hide-scrollbar mr-6 overflow-x-hidden"
+      style={{
+        borderRadius: "24px",
+        backgroundColor: "rgba(255, 255, 255, 0.7)",
+        border: "2px solid red",
+      }}
+    >
+      <Outlet />
+    </main>
+  </div>
+</div>
+
   );
 }
 
