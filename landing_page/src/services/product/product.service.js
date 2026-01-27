@@ -4,7 +4,7 @@ import { getToken } from "../../utils/auth";
 
 export const addProduct = async (productData) => {
     try {
-        const response = await axios.post("http://localhost:3000/api/v1/suppliers/stores/products", 
+        const response = await axios.post("http://localhost:8000/api/v1/suppliers/stores/products",
             productData,
             {
                 headers: {
@@ -21,7 +21,7 @@ export const addProduct = async (productData) => {
 
 export const getProducts = async () => {
     try {
-        const response = await axios.get("http://localhost:3000/api/v1/suppliers/stores/products", {
+        const response = await axios.get("http://localhost:8000/api/v1/suppliers/stores/products", {
             headers: {
                 "Content-Type": "application/json",
                 authorization: "Bearer " + getToken(),
@@ -37,7 +37,7 @@ export const getProducts = async () => {
 // get single product
 export const getSingleProduct = async (productId) => {
     try {
-        const response = await axios.get(`http://localhost:3000/api/v1/suppliers/stores/products/${productId}`, {
+        const response = await axios.get(`http://localhost:8000/api/v1/suppliers/stores/products/${productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 authorization: "Bearer " + getToken(),
@@ -53,7 +53,7 @@ export const getSingleProduct = async (productId) => {
 // update product
 export const updateProduct = async (productId, productData) => {
     try {
-        const response = await axios.put(`http://localhost:3000/api/v1/suppliers/stores/products/${productId}`, 
+        const response = await axios.put(`http://localhost:8000/api/v1/suppliers/stores/products/${productId}`,
             productData,
             {
                 headers: {
@@ -72,7 +72,7 @@ export const updateProduct = async (productId, productData) => {
 export const updateInventory = async (sku, inventoryData) => {
     console.log("inventoryData", inventoryData);
     try {
-        const response = await axios.put(`http://localhost:3000/api/v1/suppliers/stores/inventory/${sku}`, 
+        const response = await axios.put(`http://localhost:8000/api/v1/suppliers/stores/inventory/${sku}`,
             inventoryData,
             {
                 headers: {
@@ -86,6 +86,5 @@ export const updateInventory = async (sku, inventoryData) => {
         throw error;
     }
 }
-    
 
-    
+

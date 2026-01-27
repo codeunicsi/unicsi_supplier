@@ -41,7 +41,7 @@ export default function GstDetails() {
         console.log(payload, "payload-data")
         const token = "Bearer " + localStorage.getItem("token");
 
-        axios.post(`http://localhost:3000/api/v1/suppliers/stores/gstDetails`, payload, {
+        axios.post(`http://localhost:8000/api/v1/suppliers/stores/gstDetails`, payload, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 authorization: token,
@@ -53,8 +53,8 @@ export default function GstDetails() {
     };
 
     useEffect(() => {
-        
-      //return case
+
+        //return case
 
 
         getGstDetails()
