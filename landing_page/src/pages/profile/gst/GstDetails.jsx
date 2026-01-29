@@ -41,7 +41,7 @@ export default function GstDetails() {
         console.log(payload, "payload-data")
         const token = "Bearer " + localStorage.getItem("token");
 
-        axios.post(`http://localhost:8000/api/v1/suppliers/stores/gstDetails`, payload, {
+        axios.post(`${import.meta.env.VITE_API_URL}/suppliers/stores/gstDetails`, payload, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 authorization: token,

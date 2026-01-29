@@ -2,9 +2,11 @@ import api from "../../api";
 import axios from "axios";
 import { getToken } from "../../utils/auth";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export const addProduct = async (productData) => {
     try {
-        const response = await axios.post("http://localhost:8000/api/v1/suppliers/stores/products",
+        const response = await axios.post(`${API_URL}/suppliers/stores/products`,
             productData,
             {
                 headers: {
@@ -21,7 +23,7 @@ export const addProduct = async (productData) => {
 
 export const getProducts = async () => {
     try {
-        const response = await axios.get("http://localhost:8000/api/v1/suppliers/stores/products", {
+        const response = await axios.get(`${API_URL}/suppliers/stores/products`, {
             headers: {
                 "Content-Type": "application/json",
                 authorization: "Bearer " + getToken(),
@@ -37,7 +39,7 @@ export const getProducts = async () => {
 // get single product
 export const getSingleProduct = async (productId) => {
     try {
-        const response = await axios.get(`http://localhost:8000/api/v1/suppliers/stores/products/${productId}`, {
+        const response = await axios.get(`${API_URL}/suppliers/stores/products/${productId}`, {
             headers: {
                 "Content-Type": "application/json",
                 authorization: "Bearer " + getToken(),
@@ -53,7 +55,7 @@ export const getSingleProduct = async (productId) => {
 // update product
 export const updateProduct = async (productId, productData) => {
     try {
-        const response = await axios.put(`http://localhost:8000/api/v1/suppliers/stores/products/${productId}`,
+        const response = await axios.put(`${API_URL}/suppliers/stores/products/${productId}`,
             productData,
             {
                 headers: {
@@ -72,7 +74,7 @@ export const updateProduct = async (productId, productData) => {
 export const updateInventory = async (sku, inventoryData) => {
     console.log("inventoryData", inventoryData);
     try {
-        const response = await axios.put(`http://localhost:8000/api/v1/suppliers/stores/inventory/${sku}`,
+        const response = await axios.put(`${API_URL}/suppliers/stores/inventory/${sku}`,
             inventoryData,
             {
                 headers: {

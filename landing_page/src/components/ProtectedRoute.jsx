@@ -5,6 +5,7 @@ import { isAuthenticated, getUserRole } from "../utils/auth";
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = isAuthenticated();
   const role = getUserRole();
+  
 
   if (!token) {
     // Not logged in → redirect to login
@@ -14,9 +15,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   // Role mismatch protection
   if (allowedRoles && !allowedRoles.includes(role)) {
     if (role === "SUPPLIER") {
-      window.location.href = "localhost:5173/order";
+      window.location.href = import.meta.env.VITE_FRONTEND_URL + "/order";
     } else {
-      window.location.href = "localhost:5173/order";
+      window.location.href = import.meta.env.VITE_FRONTEND_URL + "/order";
     }
   }
 

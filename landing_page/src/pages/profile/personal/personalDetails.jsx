@@ -44,8 +44,12 @@ export default function PersonalDetails() {
       const res = await fetchProfile()
       const data = res.data.data
 
+      console.log(data?.supplier_id)
+
+      const lastPart = data?.supplier_id.substring(data?.supplier_id.lastIndexOf("-") + 1);
+
       setFormData({
-        supplierId: data.supplierId || "SUP-XXXX",
+        supplierId: "SUP-" + lastPart || "SUP-XXXX",
         phoneNumber: data.number || "",
         storeName: data.name || "",
         storeEmail: data.email || "",
