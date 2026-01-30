@@ -70,8 +70,8 @@ const Services = () => {
                 className={`
                   group rounded-xl sm:rounded-2xl p-6 sm:p-7 md:p-8 transition-all duration-300 hover:scale-105 
                   ${service.variant === "primary"
-                    ? "bg-[#943A09] text-white"
-                    : "bg-gray-100 text-black hover:bg-[#943A09] hover:text-white"
+                    ? "bg-[#0097B2] text-white"
+                    : "bg-gray-100 text-black hover:bg-[#0097B2] hover:text-white"
                   }
                 `}
               >
@@ -81,8 +81,8 @@ const Services = () => {
                     className={`
                       w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center transition-colors duration-300
                       ${service.variant === "primary"
-                        ? "bg-white text-[#943A09]"
-                        : "bg-[#FFE492] text-black group-hover:bg-white group-hover:text-[#943A09]"
+                        ? "bg-white text-[#65A30D]"
+                        : "bg-[#65A30D] text-black group-hover:bg-white group-hover:text-[#943A09]"
                       }
                     `}
                   >

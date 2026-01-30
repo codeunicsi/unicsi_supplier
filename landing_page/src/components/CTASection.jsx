@@ -73,8 +73,8 @@ const CTASection = () => {
           {/* CTA Text */}
           <div style={{ lineHeight: "1.4" }} className="mt-8 md:mt-4">
             <p className="text-xl sm:text-2xl md:text-[34px]">
-              Already Running <span style={{ color: "orange" }}>A Store?</span> <br />
-              <span style={{ color: "brown" }}>Connect Now</span> For Hyper-Growth!
+              Already Running <span style={{ color: "#0097B2" }}>A Store?</span> <br />
+              <span style={{ color: "#7ED957" }}>Connect Now</span> For Hyper-Growth!
             </p>
           </div>
         </div>
@@ -99,7 +99,7 @@ const CTASection = () => {
               className="bottom-4 text-base sm:text-lg md:text-[18.94px] py-3 md:py-4 mt-6 md:mt-[47px] w-full"
               style={{
                 borderRadius: "50px",
-                backgroundColor: "#943A09",
+                backgroundColor: "#0097B2",
               }}
               onClick={() => navigate("/signup")}
             >

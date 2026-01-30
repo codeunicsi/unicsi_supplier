@@ -92,7 +92,7 @@ const Hero = () => {
             <button
               className="text-white px-4 sm:px-6 py-2 rounded-full font-medium transition-colors text-xs sm:text-sm md:text-base whitespace-nowrap"
               
-              style={{ backgroundColor: "#943A09" }}
+              style={{ backgroundColor: "#0097B2" }}
             >
               Sign up
             </button>
@@ -183,7 +183,7 @@ const Hero = () => {
               <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                 <CameraIcon className="text-gray-500" size={20} />
               </button>
-              <button className="bg-orange-700 hover:bg-orange-800 text-white px-4 sm:px-6 md:px-10 py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base md:text-lg transition-colors whitespace-nowrap">
+              <button className="bg-[#0097B2] hover:bg-[#0097B2] text-white px-4 sm:px-6 md:px-10 py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base md:text-lg transition-colors whitespace-nowrap">
                 Search
               </button>
             </div>
@@ -197,7 +197,7 @@ const Hero = () => {
           <h2 className="text-xl sm:text-3xl md:text-4xl font-normal text-white">Popular Products</h2>
           <a
             href="#"
-            className="text-orange-400 hover:text-orange-300 transition-colors text-sm sm:text-base md:text-lg font-medium underline"
+            className="text-[#0097B2] hover:text-[#0097B2] transition-colors text-sm sm:text-base md:text-lg font-medium underline"
           >
             View more
           </a>

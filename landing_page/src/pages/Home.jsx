@@ -14,7 +14,7 @@ import PopularProducts from "../components/PopularProducts";
 function Home() {
   return (
     <div className="">
-       <Hero />
+      <Hero />
       <CTASection />
       <InventorySection />
       <PopularProducts />

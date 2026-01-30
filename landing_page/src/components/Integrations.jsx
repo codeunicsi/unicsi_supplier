@@ -41,7 +41,7 @@ const Integrations = () => {
                 fill="none"
                 preserveAspectRatio="none"
               >
-                <path d="M2 10C50 2 150 2 198 10" stroke="#F59E0B" strokeWidth="4" strokeLinecap="round" />
+                <path d="M2 10C50 2 150 2 198 10" stroke="#0097B2" strokeWidth="4" strokeLinecap="round" />
               </svg>
             </span>
           </h2>

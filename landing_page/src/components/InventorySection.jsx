@@ -114,7 +114,7 @@ const InventorySection = () => {
 
             {/* CTA Button */}
             <div className="pt-2 sm:pt-3 md:pt-4">
-              <button className="bg-amber-800 hover:bg-amber-900 text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 rounded-full transition-colors duration-200 flex items-center gap-2 text-sm sm:text-base">
+              <button className="bg-[#0097B2] hover:bg-[#0097B2] text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 rounded-full transition-colors duration-200 flex items-center gap-2 text-sm sm:text-base">
                 Learn More
                 <svg className="w-4 h-4" fill="none" stroke="#fff" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

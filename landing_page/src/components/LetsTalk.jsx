@@ -11,7 +11,7 @@ const LetsTalk = () => {
           <h2 className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold text-white mb-4 md:mb-6 max-w-3xl">
             Join millions of dropshippers who are making <br className="hidden md:block" /> money easily.
           </h2>
-          <button className="bg-orange-700 hover:bg-orange-800 text-white font-semibold px-8 md:px-10 lg:px-12 py-2 md:py-3 rounded-full flex items-center gap-2 text-sm md:text-base">
+          <button className="bg-[#0097B2] hover:bg-[#0097B2] text-white font-semibold px-8 md:px-10 lg:px-12 py-2 md:py-3 rounded-full flex items-center gap-2 text-sm md:text-base">
             Get Started →
           </button>
         </div>

@@ -1,7 +1,8 @@
 import Linkedin from "../assets/images/linkedinIcon.png"
 import Instagram from "../assets/images/instaIcon.png"
 import Facebook from "../assets/images/facebookIcon.png"
-const Footer = () => {
+
+const Footer = () => {  
   return (
     <footer className="bg-[#000000] text-white">
       {/* Main footer content */}
@@ -107,7 +108,7 @@ const Footer = () => {
                   placeholder="Enter your email here"
                   className="w-full px-3 md:px-4 py-2 md:py-3 pr-24 md:pr-28 rounded-full bg-white text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm md:text-base"
                 />
-                <button className="absolute top-1/2 right-1 md:right-2 -translate-y-1/2 px-4 md:px-5 py-1.5 md:py-2 bg-[#8B2E00] text-white rounded-full hover:bg-[#a33a0a] transition-all duration-200 text-sm md:text-base">
+                <button className="absolute top-1/2 right-1 md:right-2 -translate-y-1/2 px-4 md:px-5 py-1.5 md:py-2 bg-[#0097B2] text-white rounded-full hover:bg-[#a33a0a] transition-all duration-200 text-sm md:text-base">
                   Subscribe
                 </button>
               </div>

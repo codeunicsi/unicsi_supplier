@@ -45,7 +45,7 @@ const FeaturesSection = () => {
               className="text-base sm:text-lg md:text-xl py-3 sm:py-4 md:py-5 w-full sm:w-auto"
               style={{
                 borderRadius: "50px",
-                backgroundColor: "#943A09",
+                backgroundColor: "#0097B2",
                 paddingLeft: "24px",
                 paddingRight: "24px",
               }}

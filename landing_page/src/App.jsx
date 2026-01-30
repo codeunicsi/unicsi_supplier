@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import React from "react";
 
 import { Home } from "./pages/Home";
@@ -29,7 +29,11 @@ function App() {
       <AuthProvider>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<Home />} />
+        {/* <Route path="/" element={<Home />} /> */}
+
+          {/* Redirect root to login */}
+         <Route path="/" element={<Navigate to="/login" replace />} />
+         
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
