@@ -14,6 +14,7 @@ import {
   Stack
 } from "@mui/material"
 import { updatePersonalDetails, fetchProfile } from "../../../services/prodile/profile.service"
+import { toast } from "react-toastify"
 
 export default function PersonalDetails() {
   const [editMode, setEditMode] = useState(false)
@@ -33,9 +34,11 @@ export default function PersonalDetails() {
   const handleSubmit = async () => {
     try {
       await updatePersonalDetails(formData)
+      toast.success("Personal details updated successfully")
       setEditMode(false)
     } catch (error) {
       console.error(error)
+      toast.error("Failed to update personal details")
     }
   }
 

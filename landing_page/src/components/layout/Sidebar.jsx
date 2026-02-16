@@ -15,7 +15,7 @@ import {
   Avatar,
   useMediaQuery,
   useTheme,
-  
+
 } from "@mui/material"
 import MenuIcon from "@mui/icons-material/Menu"
 import CloseIcon from "@mui/icons-material/Close"
@@ -32,6 +32,7 @@ import PersonIcon from "@mui/icons-material/Person"
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline"
 import AddIcon from "@mui/icons-material/Add"
 // import SettingsIcon from '@mui/icons-material/Settings';
+import { fetchProfile } from "../../services/prodile/profile.service"
 
 
 
@@ -60,9 +61,17 @@ const menuItems = [
   { name: "Supports", icon: <SupportAgentIcon />, path: "/supports" }
 ]
 
+const pendingMenuItems = [
+  { name: "Profile", icon: <PersonIcon />, path: "/profile" },
+  { name: "Setting", icon: <SettingsIcon />, path: "/settings" },
+  { name: "FAQs", icon: <HelpIcon />, path: "/faqs" },
+  { name: "Supports", icon: <SupportAgentIcon />, path: "/supports" }
+]
+
 export default function Sidebar() {
   const [open, setOpen] = useState(true)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [isProfileCompleted, setIsProfileCompleted] = useState(false)
   const pathname = usePathname()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
@@ -78,6 +87,15 @@ export default function Sidebar() {
       setOpen(!open)
     }
   }
+
+  useEffect(() => {
+    async function fetchProfilePersonalDetails() {
+      const response = await fetchProfile()
+      console.log("profile data", response.data?.data?.account_status)
+      setIsProfileCompleted(response.data?.data?.account_status)
+    }
+    fetchProfilePersonalDetails()
+  }, [])
 
   const desktopSidebar = (
     <Box
@@ -123,7 +141,54 @@ export default function Sidebar() {
 
       {/* Navigation menu */}
       <List sx={{ flex: 1, px: 1 }}>
-        {menuItems.map((item, idx) => {
+        {isProfileCompleted === "active" ? menuItems.map((item, idx) => {
+          const isActive = pathname === item.path
+          return (
+            <ListItemButton
+              key={idx}
+              href={item.path}
+              component="a"
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                bgcolor: isActive ? "#943A09" : "transparent",
+                color: isActive ? "#fff" : "#000",
+                "&:hover": {
+                  bgcolor: "#943A09",
+                  color: "#fff",
+                },
+                justifyContent: open ? "flex-start" : "center",
+                px: open ? 2 : 1,
+                py: 1.5,
+                transition: "all 0.2s ease",
+                minHeight: open ? "auto" : 56,
+              }}
+              title={!open ? item.name : ""}
+            >
+              <ListItemIcon
+                sx={{
+                  color: "inherit",
+                  minWidth: open ? 40 : "auto",
+                  justifyContent: "center",
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              {open && (
+                <ListItemText
+                  primary={item.name}
+                  primaryTypographyProps={{
+                    sx: {
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: "0.95rem",
+                      whiteSpace: "nowrap",
+                    },
+                  }}
+                />
+              )}
+            </ListItemButton>
+          )
+        }) : pendingMenuItems.map((item, idx) => {
           const isActive = pathname === item.path
           return (
             <ListItemButton
@@ -206,7 +271,44 @@ export default function Sidebar() {
       </Box>
 
       <List sx={{ px: 1 }}>
-        {menuItems.map((item, idx) => {
+        {isProfileCompleted === "active" ? menuItems.map((item, idx) => {
+          const isActive = pathname === item.path
+          return (
+            <ListItemButton
+              key={idx}
+              href={item.path}
+              component="a"
+              sx={{
+                borderRadius: 2,
+                mb: 0.5,
+                bgcolor: isActive ? "#943A09" : "transparent",
+                color: isActive ? "#fff" : "#000",
+                "&:hover": {
+                  bgcolor: "#943A09",
+                  color: "#fff",
+                },
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  color: "inherit",
+                  minWidth: 40,
+                }}
+              >
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.name}
+                primaryTypographyProps={{
+                  sx: {
+                    fontWeight: isActive ? 600 : 500,
+                    fontSize: "0.95rem",
+                  },
+                }}
+              />
+            </ListItemButton>
+          )
+        }) : pendingMenuItems.map((item, idx) => {
           const isActive = pathname === item.path
           return (
             <ListItemButton
@@ -247,6 +349,7 @@ export default function Sidebar() {
       </List>
     </Drawer>
   )
+
 
   return (
     <>

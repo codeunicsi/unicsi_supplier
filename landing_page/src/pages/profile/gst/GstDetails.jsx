@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { Box, Button, Grid, TextField, Typography, Divider } from "@mui/material"
 import { AddGstDetails, getGstDetails } from "../../../services/prodile/profile.service";
+import { toast } from "react-toastify";
 import axios from "axios";
 
 
@@ -17,6 +18,7 @@ export default function GstDetails() {
         adharCardNumberImage: "",
         gstStatus: false
     })
+    const [isDisable, setIsDisable] = useState(false)
 
     const handleChange = (e) => {
         const { name, value, files } = e.target
@@ -27,28 +29,51 @@ export default function GstDetails() {
     }
 
     const handleSubmit = () => {
-        const payload = new FormData();
 
-        payload.append("gstName", formData.gstName);
-        payload.append("gstNumber", formData.gstNumber);
-        payload.append("panCardNumber", formData.panCardNumber);
-        payload.append("adharCardNumber", formData.adharCardNumber);
+        const submitGstDetails = async () => {
+            try {
+                const payload = new FormData();
 
-        payload.append("gstCertificate", formData.gstCertificate);
-        payload.append("panCardNumberImage", formData.panCardNumberImage);
-        payload.append("adharCardNumberImage", formData.adharCardNumberImage);
+                payload.append("gstName", formData.gstName);
+                payload.append("gstNumber", formData.gstNumber);
+                payload.append("panCardNumber", formData.panCardNumber);
+                payload.append("adharCardNumber", formData.adharCardNumber);
 
-        console.log(payload, "payload-data")
-        const token = "Bearer " + localStorage.getItem("token");
+                payload.append("gstCertificate", formData.gstCertificate);
+                payload.append("panCardNumberImage", formData.panCardNumberImage);
+                payload.append("adharCardNumberImage", formData.adharCardNumberImage);
 
-        axios.post(`${import.meta.env.VITE_API_URL}/suppliers/stores/gstDetails`, payload, {
-            headers: {
-                "Content-Type": "multipart/form-data",
-                authorization: token,
+                console.log(payload, "payload-data");
+
+                const token = "Bearer " + localStorage.getItem("token");
+
+                const res = await axios.post(
+                    `${import.meta.env.VITE_API_URL}/suppliers/stores/gstDetails`,
+                    payload,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            authorization: token,
+                        },
+                    }
+                );
+
+                console.log(res);
+                if (res.status === 200) {
+                    toast.success("GST Details Updated Successfully");
+                    setFormData(prev => ({
+                        ...prev,
+                        gstStatus: true
+                    }))
+                }
+            } catch (err) {
+                console.log(err);
             }
-        })
-            .then(res => console.log(res))
-            .catch(err => console.log(err));
+        };
+
+        submitGstDetails();
+
+
 
     };
 

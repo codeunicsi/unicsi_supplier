@@ -124,8 +124,9 @@ function profileDropDown() {
 
           <MenuItem>
             <a
-              href="#"
+              href="/profile"
               className="block px-4 py-2 text-sm text-white data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
+              // onClick={() => navigate("/profile")}
             >
               Profile
             </a>
