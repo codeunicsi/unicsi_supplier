@@ -21,49 +21,59 @@ import AddProductForm from "./pages/add-product-form";
 import ProductsList from "./pages/products-list";
 import Settings from "./pages/settings";
 
-
 import "./App.css";
+import ReportsTable from "./pages/ReportsTable";
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Home />} />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
 
           {/* Redirect root to login */}
-         {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
+          {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
 
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        {/* SUPPLIER PANEL (with layout) */}
-        <Route
-          element={
-            <ProtectedRoute allowedRoles={["SUPPLIER"]}>
-              <MainLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* <Route path="/seller" element={<SellerDashboard />} />
+          {/* SUPPLIER PANEL (with layout) */}
+          <Route
+            element={
+              <ProtectedRoute allowedRoles={["SUPPLIER"]}>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* <Route path="/seller" element={<SellerDashboard />} />
           <Route path="/vendor" element={<VendorDashboard />} /> */}
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/order" element={<ManageOrders />} />
-          <Route path="/products" element={<ProductsList />} />
-          <Route path="/products/add" element={<AddProductForm />} />
-          <Route path="/edit-product/:product_id" element={<AddProductForm />} />
-          <Route path="/products/:product_id/clone" element={<AddProductForm />} />
-          <Route path="/manage-products" element={<ManageProducts />} />
-          <Route path="/product-requirement" element={<ProductRequirement />} />
-          <Route path="/source-product" element={<ProductRequirement />} />
-          <Route path="/rto-returns/overview" element={<Analytics />} />
-          <Route path="/settings" element={<Settings />} />
-        </Route>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/order" element={<ManageOrders />} />
+            <Route path="/products" element={<ProductsList />} />
+            <Route path="/products/add" element={<AddProductForm />} />
+            <Route
+              path="/edit-product/:product_id"
+              element={<AddProductForm />}
+            />
+            <Route
+              path="/products/:product_id/clone"
+              element={<AddProductForm />}
+            />
+            <Route path="/manage-products" element={<ManageProducts />} />
+            <Route
+              path="/product-requirement"
+              element={<ProductRequirement />}
+            />
+            <Route path="/source-product" element={<ProductRequirement />} />
+            <Route path="/reports" element={<ReportsTable />} />
+            <Route path="/rto-intelligence" element={<Analytics />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </AuthProvider>
     </BrowserRouter>
   );
