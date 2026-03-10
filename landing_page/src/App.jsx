@@ -20,6 +20,7 @@ import { AuthProvider } from "./auth/AuthContext";
 import AddProductForm from "./pages/add-product-form";
 import ProductsList from "./pages/products-list";
 import Settings from "./pages/settings";
+import { Navigate } from "react-router-dom";
 
 import "./App.css";
 import ReportsTable from "./pages/ReportsTable";
@@ -30,10 +31,10 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+          {/* <Route path="/" element={<Home />} /> */}
 
           {/* Redirect root to login */}
-          {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
