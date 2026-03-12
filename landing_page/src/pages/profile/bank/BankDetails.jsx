@@ -1,15 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Box,
-  Grid,
-  TextField,
-  Typography,
-  Paper,
-  Stack,
-  Divider,
-} from "@mui/material";
+import { Box, Grid, TextField, Paper, Stack, Divider } from "@mui/material";
 import {
   AddBankDetails,
   updateBankDetails,
@@ -18,10 +10,8 @@ import {
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
-
 const MODES = { EMPTY: "EMPTY", EDIT: "EDIT", VIEW: "VIEW" };
 
-// ── Shared field sx ───────────────────────────────────────────────────────────
 const fieldSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
@@ -37,7 +27,6 @@ const fieldSx = {
   "& .MuiInputBase-input": { color: "#000" },
 };
 
-// ── Shared button ─────────────────────────────────────────────────────────────
 function GradientButton({
   children,
   onClick,
@@ -89,7 +78,6 @@ function GradientButton({
   );
 }
 
-// ── Card shell shared across modes ────────────────────────────────────────────
 function CardShell({ icon, title, subtitle, badge, children }) {
   return (
     <Paper
@@ -101,7 +89,6 @@ function CardShell({ icon, title, subtitle, badge, children }) {
         boxShadow: "0 2px 16px rgba(0,151,178,0.07)",
       }}
     >
-      {/* Header strip */}
       <Box
         sx={{
           px: 3,
@@ -146,13 +133,11 @@ function CardShell({ icon, title, subtitle, badge, children }) {
         </Box>
         {badge}
       </Box>
-
       <Box sx={{ p: 3 }}>{children}</Box>
     </Paper>
   );
 }
 
-// ── Reusable detail row ───────────────────────────────────────────────────────
 function DetailField({ label, value }) {
   return (
     <Box mb={2.5}>
@@ -175,8 +160,46 @@ function DetailField({ label, value }) {
   );
 }
 
+// ── Shimmer block ─────────────────────────────────────────────────────────────
+function Shimmer({ width = "100%", height = 14, radius = 6 }) {
+  return (
+    <Box
+      sx={{
+        width,
+        height,
+        borderRadius: radius,
+        background:
+          "linear-gradient(90deg, #e0f4f7 25%, #f0fafc 50%, #e0f4f7 75%)",
+        backgroundSize: "200% 100%",
+        animation: "shimmer 1.4s infinite",
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
+const bankIcon = (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#fff"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="10" width="18" height="11" rx="2" />
+    <path d="M3 10l9-7 9 7" />
+    <line x1="12" y1="10" x2="12" y2="21" />
+    <line x1="7" y1="14" x2="7" y2="17" />
+    <line x1="17" y1="14" x2="17" y2="17" />
+  </svg>
+);
+
 export default function BankDetails() {
   const [mode, setMode] = useState(MODES.EMPTY);
+  const [loading, setLoading] = useState(true);
   const [bankData, setBankData] = useState({
     holderName: "",
     accountNumber: "",
@@ -196,19 +219,23 @@ export default function BankDetails() {
 
   useEffect(() => {
     const loadBankDetails = async () => {
-      const res = await fetchBankDetails();
-      if (!res.data.success) {
-        setMode(MODES.EMPTY);
-        return;
+      try {
+        const res = await fetchBankDetails();
+        if (!res.data.success) {
+          setMode(MODES.EMPTY);
+          return;
+        }
+        setBankData({
+          holderName: res.data?.data?.account_holder_name,
+          accountNumber: res.data?.data?.account_number,
+          reAccountNumber: res.data?.data?.account_number,
+          ifsc: res.data?.data?.ifsc_code,
+          bank_details_status: res.data?.data?.bank_details_status,
+        });
+        setMode(MODES.VIEW);
+      } finally {
+        setLoading(false);
       }
-      setBankData({
-        holderName: res.data?.data?.account_holder_name,
-        accountNumber: res.data?.data?.account_number,
-        reAccountNumber: res.data?.data?.account_number,
-        ifsc: res.data?.data?.ifsc_code,
-        bank_details_status: res.data?.data?.bank_details_status,
-      });
-      setMode(MODES.VIEW);
     };
     loadBankDetails();
   }, []);
@@ -229,26 +256,132 @@ export default function BankDetails() {
     ? `**** **** ${bankData.accountNumber.slice(-4)}`
     : "—";
 
-  const bankIcon = (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#fff"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="10" width="18" height="11" rx="2" />
-      <path d="M3 10l9-7 9 7" />
-      <line x1="12" y1="10" x2="12" y2="21" />
-      <line x1="7" y1="14" x2="7" y2="17" />
-      <line x1="17" y1="14" x2="17" y2="17" />
-    </svg>
-  );
+  // ── LOADING ─────────────────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <>
+        <style>{`
+          @keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+          @keyframes spin { to { transform: rotate(360deg); } }
+        `}</style>
 
-  /* ── EMPTY ── */
+        <Paper
+          elevation={0}
+          sx={{
+            borderRadius: "16px",
+            border: "1.5px solid #e0f4f7",
+            overflow: "hidden",
+            boxShadow: "0 2px 16px rgba(0,151,178,0.07)",
+          }}
+        >
+          {/* Shimmer header — mirrors CardShell exactly */}
+          <Box
+            sx={{
+              px: 3,
+              py: 2.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              background:
+                "linear-gradient(135deg, rgba(0,151,178,0.06) 0%, rgba(126,217,87,0.06) 100%)",
+              borderBottom: "1.5px solid #e0f4f7",
+            }}
+          >
+            <Box
+              sx={{
+                width: 38,
+                height: 38,
+                borderRadius: "10px",
+                background: "#d0eef3",
+                flexShrink: 0,
+              }}
+            />
+            <Box
+              sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}
+            >
+              <Shimmer width={140} height={13} />
+              <Shimmer width={210} height={11} />
+            </Box>
+          </Box>
+
+          {/* Spinner */}
+          <Box
+            sx={{
+              py: 6,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                border: "3.5px solid #e0f4f7",
+                borderTopColor: "#0097b2",
+                animation: "spin 0.75s linear infinite",
+              }}
+            />
+            <Box sx={{ fontSize: "0.875rem", color: "#666", fontWeight: 500 }}>
+              Loading bank details…
+            </Box>
+          </Box>
+
+          {/* Shimmer fields */}
+          <Box
+            sx={{
+              px: 3,
+              pb: 4,
+              display: "flex",
+              flexDirection: "column",
+              gap: 2.5,
+            }}
+          >
+            <Box sx={{ display: "flex", gap: 2 }}>
+              {[180, 160].map((w, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                  }}
+                >
+                  <Shimmer width={w} height={10} />
+                  <Shimmer width="100%" height={38} radius={10} />
+                </Box>
+              ))}
+            </Box>
+            <Box sx={{ display: "flex", gap: 2 }}>
+              {[150, 90].map((w, i) => (
+                <Box
+                  key={i}
+                  sx={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 1,
+                  }}
+                >
+                  <Shimmer width={w} height={10} />
+                  <Shimmer width="100%" height={38} radius={10} />
+                </Box>
+              ))}
+            </Box>
+            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+              <Shimmer width="50%" height={42} radius={10} />
+              <Shimmer width="50%" height={42} radius={10} />
+            </Box>
+          </Box>
+        </Paper>
+      </>
+    );
+  }
+
+  // ── EMPTY ───────────────────────────────────────────────────────────────────
   if (mode === MODES.EMPTY) {
     return (
       <Paper
@@ -295,7 +428,7 @@ export default function BankDetails() {
     );
   }
 
-  /* ── VIEW ── */
+  // ── VIEW ────────────────────────────────────────────────────────────────────
   if (mode === MODES.VIEW) {
     return (
       <CardShell
@@ -332,7 +465,6 @@ export default function BankDetails() {
           </Box>
         }
       >
-        {/* Secure notice */}
         <Box
           sx={{
             display: "flex",
@@ -406,7 +538,6 @@ export default function BankDetails() {
             ✏️ Edit Bank Details
           </GradientButton>
         </Stack>
-
         <Box
           sx={{
             mt: 1.5,
@@ -421,14 +552,13 @@ export default function BankDetails() {
     );
   }
 
-  /* ── EDIT ── */
+  // ── EDIT ────────────────────────────────────────────────────────────────────
   return (
     <CardShell
       icon={bankIcon}
       title="Add / Update Bank Details"
       subtitle="Ensure all details are correct before saving"
     >
-      {/* Info banner */}
       <Box
         sx={{
           display: "flex",
@@ -532,7 +662,6 @@ export default function BankDetails() {
           </Grid>
         ))}
 
-        {/* File Upload */}
         <Grid item xs={12}>
           <Box
             sx={{

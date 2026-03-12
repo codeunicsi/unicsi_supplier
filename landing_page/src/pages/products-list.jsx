@@ -402,7 +402,7 @@ export default function ProductsList() {
                         secondary
                         startIcon={(color) => <Edit size={13} color={color} />}
                       >
-                        Edit
+                        {/* Edit */}
                       </GradientButton>
                     </Link>
                     <GradientButton
@@ -411,7 +411,7 @@ export default function ProductsList() {
                       startIcon={(color) => <Copy size={13} color={color} />}
                       onClick={() => handleClone(product)}
                     >
-                      Clone
+                      {/* Clone */}
                     </GradientButton>
                     <GradientButton
                       size="small"
@@ -422,7 +422,7 @@ export default function ProductsList() {
                         setOpenDialog(true);
                       }}
                     >
-                      Delete
+                      {/* Delete */}
                     </GradientButton>
                   </Stack>
                 </TableCell>

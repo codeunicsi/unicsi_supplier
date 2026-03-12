@@ -6,10 +6,9 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { useAuth } from "../../auth/AuthContext";
 
-// ── same route list as Sidebar so breadcrumb stays in sync ──────────────────
 const menuItems = [
   { name: "Manage Orders", path: "/order" },
-  { name: "RTO Intelligence", path: "/rto-intelligence" },
+  { name: "Manage RTO / Returns", path: "/rto-returns" },
   { name: "Add Product", path: "/products" },
   { name: "Product Requirement", path: "/product-requirement" },
   { name: "Manage Products", path: "/manage-products" },
@@ -24,7 +23,10 @@ const menuItems = [
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
-// ── For Next.js: swap window.location.pathname with usePathname() ────────────
+// Stable avatar URL — seeded on the user's identifier so it never changes
+const AVATAR_URL =
+  "https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+
 function usePageName() {
   if (typeof window === "undefined") return "Dashboard";
   const pathname = window.location.pathname;
@@ -63,7 +65,6 @@ export default function TopBar() {
             strokeLinejoin="round"
           />
         </svg>
-        {/* Dynamically reflects whichever sidebar item is active */}
         <span
           className="text-[16px] font-semibold"
           style={{ color: "#000000", letterSpacing: "-0.01em" }}
@@ -130,7 +131,7 @@ function ProfileDropDown() {
         }}
       >
         <img
-          src="https://i.pravatar.cc/40"
+          src={AVATAR_URL}
           alt="User"
           className="w-7 h-7 rounded-full"
           style={{ border: "1.5px solid rgba(255,255,255,0.7)" }}
