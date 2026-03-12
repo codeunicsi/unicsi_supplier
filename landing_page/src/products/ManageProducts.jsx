@@ -1,142 +1,48 @@
-// components/products/ManageProductsPage.jsx
-import { useEffect, useState } from "react";
-import FiltersBar from "./FiltersBar";
-import ProductCard from "../components/ProductCard";
-import { getProducts } from "../services/product/product.service";
-import { CircularProgress } from "@mui/material";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import ProductTable from "./ProductTable";
+import Tabs from "./Tabs";
+import SubTabs from "./SubTabs";
+import {
+  getProducts,
+  updateInventory as updateInventoryApi,
+} from "../services/product/product.service";
 
-export default function ProductRequirementPage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function ManageProducts() {
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await getProducts();
-        setProducts(response.data);
-      } catch (error) {
-        console.log(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, []);
+  // fetch products
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  });
+
+  // update inventory mutation
+  const { mutate: updateInventory, isPending } = useMutation({
+    mutationFn: ({ sku, quantity, action }) =>
+      updateInventoryApi(sku, { quantity, action }),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+
+    onError: (err) => {
+      console.error("Inventory update failed", err);
+    },
+  });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f4fbfc", padding: "24px" }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: "20px" }}>
-        <h1
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: 800,
-            color: "#000",
-            margin: 0,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Product Requirement
-        </h1>
-        <p style={{ color: "#555", margin: "4px 0 0", fontSize: "0.9rem" }}>
-          Manage all your product requirements from here.
-        </p>
-      </div>
+    <div width="60%">
+      <h2 className="text-lg font-semibold mb-4">Manage Products</h2>
+      <Tabs tabItems={["Inventory", "Approved", "Purchase Order"]} />
+      <SubTabs tabItems={["Pending", "Approved", "Closed"]} />
 
-      <FiltersBar type="manage-product-requirements" />
-
-      {/* Loading */}
-      {loading && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "260px",
-            gap: "12px",
-          }}
-        >
-          <CircularProgress sx={{ color: "#0097b2" }} />
-          <span
-            style={{ color: "#0097b2", fontSize: "0.9rem", fontWeight: 500 }}
-          >
-            Loading products…
-          </span>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && (!products?.products || products.products.length === 0) && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "260px",
-            gap: "12px",
-            border: "2px dashed #b8e8f0",
-            borderRadius: "16px",
-            background: "#f8fdfe",
-          }}
-        >
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: "14px",
-              background: "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#fff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            </svg>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <p
-              style={{
-                fontWeight: 700,
-                color: "#000",
-                margin: "0 0 4px",
-                fontSize: "1rem",
-              }}
-            >
-              No products found
-            </p>
-            <p style={{ color: "#777", margin: 0, fontSize: "0.875rem" }}>
-              Products will appear here once added.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Product Grid */}
-      {!loading && products?.products?.length > 0 && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: "18px",
-          }}
-        >
-          {products.products.map((product) => (
-            <ProductCard key={product?.product_id} product={product} />
-          ))}
-        </div>
-      )}
+      <ProductTable
+        data={data}
+        isLoading={isLoading}
+        error={error}
+        updateInventory={updateInventory}
+        isUpdating={isPending}
+      />
     </div>
   );
 }

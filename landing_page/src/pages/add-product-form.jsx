@@ -17,7 +17,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Plus, Trash2, Upload, ChevronDown } from "lucide-react";
 import {
   addProduct,
@@ -114,6 +114,7 @@ const fieldSx = {
 export default function AddProductForm({ initialProduct, onSuccess }) {
   const params = useParams();
   const productId = params.product_id;
+  const navigate = useNavigate(); // ← add this
 
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState({
@@ -274,6 +275,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       variants: [],
     });
     onSuccess?.();
+    navigate("/products"); // ← add this line
   };
 
   if (isLoading) {

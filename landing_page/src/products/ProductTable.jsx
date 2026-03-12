@@ -21,7 +21,7 @@ function GradientButton({
   size = "medium",
 }) {
   const [hovered, setHovered] = useState(false);
-  const pad = size === "small" ? "5px 14px" : "9px 22px";
+  const pad = size === "small" ? "4px 14px" : "9px 22px";
   return (
     <button
       onClick={onClick}
@@ -29,7 +29,7 @@ function GradientButton({
       onMouseLeave={() => setHovered(false)}
       style={{
         padding: pad,
-        borderRadius: "9px",
+        borderRadius: "6px",
         border: secondary ? "1.5px solid #0097b2" : "none",
         background: secondary
           ? hovered
@@ -39,10 +39,15 @@ function GradientButton({
             ? GRADIENT_HOVER
             : GRADIENT,
         color: secondary ? (hovered ? "#fff" : "#0097b2") : "#fff",
-        fontSize: size === "small" ? "0.8rem" : "0.875rem",
+        fontSize: "0.78rem",
         fontWeight: 600,
         cursor: "pointer",
         whiteSpace: "nowrap",
+        lineHeight: "1",
+        height: "28px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
         boxShadow: secondary
           ? "none"
           : hovered
@@ -123,10 +128,22 @@ export default function ProductTable({
       field: "actions",
       headerName: "Actions",
       width: 120,
+      sortable: false,
+      filterable: false,
       renderCell: (params) => (
-        <GradientButton size="small" onClick={() => handleEdit(params.row)}>
-          Edit
-        </GradientButton>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <GradientButton size="small" onClick={() => handleEdit(params.row)}>
+            Edit
+          </GradientButton>
+        </div>
       ),
     },
   ];
@@ -191,9 +208,9 @@ export default function ProductTable({
             fontFamily: "inherit",
             fontSize: "0.875rem",
 
-            // ── Header: gradient bg, white text ──────────────────────────
+            // ── Header ────────────────────────────────────────────────────
             "& .MuiDataGrid-columnHeaders": {
-              background: "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)",
+              background: GRADIENT,
               borderBottom: "none",
             },
             "& .MuiDataGrid-columnHeader": {
@@ -217,11 +234,7 @@ export default function ProductTable({
               color: "#fff",
             },
 
-            // ── Rows & Cells: always black text ──────────────────────────
-            "& .MuiDataGrid-virtualScroller": {
-              overflowX: "auto",
-              color: "#000000",
-            },
+            // ── Rows & Cells ──────────────────────────────────────────────
             "& .MuiDataGrid-row": {
               color: "#000000",
               transition: "background 0.15s ease",
@@ -239,12 +252,14 @@ export default function ProductTable({
               color: "#000000",
               borderColor: "#e8f6f9",
               fontSize: "0.875rem",
+              display: "flex",
+              alignItems: "center",
             },
             "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
               outline: "none",
             },
 
-            // ── Checkbox ─────────────────────────────────────────────────
+            // ── Checkbox ──────────────────────────────────────────────────
             "& .MuiDataGrid-cellCheckbox .MuiCheckbox-root": {
               color: "#b0b0b0",
             },
@@ -286,7 +301,6 @@ export default function ProductTable({
           },
         }}
       >
-        {/* Gradient title bar */}
         <DialogTitle
           sx={{
             background: GRADIENT,
@@ -301,7 +315,6 @@ export default function ProductTable({
         </DialogTitle>
 
         <DialogContent sx={{ pt: 3, pb: 1, px: 3 }}>
-          {/* SKU read-only badge */}
           <div
             style={{
               background: "#f0fafc",

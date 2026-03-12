@@ -31,6 +31,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import SettingsIcon from "@mui/icons-material/Settings";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
@@ -56,6 +57,7 @@ function GradientButton({
   children,
   onClick,
   secondary = false,
+  danger = false,
   startIcon,
   size = "medium",
   fullWidth = false,
@@ -63,6 +65,16 @@ function GradientButton({
   const [hovered, setHovered] = useState(false);
   const pad = size === "small" ? "6px 14px" : "10px 22px";
   const fontSize = size === "small" ? "0.8rem" : "0.875rem";
+
+  const dangerStyle = {
+    background: hovered ? "#c62828" : "#e53935",
+    color: "#fff",
+    border: "none",
+    boxShadow: hovered
+      ? "0 4px 14px rgba(229,57,53,0.4)"
+      : "0 2px 8px rgba(229,57,53,0.2)",
+  };
+
   return (
     <button
       onClick={onClick}
@@ -80,21 +92,23 @@ function GradientButton({
         fontWeight: 600,
         cursor: "pointer",
         transition: "all 0.2s ease",
-        ...(secondary
-          ? {
-              background: hovered ? GRADIENT : "transparent",
-              color: hovered ? "#fff" : "#0097b2",
-              border: "1.5px solid #0097b2",
-              boxShadow: "none",
-            }
-          : {
-              background: hovered ? GRADIENT_HOVER : GRADIENT,
-              color: "#fff",
-              border: "none",
-              boxShadow: hovered
-                ? "0 4px 14px rgba(0,151,178,0.3)"
-                : "0 2px 8px rgba(0,151,178,0.18)",
-            }),
+        ...(danger
+          ? dangerStyle
+          : secondary
+            ? {
+                background: hovered ? GRADIENT : "transparent",
+                color: hovered ? "#fff" : "#0097b2",
+                border: "1.5px solid #0097b2",
+                boxShadow: "none",
+              }
+            : {
+                background: hovered ? GRADIENT_HOVER : GRADIENT,
+                color: "#fff",
+                border: "none",
+                boxShadow: hovered
+                  ? "0 4px 14px rgba(0,151,178,0.3)"
+                  : "0 2px 8px rgba(0,151,178,0.18)",
+              }),
       }}
     >
       {startIcon && (
@@ -236,6 +250,10 @@ export default function SupplierSettings() {
   const [pickupAddresses, setPickupAddresses] = useState([]);
   const [editingAddressId, setEditingAddressId] = useState(null);
 
+  // ── Delete confirmation state ──
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const addressToDelete = pickupAddresses.find((a) => a.id === deleteConfirmId);
+
   const [newAddress, setNewAddress] = useState({
     id: null,
     fullName: "",
@@ -320,6 +338,7 @@ export default function SupplierSettings() {
     setNewAddress(address);
     setOpenDialog(true);
   };
+
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingAddressId(null);
@@ -346,16 +365,30 @@ export default function SupplierSettings() {
     handleCloseDialog();
   };
 
-  const handleDeleteAddress = (id) => {
-    setPickupAddresses(pickupAddresses.filter((a) => a.id !== id));
+  // ── Delete: open confirmation ──
+  const handleDeleteClick = (id) => {
+    setDeleteConfirmId(id);
+  };
+
+  // ── Delete: confirmed ──
+  const handleConfirmDelete = () => {
+    setPickupAddresses(pickupAddresses.filter((a) => a.id !== deleteConfirmId));
+    setDeleteConfirmId(null);
     handleSaveSettings();
   };
+
+  // ── Delete: cancelled ──
+  const handleCancelDelete = () => {
+    setDeleteConfirmId(null);
+  };
+
   const handleToggleAddress = (id) =>
     setPickupAddresses(
       pickupAddresses.map((a) =>
         a.id === id ? { ...a, isEnabled: !a.isEnabled } : a,
       ),
     );
+
   const handleSetDefault = (id) => {
     setPickupAddresses(
       pickupAddresses.map((a) => ({ ...a, isDefault: a.id === id })),
@@ -428,7 +461,7 @@ export default function SupplierSettings() {
               flexShrink: 0,
             }}
           >
-            <SettingsIcon sx={{ "& path": { fill: "#fff !important" } }} />{" "}
+            <SettingsIcon sx={{ "& path": { fill: "#fff !important" } }} />
           </Box>
           <Box>
             <Typography
@@ -463,18 +496,6 @@ export default function SupplierSettings() {
             >
               <Stack spacing={2.5}>
                 <LabeledSelect
-                  label="Label Provider"
-                  name="labelProvider"
-                  value={shippingLabel.labelProvider}
-                  onChange={handleShippingLabelChange}
-                  options={[
-                    { value: "dhl", label: "DHL" },
-                    { value: "fedex", label: "FedEx" },
-                    { value: "ups", label: "UPS" },
-                    { value: "usps", label: "USPS" },
-                  ]}
-                />
-                <LabeledSelect
                   label="Default Label Size"
                   name="defaultSize"
                   value={shippingLabel.defaultSize}
@@ -492,8 +513,7 @@ export default function SupplierSettings() {
                   onChange={handleShippingLabelChange}
                   options={[
                     { value: "pdf", label: "PDF" },
-                    { value: "zpl", label: "ZPL" },
-                    { value: "png", label: "PNG" },
+                    { value: "zil", label: "ZIP" },
                   ]}
                 />
 
@@ -762,7 +782,7 @@ export default function SupplierSettings() {
                           fontSize: 22,
                           "& path": { fill: "#fff !important" },
                         }}
-                      />{" "}
+                      />
                     </Box>
                     <Box
                       sx={{
@@ -896,7 +916,7 @@ export default function SupplierSettings() {
                             </IconButton>
                             <IconButton
                               size="small"
-                              onClick={() => handleDeleteAddress(address.id)}
+                              onClick={() => handleDeleteClick(address.id)}
                               sx={{
                                 color: "#e53935",
                                 border: "1px solid rgba(229,57,53,0.25)",
@@ -962,7 +982,7 @@ export default function SupplierSettings() {
           </Grid>
         </Grid>
 
-        {/* ── Dialog ── */}
+        {/* ── Add / Edit Address Dialog ── */}
         <Dialog
           open={openDialog}
           onClose={handleCloseDialog}
@@ -1107,6 +1127,116 @@ export default function SupplierSettings() {
             </GradientButton>
             <GradientButton onClick={handleSaveAddress}>
               {editingAddressId !== null ? "Update Address" : "Save Address"}
+            </GradientButton>
+          </DialogActions>
+        </Dialog>
+
+        {/* ── Delete Confirmation Dialog ── */}
+        <Dialog
+          open={deleteConfirmId !== null}
+          onClose={handleCancelDelete}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: "16px",
+              border: "1.5px solid rgba(229,57,53,0.2)",
+              boxShadow: "0 8px 40px rgba(229,57,53,0.15)",
+              overflow: "hidden",
+            },
+          }}
+        >
+          {/* Red warning header */}
+          <Box
+            sx={{
+              background: "linear-gradient(135deg, #e53935 0%, #ef5350 100%)",
+              px: 3,
+              py: 2.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+            }}
+          >
+            <Box
+              sx={{
+                width: 36,
+                height: 36,
+                borderRadius: "10px",
+                background: "rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <WarningAmberIcon sx={{ color: "#fff", fontSize: 20 }} />
+            </Box>
+            <Box sx={{ fontSize: "1rem", fontWeight: 700, color: "#fff" }}>
+              Delete Address
+            </Box>
+          </Box>
+
+          <DialogContent sx={{ pt: 3, pb: 1, px: 3 }}>
+            <Box
+              sx={{
+                fontSize: "0.9rem",
+                color: "#333",
+                lineHeight: 1.6,
+              }}
+            >
+              Are you sure you want to delete this address?
+            </Box>
+
+            {/* Address preview */}
+            {addressToDelete && (
+              <Box
+                sx={{
+                  mt: 2,
+                  p: 2,
+                  borderRadius: "10px",
+                  background: "rgba(229,57,53,0.05)",
+                  border: "1px solid rgba(229,57,53,0.15)",
+                }}
+              >
+                <Box
+                  sx={{
+                    fontSize: "0.875rem",
+                    fontWeight: 700,
+                    color: "#000",
+                    mb: 0.4,
+                  }}
+                >
+                  {addressToDelete.fullName}
+                </Box>
+                {addressToDelete.companyName && (
+                  <Box sx={{ fontSize: "0.8rem", color: "#666", mb: 0.2 }}>
+                    {addressToDelete.companyName}
+                  </Box>
+                )}
+                <Box sx={{ fontSize: "0.8rem", color: "#555" }}>
+                  {addressToDelete.street}, {addressToDelete.city},{" "}
+                  {addressToDelete.state} {addressToDelete.zipCode}
+                </Box>
+              </Box>
+            )}
+
+            <Box
+              sx={{
+                mt: 2,
+                fontSize: "0.8rem",
+                color: "#999",
+              }}
+            >
+              This action cannot be undone.
+            </Box>
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, py: 2.5, gap: 1 }}>
+            <GradientButton secondary onClick={handleCancelDelete}>
+              Cancel
+            </GradientButton>
+            <GradientButton danger onClick={handleConfirmDelete}>
+              Yes, Delete
             </GradientButton>
           </DialogActions>
         </Dialog>

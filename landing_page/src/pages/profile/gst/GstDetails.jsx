@@ -126,7 +126,7 @@ function FileInput({ name, file, onChange, disabled }) {
   const fileName = file?.name || (isUrl ? "Uploaded file" : null);
 
   return (
-    <Box>
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <Box
         sx={{
           fontSize: "0.75rem",
@@ -144,6 +144,7 @@ function FileInput({ name, file, onChange, disabled }) {
         style={{
           display: "block",
           cursor: disabled ? "not-allowed" : "pointer",
+          flex: 1,
         }}
       >
         <Box
@@ -152,8 +153,11 @@ function FileInput({ name, file, onChange, disabled }) {
             borderColor: disabled ? "#e0f4f7" : "#b8e8f0",
             borderRadius: "10px",
             background: disabled ? "#f4fbfc" : "#f8fdfe",
-            p: 2,
-            textAlign: "center",
+            px: 2,
+            height: "40px", // matches MUI size="small" TextField height
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end", // always right-aligned
             transition: "all 0.2s",
             opacity: disabled ? 0.6 : 1,
             "&:hover": disabled
@@ -161,35 +165,73 @@ function FileInput({ name, file, onChange, disabled }) {
               : { borderColor: "#0097b2", background: "#edf8fb" },
           }}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={disabled ? "#aaa" : "#0097b2"}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ marginBottom: 4 }}
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          <Box sx={{ fontSize: "0.78rem", fontWeight: 500 }}>
-            {fileName ? (
-              <span style={{ color: "#2e7d1e", fontWeight: 700 }}>
-                ✔ {fileName}
-              </span>
-            ) : (
-              <span style={{ color: "#777" }}>
-                Click to upload &nbsp;
+          {!fileName ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={disabled ? "#aaa" : "#0097b2"}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="17 8 12 3 7 8" />
+                <line x1="12" y1="3" x2="12" y2="15" />
+              </svg>
+              <Box
+                sx={{
+                  fontSize: "0.78rem",
+                  fontWeight: 500,
+                  color: "#777",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Click to upload{" "}
                 <span style={{ color: "#aaa", fontSize: "0.72rem" }}>
                   JPG, PNG · Max 200kb
                 </span>
-              </span>
-            )}
-          </Box>
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#2e7d1e"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <Box
+                sx={{
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  color: "#2e7d1e",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "180px",
+                }}
+              >
+                {fileName}
+              </Box>
+            </Box>
+          )}
         </Box>
       </label>
       <input
@@ -489,7 +531,7 @@ export default function GstDetails() {
             GST Information
           </SectionLabel>
 
-          <Grid container spacing={2.5}>
+          <Grid container spacing={2.5} alignItems="flex-end">
             <Grid item xs={12} sm={6}>
               <FieldLabel>GST ID</FieldLabel>
               <TextField
@@ -548,7 +590,16 @@ export default function GstDetails() {
                 sx={fieldSx}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+              }}
+            >
               <FileInput
                 name="panCardNumberImage"
                 file={formData.panCardNumberImage}
@@ -597,7 +648,16 @@ export default function GstDetails() {
                 sx={fieldSx}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid
+              item
+              xs={12}
+              sm={6}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+              }}
+            >
               <FileInput
                 name="adharCardNumberImage"
                 file={formData.adharCardNumberImage}

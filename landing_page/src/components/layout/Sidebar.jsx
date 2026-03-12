@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useLocation } from "react-router-dom";
 import {
   Drawer,
   List,
@@ -34,7 +34,7 @@ const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
 const menuItems = [
   { name: "Manage Orders", icon: ShoppingCartIcon, path: "/order" },
-  { name: "RTO Intelligence", icon: TrendingUpIcon, path: "/rto-intelligence" },
+  { name: "Manage RTO / Returns", icon: TrendingUpIcon, path: "/rto-returns" },
   { name: "Add Product", icon: AddIcon, path: "/products" },
   { name: "Product Requirement", icon: AddIcon, path: "/product-requirement" },
   { name: "Manage Products", icon: WarehouseIcon, path: "/manage-products" },
@@ -54,33 +54,72 @@ const pendingMenuItems = [
 ];
 
 function NavItem({ item, isActive, open = true }) {
-  const [hovered, setHovered] = useState(false);
-  const isHighlighted = isActive || hovered;
-
-  const iconColor = isHighlighted ? "#ffffff" : "#1a1a1a";
-  const textColor = isHighlighted ? "#ffffff" : "#1a1a1a";
-  const bg = isActive ? GRADIENT : hovered ? GRADIENT_HOVER : "transparent";
-
   const IconComponent = item.icon;
 
   return (
     <ListItemButton
       href={item.path}
       component="a"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      selected={isActive}
       sx={{
         borderRadius: 2,
         mb: 0.5,
-        background: bg,
         cursor: "pointer",
         justifyContent: open ? "flex-start" : "center",
         px: open ? 2 : 1,
         py: 1.5,
         transition: "background 0.2s ease",
         minHeight: open ? "auto" : 56,
-        borderLeft: isActive ? "3px solid #7ed957" : "3px solid transparent",
-        "&:hover": { background: GRADIENT_HOVER },
+        borderLeft: "3px solid transparent",
+
+        // ── Default state ──────────────────────────────────────────────
+        background: "transparent",
+        "& .MuiListItemIcon-root svg": {
+          fill: "#1a1a1a !important",
+          color: "#1a1a1a !important",
+          fontSize: "1.3rem",
+          transition: "fill 0.15s ease",
+        },
+        "& .MuiListItemText-primary": {
+          color: "#1a1a1a",
+          fontWeight: 500,
+          fontSize: "0.95rem",
+        },
+
+        // ── Hover state ────────────────────────────────────────────────
+        "&:hover": {
+          background: GRADIENT_HOVER,
+          borderLeft: "3px solid #7ed957",
+          "& .MuiListItemIcon-root svg": {
+            fill: "#ffffff !important",
+            color: "#ffffff !important",
+          },
+          "& .MuiListItemText-primary": {
+            color: "#ffffff",
+            fontWeight: 600,
+          },
+        },
+
+        // ── Selected / Active state (MUI .Mui-selected) ────────────────
+        "&.Mui-selected": {
+          background: GRADIENT,
+          borderLeft: "3px solid #7ed957",
+          "& .MuiListItemIcon-root svg": {
+            fill: "#ffffff !important",
+            color: "#ffffff !important",
+          },
+          "& .MuiListItemText-primary": {
+            color: "#ffffff",
+            fontWeight: 700,
+          },
+        },
+
+        // ── Selected + Hover (keep gradient, don't go transparent) ─────
+        "&.Mui-selected:hover": {
+          background: GRADIENT_HOVER,
+          borderLeft: "3px solid #7ed957",
+        },
+
         "& .MuiTouchRipple-root": { color: "rgba(255,255,255,0.15)" },
       }}
       title={!open ? item.name : ""}
@@ -89,21 +128,6 @@ function NavItem({ item, isActive, open = true }) {
         sx={{
           minWidth: open ? 40 : "auto",
           justifyContent: "center",
-          // ── THE FIX ──────────────────────────────────────────────────────
-          // Target the SVG path fill directly through the DOM tree.
-          // MUI icons render as <svg><path fill="currentColor"/></svg>
-          // We override currentColor at the svg level with !important
-          // so no MUI class can outbid us.
-          "& svg": {
-            fill: `${iconColor} !important`,
-            color: `${iconColor} !important`,
-            fontSize: "1.3rem",
-            transition: "fill 0.15s ease, color 0.15s ease",
-          },
-          // Also catch any path that MUI renders with explicit fill attribute
-          "& svg path": {
-            fill: `${iconColor} !important`,
-          },
         }}
       >
         <IconComponent />
@@ -114,10 +138,7 @@ function NavItem({ item, isActive, open = true }) {
           primary={item.name}
           primaryTypographyProps={{
             sx: {
-              fontWeight: isActive ? 700 : 500,
-              fontSize: "0.95rem",
               whiteSpace: "nowrap",
-              color: textColor,
               transition: "color 0.15s ease",
             },
           }}
@@ -130,8 +151,8 @@ function NavItem({ item, isActive, open = true }) {
 export default function Sidebar() {
   const [open, setOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isProfileCompleted, setIsProfileCompleted] = useState(false);
-  const pathname = usePathname();
+  const [isProfileCompleted, setIsProfileCompleted] = useState(null);
+  const { pathname } = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -152,7 +173,12 @@ export default function Sidebar() {
     load();
   }, []);
 
-  const items = isProfileCompleted === "active" ? menuItems : pendingMenuItems;
+  const items =
+    isProfileCompleted === null
+      ? []
+      : isProfileCompleted === "active"
+        ? menuItems
+        : pendingMenuItems;
 
   const sidebarContent = (showOpen = true) => (
     <Box
@@ -197,12 +223,12 @@ export default function Sidebar() {
             border: "1.5px solid #0097b2",
             borderRadius: "10px",
             transition: "all 0.2s",
-            "& path": { fill: "#0097b2 !important" }, // ← default state
+            "& path": { fill: "#0097b2 !important" },
             "&:hover": {
               background: GRADIENT,
               color: "#fff",
               borderColor: "transparent",
-              "& path": { fill: "#fff !important" }, // ← hover state
+              "& path": { fill: "#fff !important" },
             },
           }}
         >
@@ -216,7 +242,10 @@ export default function Sidebar() {
           <NavItem
             key={idx}
             item={item}
-            isActive={pathname === item.path}
+            isActive={
+              !!pathname &&
+              (pathname === item.path || pathname.startsWith(item.path + "/"))
+            }
             open={showOpen ? open : true}
           />
         ))}
@@ -285,7 +314,11 @@ export default function Sidebar() {
                 <NavItem
                   key={idx}
                   item={item}
-                  isActive={pathname === item.path}
+                  isActive={
+                    !!pathname &&
+                    (pathname === item.path ||
+                      pathname.startsWith(item.path + "/"))
+                  }
                   open={true}
                 />
               ))}

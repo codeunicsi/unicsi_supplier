@@ -133,10 +133,6 @@ function StatusBadge({ status }: { status: StatusType }) {
 // ── Download Button ───────────────────────────────────────────────────────────
 function DownloadButton({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
-
-  // Icon stroke follows the button text color explicitly — not currentColor
-  // because currentColor on an SVG inside a gradient-background button
-  // resolves from the nearest CSS color, which may lag behind the transition.
   const iconStroke = hovered ? "#ffffff" : "#0097b2";
 
   return (
@@ -161,13 +157,12 @@ function DownloadButton({ onClick }: { onClick: () => void }) {
         whiteSpace: "nowrap",
       }}
     >
-      {/* Explicit stroke color — never relies on currentColor */}
       <svg
         width="14"
         height="14"
         viewBox="0 0 24 24"
         fill="none"
-        stroke={iconStroke} // ← explicit, driven by React state
+        stroke={iconStroke}
         strokeWidth="2.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -182,7 +177,7 @@ function DownloadButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-// ── Nav arrow button (extracted so hooks aren't called inside .map) ───────────
+// ── Nav arrow button ──────────────────────────────────────────────────────────
 function NavArrow({
   arrow,
   disabled,
@@ -221,7 +216,7 @@ function NavArrow({
   );
 }
 
-// ── Page number button (extracted for same reason) ────────────────────────────
+// ── Page number button ────────────────────────────────────────────────────────
 function PageButton({
   page,
   active,
@@ -265,6 +260,15 @@ export default function ReportsTable() {
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(REPORTS.length / PAGE_SIZE);
   const paginated = REPORTS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const handleDownload = (reportName: string) => {
+    const link = document.createElement("a");
+    link.href = "/GST_Report.zip"; // place your zip file inside the /public folder
+    link.download = `${reportName}.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div
@@ -407,9 +411,7 @@ export default function ReportsTable() {
                 <StatusBadge status={report.status} />
               </div>
               <div>
-                <DownloadButton
-                  onClick={() => alert(`Downloading: ${report.name}`)}
-                />
+                <DownloadButton onClick={() => handleDownload(report.name)} />
               </div>
             </div>
           );
