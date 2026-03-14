@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import {
   Drawer,
   List,
@@ -68,8 +68,8 @@ function NavItem({ item, isActive, open = true }) {
 
   return (
     <ListItemButton
-      href={item.path}
-      component="a"
+      component={Link}
+      to={item.path}
       selected={isActive}
       sx={{
         borderRadius: 2,
