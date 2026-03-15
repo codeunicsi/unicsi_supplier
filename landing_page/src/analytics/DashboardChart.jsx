@@ -216,9 +216,9 @@ function OrdersAndGMVCard() {
             letterSpacing: "-0.02em",
           }}
         >
-          240.8K
+          0
         </span>
-        <StatBadge value="24.6%" up />
+        <StatBadge value="" up />
       </div>
 
       {/* Chart */}
@@ -313,7 +313,7 @@ function MarginAppliedCard() {
         }}
       >
         <span style={{ fontSize: "1.4rem", fontWeight: 800, color: "#000" }}>
-          144.6K
+          0
         </span>
         <StatBadge value="As a % of GMV" up />
       </div>
@@ -369,9 +369,9 @@ function TotalOrdersCard() {
         }}
       >
         <span style={{ fontSize: "1.4rem", fontWeight: 800, color: "#000" }}>
-          400
+          0
         </span>
-        <StatBadge value="16.8%" up />
+        <StatBadge value="" up />
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         <ResponsiveContainer width="100%" height="100%">
