@@ -129,10 +129,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     title: "",
     description: "",
     brand: "",
-    category_id: "",
+    categoryId: "",
     approval_status: "draft",
     lifecycle_status: "inactive",
     productGallery: [],
+    options: [],
     variants: [],
   });
   const [expandedVariant, setExpandedVariant] = useState(null);
@@ -145,15 +146,23 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
   useEffect(() => {
     if (product) {
+      const productData = product?.data || product;
+
       setFormData({
-        title: product?.data?.title,
-        description: product?.data?.description,
-        brand: product?.data?.brand,
-        category_id: product?.data?.category_id,
-        approval_status: product?.data?.approval_status,
-        lifecycle_status: product?.data?.lifecycle_status ?? "inactive",
-        productGallery: product?.data?.images,
-        variants: product?.data?.variants,
+        title: productData?.title || "",
+        description: productData?.description || "",
+        brand: productData?.brand || "",
+        categoryId: productData?.category_id || "",
+        approval_status: (
+          productData?.approval_status || "draft"
+        ).toLowerCase(),
+        lifecycle_status: productData?.lifecycle_status || "inactive",
+        productGallery: productData?.images || [],
+        options: productData?.options || [],
+        variants: (productData?.variants || []).map((v, idx) => ({
+          id: v.variant_id || `loaded-${idx}`,
+          ...v,
+        })),
       });
     }
   }, [product]);
@@ -162,36 +171,31 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
   const addVariant = () => {
+    const id = Date.now().toString();
     const newVariant = {
-      variant_id: Date.now().toString(),
+      id,
       sku: "",
-      title: "",
       price: 0,
       compare_at_price: 0,
-      cost_price: 0,
       inventory_quantity: 0,
-      inventory_management: "shopify",
       weight_grams: 0,
       option1: "",
       option2: "",
-      option3: "",
-      attributes: { color: "", size: "" },
-      shopify_variant_id: "",
-      is_active: true,
+      attributes: {},
     };
 
     setFormData((prev) => ({
       ...prev,
       variants: [...prev.variants, newVariant],
     }));
-    setExpandedVariant(newVariant.variant_id);
+    setExpandedVariant(id);
   };
 
   const updateVariant = (id, field, value) =>
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((v) =>
-        v.variant_id === id ? { ...v, [field]: value } : v,
+        v.id === id ? { ...v, [field]: value } : v,
       ),
     }));
 
@@ -199,7 +203,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.map((v) =>
-        v.variant_id === id
+        v.id === id
           ? { ...v, attributes: { ...v.attributes, [attribute]: value } }
           : v,
       ),
@@ -208,7 +212,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
   const removeVariant = (id) =>
     setFormData((prev) => ({
       ...prev,
-      variants: prev.variants.filter((v) => v.variant_id !== id),
+      variants: prev.variants.filter((v) => v.id !== id),
     }));
 
   const handleProductImageUpload = (files) => {
@@ -226,6 +230,47 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       productGallery: prev.productGallery.filter((_, i) => i !== index),
     }));
 
+  const addOption = () =>
+    setFormData((prev) => ({
+      ...prev,
+      options: [
+        ...prev.options,
+        { name: "", position: prev.options.length + 1, values: [] },
+      ],
+    }));
+
+  const updateOption = (index, field, value) =>
+    setFormData((prev) => ({
+      ...prev,
+      options: prev.options.map((opt, idx) =>
+        idx === index ? { ...opt, [field]: value } : opt,
+      ),
+    }));
+
+  const updateOptionValues = (index, rawValues) =>
+    setFormData((prev) => ({
+      ...prev,
+      options: prev.options.map((opt, idx) =>
+        idx === index
+          ? {
+              ...opt,
+              values: rawValues
+                .split(",")
+                .map((v) => v.trim())
+                .filter(Boolean),
+            }
+          : opt,
+      ),
+    }));
+
+  const removeOption = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      options: prev.options
+        .filter((_, idx) => idx !== index)
+        .map((opt, idx) => ({ ...opt, position: idx + 1 })),
+    }));
+
   const handleSaveDraft = async (e) => {
     e.preventDefault();
     const payload = {
@@ -235,56 +280,79 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       id: formData.id || Date.now().toString(),
       updatedAt: new Date().toISOString(),
     };
+
     try {
       await addProduct(payload);
     } catch (err) {
       console.log(err);
     }
+
     alert("Product saved as draft successfully!");
     onSuccess?.();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (formData.variants.length === 0) {
       alert("Please add at least one variant");
       return;
     }
+
     const payload = {
-      ...formData,
-      approval_status: "submitted",
-      lifecycle_status: formData.lifecycle_status || "inactive",
-      id: formData.id || Date.now().toString(),
-      submittedAt: new Date().toISOString(),
+      title: formData.title,
+      description: formData.description,
+      brand: formData.brand,
+
+      categoryId: Number(formData.categoryId),
+
+      // use selected value
+      approval_status: formData.approval_status,
+
+      options: formData.options.map((opt, idx) => ({
+        name: opt.name,
+        position: idx + 1,
+        values: opt.values,
+      })),
+
+      variants: formData.variants.map((variant) => ({
+        sku: variant.sku,
+        price: Number(variant.price),
+        compare_at_price: Number(variant.compare_at_price),
+        inventory_quantity: Number(variant.inventory_quantity),
+        weight_grams: Number(variant.weight_grams),
+        option1: variant.option1 || null,
+        option2: variant.option2 || null,
+        attributes: variant.attributes || {},
+      })),
     };
-    const productData = new FormData();
-    productData.append("title", payload.title);
-    productData.append("description", payload.description);
-    productData.append("brand", payload.brand);
-    productData.append("category_id", payload.category_id);
-    productData.append("approval_status", payload.approval_status);
-    productData.append("lifecycle_status", payload.lifecycle_status);
-    productData.append("variants", JSON.stringify(payload.variants));
-    if (payload.productGallery?.length > 0)
-      payload.productGallery.forEach((f) => productData.append("images", f));
+
     try {
-      if (productId) await updateProduct(productId, productData);
-      else await addProduct(productData);
+      if (productId) {
+        await updateProduct(productId, payload);
+      } else {
+        await addProduct(payload);
+      }
     } catch (err) {
       console.log(err);
     }
+
     alert("Product submitted successfully!");
+
     setFormData({
       title: "",
       description: "",
       brand: "",
-      category_id: "",
+      categoryId: "",
       approval_status: "draft",
+      lifecycle_status: "inactive",
       productGallery: [],
+      options: [],
       variants: [],
     });
+
     onSuccess?.();
-    navigate("/products"); // ← add this line
+    navigate("/products");
   };
 
   if (isLoading) {
@@ -444,13 +512,115 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       fullWidth
                       label="Category ID"
                       placeholder="b2f5b1c9-9c22-..."
-                      value={formData.category_id}
+                      value={formData.categoryId}
                       onChange={(e) =>
-                        handleProductChange("category_id", e.target.value)
+                        handleProductChange("categoryId", e.target.value)
                       }
                       variant="outlined"
                       sx={fieldSx}
                     />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        mb: 1,
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{ fontWeight: 700, color: "#000" }}
+                      >
+                        Options
+                      </Typography>
+                      <GradientButton
+                        secondary
+                        size="small"
+                        startIcon={<Plus size={15} />}
+                        onClick={addOption}
+                      >
+                        Add Option
+                      </GradientButton>
+                    </Box>
+
+                    {formData.options.length === 0 ? (
+                      <Typography sx={{ color: "#777", fontSize: "0.875rem" }}>
+                        Add option groups (e.g., Color, Size) and their values.
+                      </Typography>
+                    ) : (
+                      <Stack spacing={2}>
+                        {formData.options.map((opt, idx) => (
+                          <Paper
+                            key={idx}
+                            variant="outlined"
+                            sx={{ p: 2, borderRadius: "14px" }}
+                          >
+                            <Grid container spacing={2} alignItems="center">
+                              <Grid item xs={12} sm={4}>
+                                <TextField
+                                  fullWidth
+                                  label="Option name"
+                                  placeholder="Color"
+                                  value={opt.name}
+                                  onChange={(e) =>
+                                    updateOption(idx, "name", e.target.value)
+                                  }
+                                  size="small"
+                                  sx={fieldSx}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={3}>
+                                <TextField
+                                  fullWidth
+                                  label="Position"
+                                  type="number"
+                                  value={opt.position}
+                                  onChange={(e) =>
+                                    updateOption(
+                                      idx,
+                                      "position",
+                                      parseInt(e.target.value, 10) || 0,
+                                    )
+                                  }
+                                  size="small"
+                                  sx={fieldSx}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={4}>
+                                <TextField
+                                  fullWidth
+                                  label="Values"
+                                  placeholder="Black, White, Blue"
+                                  value={opt.values.join(", ")}
+                                  onChange={(e) =>
+                                    updateOptionValues(idx, e.target.value)
+                                  }
+                                  size="small"
+                                  sx={fieldSx}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={1}>
+                                <IconButton
+                                  onClick={() => removeOption(idx)}
+                                  sx={{
+                                    color: "#c62828",
+                                    bgcolor: "rgba(198,40,40,0.12)",
+                                    "&:hover": {
+                                      bgcolor: "rgba(198,40,40,0.18)",
+                                    },
+                                  }}
+                                >
+                                  <X size={16} />
+                                </IconButton>
+                              </Grid>
+                            </Grid>
+                          </Paper>
+                        ))}
+                      </Stack>
+                    )}
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
@@ -467,27 +637,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     >
                       <MenuItem value="draft">Draft</MenuItem>
                       <MenuItem value="submitted">Submitted</MenuItem>
-                      <MenuItem value="approved">Approved</MenuItem>
-                      <MenuItem value="rejected">Rejected</MenuItem>
-                    </TextField>
-                  </Grid>
-
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Lifecycle Status"
-                      value={formData.lifecycle_status}
-                      onChange={(e) =>
-                        handleProductChange("lifecycle_status", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={fieldSx}
-                    >
-                      <MenuItem value="inactive">Inactive</MenuItem>
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="paused">Paused</MenuItem>
-                      <MenuItem value="archived">Archived</MenuItem>
                     </TextField>
                   </Grid>
 
@@ -687,13 +836,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                   <Stack spacing={2}>
                     {formData.variants.map((variant, index) => (
                       <Accordion
-                        key={variant.variant_id}
-                        expanded={expandedVariant === variant.variant_id}
+                        key={variant.id}
+                        expanded={expandedVariant === variant.id}
                         onChange={() =>
                           setExpandedVariant(
-                            expandedVariant === variant.variant_id
-                              ? null
-                              : variant.variant_id,
+                            expandedVariant === variant.id ? null : variant.id,
                           )
                         }
                         sx={{
@@ -744,7 +891,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               sx={{ fontWeight: 700, color: "#000" }}
                               noWrap
                             >
-                              {variant.title || "Untitled variant"}
+                              {variant.sku || "Untitled variant"}
                             </Typography>
 
                             <Box
@@ -756,20 +903,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 alignItems: "center",
                               }}
                             >
-                              {variant.sku && (
-                                <Chip
-                                  label={`SKU: ${variant.sku}`}
-                                  size="small"
-                                  sx={{
-                                    bgcolor: "rgba(0,151,178,0.12)",
-                                    color: "#007a91",
-                                    border: "1px solid rgba(0,151,178,0.25)",
-                                    fontWeight: 500,
-                                    fontSize: "0.7rem",
-                                  }}
-                                />
-                              )}
-
                               <Chip
                                 label={
                                   variant.price > 0
@@ -820,7 +953,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             size="small"
                             onClick={(e) => {
                               e.stopPropagation();
-                              removeVariant(variant.variant_id);
+                              removeVariant(variant.id);
                             }}
                             sx={{
                               color: "#c62828",
@@ -836,42 +969,24 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
                         <AccordionDetails sx={{ px: 3, pt: 2, pb: 3 }}>
                           <Grid container spacing={2} alignItems="flex-start">
-                            {/* Basic info */}
                             <Grid item xs={12}>
                               <Typography
                                 variant="subtitle2"
                                 sx={{ fontWeight: 700, color: "#000" }}
                               >
-                                Basic info
+                                Variant Details
                               </Typography>
                             </Grid>
 
                             <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
-                                label="Variant Title"
-                                placeholder="e.g., Black Medium"
-                                value={variant.title}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "title",
-                                    e.target.value,
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
                                 label="SKU"
-                                placeholder="TS-BLK-M"
+                                placeholder="TS-BLK-S"
                                 value={variant.sku}
                                 onChange={(e) =>
                                   updateVariant(
-                                    variant.variant_id,
+                                    variant.id,
                                     "sku",
                                     e.target.value,
                                   )
@@ -883,83 +998,15 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
-                                label="Option 1"
-                                placeholder="Color"
-                                value={variant.option1}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "option1",
-                                    e.target.value,
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              />
-                            </Grid>
-
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
-                                label="Option 2"
-                                placeholder="Size"
-                                value={variant.option2}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "option2",
-                                    e.target.value,
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
-                                label="Option 3"
-                                placeholder="Material"
-                                value={variant.option3}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "option3",
-                                    e.target.value,
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              />
-                            </Grid>
-                            <Grid item xs={12} sm={4} />
-
-                            <Grid item xs={12}>
-                              <Divider sx={{ my: 1.5 }} />
-                            </Grid>
-
-                            {/* Pricing */}
-                            <Grid item xs={12}>
-                              <Typography
-                                variant="subtitle2"
-                                sx={{ fontWeight: 700, color: "#000" }}
-                              >
-                                Pricing
-                              </Typography>
-                            </Grid>
-
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
                                 label="Price"
                                 type="number"
-                                placeholder="345"
+                                placeholder="499"
                                 value={variant.price}
                                 onChange={(e) =>
                                   updateVariant(
-                                    variant.variant_id,
+                                    variant.id,
                                     "price",
-                                    parseFloat(e.target.value),
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 size="small"
@@ -979,13 +1026,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Compare at price"
                                 type="number"
-                                placeholder="400"
+                                placeholder="699"
                                 value={variant.compare_at_price}
                                 onChange={(e) =>
                                   updateVariant(
-                                    variant.variant_id,
+                                    variant.id,
                                     "compare_at_price",
-                                    parseFloat(e.target.value),
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 size="small"
@@ -999,46 +1046,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                   ),
                                 }}
                               />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
-                                label="Cost price"
-                                type="number"
-                                placeholder="200"
-                                value={variant.cost_price}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "cost_price",
-                                    parseFloat(e.target.value),
-                                  )
-                                }
-                                size="small"
-                                inputProps={{ step: "0.01" }}
-                                sx={fieldSx}
-                                InputProps={{
-                                  startAdornment: (
-                                    <InputAdornment position="start">
-                                      $
-                                    </InputAdornment>
-                                  ),
-                                }}
-                              />
-                            </Grid>
-
-                            <Grid item xs={12}>
-                              <Divider sx={{ my: 1.5 }} />
-                            </Grid>
-
-                            {/* Inventory & shipping */}
-                            <Grid item xs={12}>
-                              <Typography
-                                variant="subtitle2"
-                                sx={{ fontWeight: 700, color: "#000" }}
-                              >
-                                Inventory & shipping
-                              </Typography>
                             </Grid>
 
                             <Grid item xs={12} sm={4}>
@@ -1046,75 +1053,31 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Inventory quantity"
                                 type="number"
-                                placeholder="45"
+                                placeholder="50"
                                 value={variant.inventory_quantity}
                                 onChange={(e) =>
                                   updateVariant(
-                                    variant.variant_id,
+                                    variant.id,
                                     "inventory_quantity",
-                                    parseInt(e.target.value),
+                                    parseInt(e.target.value) || 0,
                                   )
                                 }
                                 size="small"
                                 sx={fieldSx}
                               />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                              <TextField
-                                select
-                                fullWidth
-                                label="Inventory management"
-                                value={variant.inventory_management}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "inventory_management",
-                                    e.target.value,
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              >
-                                <MenuItem value="shopify">Shopify</MenuItem>
-                                <MenuItem value="manual">Manual</MenuItem>
-                                <MenuItem value="none">None</MenuItem>
-                              </TextField>
                             </Grid>
                             <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
                                 label="Weight (grams)"
                                 type="number"
-                                placeholder="350"
+                                placeholder="200"
                                 value={variant.weight_grams}
                                 onChange={(e) =>
                                   updateVariant(
-                                    variant.variant_id,
+                                    variant.id,
                                     "weight_grams",
-                                    parseInt(e.target.value),
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              />
-                            </Grid>
-
-                            <Grid item xs={12}>
-                              <Divider sx={{ my: 1.5 }} />
-                            </Grid>
-
-                            {/* Shopify & status */}
-                            <Grid item xs={12} sm={8}>
-                              <TextField
-                                fullWidth
-                                label="Shopify variant ID"
-                                placeholder="1234567890"
-                                value={variant.shopify_variant_id}
-                                onChange={(e) =>
-                                  updateVariant(
-                                    variant.variant_id,
-                                    "shopify_variant_id",
-                                    e.target.value,
+                                    parseInt(e.target.value) || 0,
                                   )
                                 }
                                 size="small"
@@ -1122,34 +1085,55 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               />
                             </Grid>
                             <Grid item xs={12} sm={4}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={variant.is_active}
-                                    onChange={(e) =>
-                                      updateVariant(
-                                        variant.variant_id,
-                                        "is_active",
-                                        e.target.checked,
-                                      )
-                                    }
-                                    sx={{
-                                      color: "#b0b0b0",
-                                      "&.Mui-checked": { color: "#0097b2" },
-                                    }}
-                                  />
+                              <TextField
+                                fullWidth
+                                label="Material"
+                                placeholder="cotton"
+                                value={variant.attributes?.material || ""}
+                                onChange={(e) =>
+                                  updateVariantAttribute(
+                                    variant.id,
+                                    "material",
+                                    e.target.value,
+                                  )
                                 }
-                                label={
-                                  <Typography
-                                    sx={{
-                                      fontSize: "0.875rem",
-                                      fontWeight: 500,
-                                      color: "#000",
-                                    }}
-                                  >
-                                    Active
-                                  </Typography>
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
+
+                            <Grid item xs={12} sm={6}>
+                              <TextField
+                                fullWidth
+                                label="Option 1"
+                                placeholder="Black"
+                                value={variant.option1}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "option1",
+                                    e.target.value,
+                                  )
                                 }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <TextField
+                                fullWidth
+                                label="Option 2"
+                                placeholder="S"
+                                value={variant.option2}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "option2",
+                                    e.target.value,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
                               />
                             </Grid>
                           </Grid>

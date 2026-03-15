@@ -363,26 +363,55 @@ export default function ProductsList() {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Chip
-                    label={product.status === "draft" ? "Draft" : "Submitted"}
-                    size="small"
-                    sx={{
-                      fontWeight: 600,
-                      fontSize: "0.75rem",
-                      ...(product.status === "draft"
-                        ? {
-                            bgcolor: "rgba(255,160,0,0.1)",
-                            color: "#e65100",
-                            border: "1px solid rgba(230,81,0,0.3)",
-                          }
-                        : {
-                            bgcolor: "rgba(0,151,178,0.1)",
-                            color: "#0097b2",
-                            border: "1px solid rgba(0,151,178,0.3)",
-                          }),
-                    }}
-                    variant="outlined"
-                  />
+                  {(() => {
+                    const status = (
+                      product.approval_status ||
+                      product.status ||
+                      "submitted"
+                    ).toString();
+                    const normalized = status.toLowerCase();
+                    const label =
+                      normalized.charAt(0).toUpperCase() + normalized.slice(1);
+
+                    const styleMap = {
+                      draft: {
+                        bgcolor: "rgba(255,160,0,0.1)",
+                        color: "#e65100",
+                        border: "1px solid rgba(230,81,0,0.3)",
+                      },
+                      submitted: {
+                        bgcolor: "rgba(0,151,178,0.1)",
+                        color: "#0097b2",
+                        border: "1px solid rgba(0,151,178,0.3)",
+                      },
+                      approved: {
+                        bgcolor: "rgba(76,175,80,0.12)",
+                        color: "#2e7d32",
+                        border: "1px solid rgba(76,175,80,0.35)",
+                      },
+                      rejected: {
+                        bgcolor: "rgba(198,40,40,0.12)",
+                        color: "#c62828",
+                        border: "1px solid rgba(198,40,40,0.35)",
+                      },
+                    };
+
+                    const statusStyle =
+                      styleMap[normalized] || styleMap.submitted;
+
+                    return (
+                      <Chip
+                        label={label}
+                        size="small"
+                        sx={{
+                          fontWeight: 600,
+                          fontSize: "0.75rem",
+                          ...statusStyle,
+                        }}
+                        variant="outlined"
+                      />
+                    );
+                  })()}
                 </TableCell>
                 <TableCell sx={{ color: "#555", fontSize: "0.85rem" }}>
                   {new Date(product.createdAt).toLocaleDateString()}
