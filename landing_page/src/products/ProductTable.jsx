@@ -76,15 +76,14 @@ export default function ProductTable({
     return data.data.products.flatMap((item) =>
       item.variants.map((variant) => ({
         id: variant.variant_id,
-        productDetails: item.description,
+        productDetails: item.title || item.description || "",
         skuId: variant.sku,
-        businessTag: item.businessTag || "",
-        QtyInStock: variant.variant_stock || 0,
-        transferPrice: item.transferPrice || 0,
-        appPrice: variant.variant_price || 0,
-        autoShipment: item.autoShipment ? "Yes" : "No",
-        volumetricWeightAndDimensions: item.volumetricWeightAndDimensions || 0,
-        deadWeight: item.deadWeight || 0,
+        QtyInStock: variant.inventory_quantity ?? 0,
+        costPrice: variant.cost_price ?? 0,
+        salePrice: variant.price ?? 0,
+        compareAtPrice: variant.compare_at_price ?? 0,
+        inventoryManagement: variant.inventory_management || "",
+        weightGrams: variant.weight_grams ?? 0,
       })),
     );
   }, [data?.data?.products]);
@@ -106,24 +105,23 @@ export default function ProductTable({
   };
 
   const columns = [
-    { field: "productDetails", headerName: "Product Details", width: 150 },
-    { field: "skuId", headerName: "SKU ID", width: 130 },
-    { field: "businessTag", headerName: "Business Tag", width: 130 },
+    { field: "productDetails", headerName: "Product", width: 180 },
+    { field: "skuId", headerName: "SKU", width: 140 },
     {
       field: "QtyInStock",
-      headerName: "Qty In Stock",
+      headerName: "Stock",
       type: "number",
       width: 120,
     },
-    { field: "transferPrice", headerName: "Transfer Price", width: 130 },
-    { field: "appPrice", headerName: "App Price", width: 120 },
-    { field: "autoShipment", headerName: "Auto Shipment", width: 140 },
+    { field: "costPrice", headerName: "Cost Price", width: 120 },
+    { field: "salePrice", headerName: "Sale Price", width: 120 },
+    { field: "compareAtPrice", headerName: "Compare At", width: 120 },
     {
-      field: "volumetricWeightAndDimensions",
-      headerName: "Volumetric Weight & Dim",
-      width: 200,
+      field: "inventoryManagement",
+      headerName: "Inventory Management",
+      width: 160,
     },
-    { field: "deadWeight", headerName: "Dead Weight", width: 120 },
+    { field: "weightGrams", headerName: "Weight (g)", width: 120 },
     {
       field: "actions",
       headerName: "Actions",
