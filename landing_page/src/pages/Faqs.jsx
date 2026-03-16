@@ -1,10 +1,11 @@
 import React from "react";
 import { Button } from "@mui/material";
+import faqPdf from "../assets/pdfs/Faq-On-Gst.pdf";
 
 const Faqs = () => {
   const handleDownload = () => {
     const link = document.createElement("a");
-    link.href = "/faq-on-gst.pdf";
+    link.href = faqPdf;
     link.download = "faq-on-gst.pdf";
     document.body.appendChild(link);
     link.click();

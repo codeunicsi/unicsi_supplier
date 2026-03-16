@@ -1105,7 +1105,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             <Grid item xs={12} sm={6}>
                               <TextField
                                 fullWidth
-                                label="Option 1"
+                                label="Color"
                                 placeholder="Black"
                                 value={variant.option1}
                                 onChange={(e) =>
@@ -1122,7 +1122,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             <Grid item xs={12} sm={6}>
                               <TextField
                                 fullWidth
-                                label="Option 2"
+                                label="Size"
                                 placeholder="S"
                                 value={variant.option2}
                                 onChange={(e) =>
