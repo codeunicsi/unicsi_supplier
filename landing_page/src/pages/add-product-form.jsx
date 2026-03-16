@@ -1136,6 +1136,67 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
+
+                            {/* ── Dimensions ── */}
+                            <Grid item xs={12}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{ fontWeight: 700, color: "#000", mt: 1 }}
+                              >
+                                Dimensions (cm)
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                fullWidth
+                                label="Length"
+                                type="number"
+                                value={variant.length_cm}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "length_cm",
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                fullWidth
+                                label="Width"
+                                type="number"
+                                value={variant.width_cm}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "width_cm",
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                fullWidth
+                                label="Height"
+                                type="number"
+                                value={variant.height_cm}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "height_cm",
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
                           </Grid>
                         </AccordionDetails>
                       </Accordion>
