@@ -3,6 +3,16 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import InputField from "../components/InputField";
 
+const ThemeLoader = () => (
+  <div
+    className="w-12 h-12 rounded-full border-4 border-solid animate-spin"
+    style={{
+      borderColor: "transparent",
+      borderImage: "linear-gradient(135deg, #0097b2 0%, #7ed957 100%) 1",
+    }}
+  />
+);
+
 const Signup = () => {
   const [form, setForm] = useState({
     name: "",
@@ -90,7 +100,12 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen bg-gray-100 relative">
+      {loading && (
+        <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+          <ThemeLoader />
+        </div>
+      )}
       <form
         onSubmit={handleSignup}
         className="bg-white shadow-lg p-8 rounded-xl w-3/5"
@@ -127,10 +142,19 @@ const Signup = () => {
             type="button"
             onClick={handleSendOtp}
             disabled={loading || otpSent}
-            className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold ${otpSent
-              ? "bg-green-600 text-white cursor-not-allowed"
-              : "bg-[#943A09] text-white hover:bg-amber-800"
-              }`}
+            className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold transition-opacity ${
+              otpSent
+                ? "bg-green-600 text-white cursor-not-allowed"
+                : "text-white"
+            }`}
+            style={
+              otpSent
+                ? undefined
+                : {
+                    background:
+                      "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)",
+                  }
+            }
           >
             {otpSent ? "Sent" : loading ? "Sending..." : "Send OTP"}
           </button>
@@ -154,10 +178,19 @@ const Signup = () => {
               type="button"
               onClick={handleVerifyOtp}
               disabled={loading || otpVerified}
-              className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold ${otpVerified
-                ? "bg-green-600 text-white cursor-not-allowed"
-                : "bg-blue-700 text-white hover:bg-blue-800"
-                }`}
+              className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold transition-opacity ${
+                otpVerified
+                  ? "bg-green-600 text-white cursor-not-allowed"
+                  : "text-white"
+              }`}
+              style={
+                otpVerified
+                  ? undefined
+                  : {
+                      background:
+                        "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)",
+                    }
+              }
             >
               {otpVerified ? "Verified" : loading ? "Verifying..." : "Verify"}
             </button>
@@ -193,10 +226,19 @@ const Signup = () => {
         <button
           type="submit"
           disabled={!otpVerified || loading}
-          className={`w-full py-2 rounded-lg font-medium ${otpVerified
-            ? "bg-[#943A09] text-white hover:bg-amber-800"
-            : "bg-gray-400 text-white cursor-not-allowed"
-            }`}
+          className={`w-full py-2 rounded-lg font-medium transition-opacity ${
+            otpVerified
+              ? "text-white"
+              : "bg-gray-400 text-white cursor-not-allowed"
+          }`}
+          style={
+            otpVerified
+              ? {
+                  background:
+                    "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)",
+                }
+              : undefined
+          }
         >
           {loading ? "Processing..." : "Sign Up"}
         </button>
@@ -209,7 +251,7 @@ const Signup = () => {
           Already have an account?{" "}
           <span
             onClick={() => navigate("/login")}
-            className="text-[#943A09] cursor-pointer font-semibold"
+            className="text-[#0097b2] cursor-pointer font-semibold hover:text-[#7ed957] transition-colors"
           >
             Login
           </span>

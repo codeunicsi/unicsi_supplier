@@ -26,6 +26,7 @@ import "./App.css";
 import ReportsTable from "./pages/ReportsTable";
 import SubmitTicket from "./pages/SubmitTicket";
 import PaymentsPage from "./pages/Payment";
+import Faq from "./pages/Faqs";
 
 function App() {
   return (
@@ -74,6 +75,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/supports" element={<SubmitTicket />} />
             <Route path="/payments" element={<PaymentsPage />} />
+            <Route path="/faqs" element={<Faq />} />
           </Route>
 
           {/* 404 */}

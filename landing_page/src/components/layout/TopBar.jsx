@@ -130,12 +130,31 @@ function ProfileDropDown() {
           e.currentTarget.style.background = GRADIENT;
         }}
       >
-        <img
-          src={AVATAR_URL}
-          alt="User"
-          className="w-7 h-7 rounded-full"
-          style={{ border: "1.5px solid rgba(255,255,255,0.7)" }}
-        />
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 28 28"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient id="avatarGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#0097b2" />
+              <stop offset="100%" stopColor="#7ed957" />
+            </linearGradient>
+          </defs>
+          <circle cx="14" cy="14" r="14" fill="url(#avatarGradient)" />
+          <path
+            d="M14 16c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"
+            fill="#ffffff"
+            opacity="0.9"
+          />
+          <path
+            d="M6 25c0-4.418 3.582-8 8-8s8 3.582 8 8v1H6v-1z"
+            fill="#ffffff"
+            opacity="0.9"
+          />
+        </svg>
         <ChevronDownIcon className="w-4 h-4" style={{ color: "#ffffff" }} />
       </MenuButton>
 

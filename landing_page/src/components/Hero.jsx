@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { SearchIcon, CameraIcon, Heart, Star, MenuIcon, XIcon } from "@/lib/icons"
 import banner from "../assets/images/Banner.png"
-import productImage from "../assets/images/productImage.png"
+// import productImage from "../assets/images/productImage.png"
 import sample1 from "../assets/images/sample1.jpeg"
 import sample2 from "../assets/images/sample2.jpeg"
 import sample3 from "../assets/images/sample3.jpeg"
