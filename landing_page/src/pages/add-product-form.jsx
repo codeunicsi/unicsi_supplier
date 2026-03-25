@@ -135,6 +135,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     productGallery: [],
     options: [],
     variants: [],
+    minimum_order_quantity: 1,
+    mrp: 0,
+    bulk_price: 0,
   });
   const [expandedVariant, setExpandedVariant] = useState(null);
 
@@ -163,6 +166,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
           id: v.variant_id || `loaded-${idx}`,
           ...v,
         })),
+        minimum_order_quantity: productData?.minimum_order_quantity || 1,
+        mrp: productData?.mrp || 0,
+        bulk_price: productData?.bulk_price || 0,
       });
     }
   }, [product]);
@@ -309,6 +315,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       // use selected value
       approval_status: formData.approval_status,
 
+      minimum_order_quantity: Number(formData.minimum_order_quantity),
+      mrp: Number(formData.mrp),
+      bulk_price: Number(formData.bulk_price),
+
       options: formData.options.map((opt, idx) => ({
         name: opt.name,
         position: idx + 1,
@@ -349,6 +359,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       productGallery: [],
       options: [],
       variants: [],
+
+      minimum_order_quantity: 1,
+      mrp: 0,
+      bulk_price: 0,
     });
 
     onSuccess?.();
@@ -521,6 +535,67 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     />
                   </Grid>
 
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Minimum Order Quantity"
+                      type="number"
+                      value={formData.minimum_order_quantity}
+                      onChange={(e) =>
+                        handleProductChange(
+                          "minimum_order_quantity",
+                          parseInt(e.target.value) || 1,
+                        )
+                      }
+                      size="small"
+                      sx={fieldSx}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="MRP"
+                      type="number"
+                      value={formData.mrp}
+                      onChange={(e) =>
+                        handleProductChange(
+                          "mrp",
+                          parseFloat(e.target.value) || 0,
+                        )
+                      }
+                      size="small"
+                      sx={fieldSx}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">₹</InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Bulk Price"
+                      type="number"
+                      value={formData.bulk_price}
+                      onChange={(e) =>
+                        handleProductChange(
+                          "bulk_price",
+                          parseFloat(e.target.value) || 0,
+                        )
+                      }
+                      size="small"
+                      sx={fieldSx}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">₹</InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+
                   <Grid item xs={12}>
                     <Box
                       sx={{
@@ -640,7 +715,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     </TextField>
                   </Grid>
 
-                  <Grid item xs={12}>
+                  {/* Replace the Description and Image Upload Grid items with these */}
+
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Description"
@@ -651,13 +728,19 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       }
                       variant="outlined"
                       multiline
-                      rows={5}
-                      sx={fieldSx}
+                      rows={8}
+                      sx={{
+                        ...fieldSx,
+                        height: "100%",
+                        "& .MuiInputBase-root": {
+                          height: "100%",
+                          alignItems: "flex-start",
+                        },
+                      }}
                     />
                   </Grid>
 
-                  {/* Image Upload */}
-                  <Grid item xs={12}>
+                  <Grid item xs={12} sm={6}>
                     <Typography
                       variant="subtitle2"
                       sx={{ fontWeight: 700, mb: 1.5, color: "#000" }}
@@ -674,7 +757,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     />
                     <label
                       htmlFor="product-image-upload"
-                      style={{ display: "block", cursor: "pointer" }}
+                      style={{
+                        display: "block",
+                        cursor: "pointer",
+                        height: "calc(100% - 32px)",
+                      }}
                     >
                       <Paper
                         variant="outlined"
@@ -684,6 +771,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           border: "2px dashed #b8e8f0",
                           borderRadius: "14px",
                           bgcolor: "#f8fdfe",
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
                           transition: "all 0.2s",
                           "&:hover": {
                             borderColor: "#0097b2",
@@ -700,7 +792,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            mx: "auto",
                             mb: 1.5,
                           }}
                         >
