@@ -1,23 +1,23 @@
 // import Framer from "../assets/images/framer.png";
-import Framer from "../assets/images/Framer.png"
-import Pipedrive from "../assets/images/pipedrive.png"
-import Rippling from "../assets/images/rippling.png"
-import HashiCorp from "../assets/images/hashicop.png"
-import Square from "../assets/images/square.png"
-import Mailchip from "../assets/images/mailchip.png"
-import Notion from "../assets/images/notion.png"
-import Intercomp from "../assets/images/innercomp.png"
-import Toggl from "../assets/images/togg.png"
-import CultureAmp from "../assets/images/cultureamp.png"
-import Afterpay from "../assets/images/afterplay.png"
-import Discord from "../assets/images/discord.png"
-import LauncghDarkly from "../assets/images/launchDarkly.png"
-import Medium from "../assets/images/medium.png"
-import ekart from "../assets/images/ekart.png"
-import del from "../assets/images/del.png"
-import express from "../assets/images/express.png"
-import blue from "../assets/images/blue.png"
-import shadow from "../assets/images/shadow.png"
+// import Framer from "../assets/images/Framer.png";
+// import Pipedrive from "../assets/images/pipedrive.png";
+// import Rippling from "../assets/images/rippling.png";
+// import HashiCorp from "../assets/images/hashicop.png";
+// import Square from "../assets/images/square.png";
+// import Mailchip from "../assets/images/mailchip.png";
+// import Notion from "../assets/images/notion.png";
+// import Intercomp from "../assets/images/innercomp.png";
+// import Toggl from "../assets/images/togg.png";
+// import CultureAmp from "../assets/images/cultureamp.png";
+// import Afterpay from "../assets/images/afterplay.png"
+// import Discord from "../assets/images/discord.png";
+// import LauncghDarkly from "../assets/images/launchDarkly.png";
+// import Medium from "../assets/images/medium.png";
+import ekart from "../assets/images/ekart.png";
+import del from "../assets/images/del.png";
+import express from "../assets/images/express.png";
+import blue from "../assets/images/blue.png";
+import shadow from "../assets/images/shadow.png";
 
 const Partners = () => {
   const topRowLogos = [
@@ -28,8 +28,8 @@ const Partners = () => {
     { name: "shadow", logo: shadow },
     { name: "del", logo: del },
     { name: "express", logo: express },
-    { name: "blue", logo: blue }
-  ]
+    { name: "blue", logo: blue },
+  ];
 
   const bottomRowLogos = [
     { name: "shadow", logo: shadow },
@@ -40,8 +40,7 @@ const Partners = () => {
     { name: "shadow", logo: shadow },
     { name: "blue", logo: blue },
     { name: "express", logo: express },
-
-  ]
+  ];
 
   return (
     <div className="min-h-[250px] md:min-h-[300px] lg:min-h-[378px] flex flex-col justify-center bg-white py-8 md:py-12 px-4 md:px-6">
@@ -61,7 +60,10 @@ const Partners = () => {
           <div className="horizontal-scrolling-items__item">
             <div className="flex items-center gap-8 md:gap-12 flex-wrap horizontal-scrolling-items">
               {[...topRowLogos, ...topRowLogos].map((company, index) => (
-                <div key={index} className="flex items-center justify-center min-w-[60px] md:min-w-[80px]">
+                <div
+                  key={index}
+                  className="flex items-center justify-center min-w-[60px] md:min-w-[80px]"
+                >
                   <img
                     src={company.logo || "/placeholder.svg"}
                     alt={company.name}
@@ -78,7 +80,10 @@ const Partners = () => {
           <div className="horizontal-scrolling-items-reverse__item">
             <div className="flex items-center gap-8 md:gap-12 horizontal-scrolling-items-reverse">
               {[...bottomRowLogos, ...bottomRowLogos].map((company, index) => (
-                <div key={index} className="flex items-center justify-center min-w-[60px] md:min-w-[80px]">
+                <div
+                  key={index}
+                  className="flex items-center justify-center min-w-[60px] md:min-w-[80px]"
+                >
                   <img
                     src={company.logo || "/placeholder.svg"}
                     alt={company.name}
@@ -91,7 +96,7 @@ const Partners = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Partners
+export default Partners;

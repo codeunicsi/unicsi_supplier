@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import {
   Drawer,
   List,
@@ -15,15 +15,17 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import WarehouseIcon from "@mui/icons-material/Warehouse";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import PaymentIcon from "@mui/icons-material/Payment";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
+import InventoryIcon from "@mui/icons-material/Inventory";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
+import AnalyticsIcon from "@mui/icons-material/Analytics";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import ContactSupportIcon from "@mui/icons-material/ContactSupport";
 import SettingsIcon from "@mui/icons-material/Settings";
-import HelpIcon from "@mui/icons-material/Help";
-import SupportAgentIcon from "@mui/icons-material/SupportAgent";
-import PersonIcon from "@mui/icons-material/Person";
-import AddIcon from "@mui/icons-material/Add";
 import { fetchProfile } from "../../services/prodile/profile.service";
 import logo from "../../assets/images/logo.png";
 
@@ -33,24 +35,32 @@ const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
 const menuItems = [
-  { name: "Manage Orders", icon: ShoppingCartIcon, path: "/order" },
-  { name: "Manage RTO / Returns", icon: TrendingUpIcon, path: "/rto-returns" },
-  { name: "Add Product", icon: AddIcon, path: "/products" },
-  { name: "Product Requirement", icon: AddIcon, path: "/product-requirement" },
-  { name: "Manage Products", icon: WarehouseIcon, path: "/manage-products" },
-  { name: "Reports", icon: TrendingUpIcon, path: "/reports" },
-  { name: "Payments", icon: PaymentIcon, path: "/payments" },
-  { name: "Profile", icon: PersonIcon, path: "/profile" },
+  { name: "Manage Orders", icon: ReceiptLongIcon, path: "/order" },
+  {
+    name: "Manage RTO / Returns",
+    icon: AssignmentReturnIcon,
+    path: "/rto-returns",
+  },
+  { name: "Add Product", icon: AddShoppingCartIcon, path: "/products" },
+  {
+    name: "Product Requirement",
+    icon: PlaylistAddIcon,
+    path: "/product-requirement",
+  },
+  { name: "Manage Products", icon: InventoryIcon, path: "/manage-products" },
+  { name: "Reports", icon: AnalyticsIcon, path: "/reports" },
+  { name: "Payments", icon: AccountBalanceWalletIcon, path: "/payments" },
+  { name: "Profile", icon: AccountCircleIcon, path: "/profile" },
   { name: "Setting", icon: SettingsIcon, path: "/settings" },
-  { name: "FAQs", icon: HelpIcon, path: "/faqs" },
-  { name: "Supports", icon: SupportAgentIcon, path: "/supports" },
+  { name: "FAQs", icon: HelpOutlineIcon, path: "/faqs" },
+  { name: "Supports", icon: ContactSupportIcon, path: "/supports" },
 ];
 
 const pendingMenuItems = [
-  { name: "Profile", icon: PersonIcon, path: "/profile" },
+  { name: "Profile", icon: AccountCircleIcon, path: "/profile" },
   { name: "Setting", icon: SettingsIcon, path: "/settings" },
-  { name: "FAQs", icon: HelpIcon, path: "/faqs" },
-  { name: "Supports", icon: SupportAgentIcon, path: "/supports" },
+  { name: "FAQs", icon: HelpOutlineIcon, path: "/faqs" },
+  { name: "Supports", icon: ContactSupportIcon, path: "/supports" },
 ];
 
 function NavItem({ item, isActive, open = true }) {
@@ -58,8 +68,8 @@ function NavItem({ item, isActive, open = true }) {
 
   return (
     <ListItemButton
-      href={item.path}
-      component="a"
+      component={Link}
+      to={item.path}
       selected={isActive}
       sx={{
         borderRadius: 2,
