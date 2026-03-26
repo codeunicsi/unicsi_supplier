@@ -4,6 +4,18 @@ import { getToken } from "../../utils/auth";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+/** List active categories for dropdown (public endpoint). */
+export const getCategories = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/categories`, {
+            headers: { "Content-Type": "application/json" },
+        });
+        return response.data?.data ?? response.data ?? [];
+    } catch (error) {
+        throw error;
+    }
+};
+
 export const addProduct = async (productData) => {
     try {
         const response = await axios.post(`${API_URL}/suppliers/stores/products`,
