@@ -22,6 +22,9 @@ import {
   IconButton,
   InputAdornment,
   Divider,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useQuery } from "@tanstack/react-query";
@@ -31,6 +34,7 @@ import {
   addProduct,
   updateProduct,
   getSingleProduct,
+  getCategories,
 } from "../services/product/product.service";
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
@@ -137,6 +141,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     variants: [],
   });
   const [expandedVariant, setExpandedVariant] = useState(null);
+  const [categories, setCategories] = useState([]);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", productId],
@@ -145,25 +150,23 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
   });
 
   useEffect(() => {
-    if (product) {
-      const productData = product?.data || product;
+    getCategories()
+      .then((list) => setCategories(Array.isArray(list) ? list : []))
+      .catch(() => setCategories([]));
+  }, []);
 
-      setFormData({
-        title: productData?.title || "",
-        description: productData?.description || "",
-        brand: productData?.brand || "",
-        categoryId: productData?.category_id || "",
-        approval_status: (
-          productData?.approval_status || "draft"
-        ).toLowerCase(),
-        lifecycle_status: productData?.lifecycle_status || "inactive",
-        productGallery: productData?.images || [],
-        options: productData?.options || [],
-        variants: (productData?.variants || []).map((v, idx) => ({
-          id: v.variant_id || `loaded-${idx}`,
-          ...v,
-        })),
-      });
+  useEffect(() => {
+    if (product?.data) {
+      setFormData((prev) => ({
+        ...prev,
+        title: product.data.title ?? prev.title,
+        description: product.data.description ?? prev.description,
+        brand: product.data.brand ?? prev.brand,
+        category_id: product.data.category_id ?? prev.category_id ?? "",
+        approval_status: product.data.approval_status ?? prev.approval_status,
+        productGallery: product.data.images ?? prev.productGallery,
+        variants: product.data.variants ?? prev.variants,
+      }));
     }
   }, [product]);
 
@@ -494,31 +497,67 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Brand"
-                      placeholder="e.g., UrbanWear"
-                      value={formData.brand}
-                      onChange={(e) =>
-                        handleProductChange("brand", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={fieldSx}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Category ID"
-                      placeholder="b2f5b1c9-9c22-..."
-                      value={formData.categoryId}
-                      onChange={(e) =>
-                        handleProductChange("categoryId", e.target.value)
-                      }
-                      variant="outlined"
-                      sx={fieldSx}
-                    />
+                  <Grid item xs={12}>
+                    <Stack
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={3}
+                      sx={{ width: "100%", alignItems: { sm: "flex-start" } }}
+                    >
+                      <TextField
+                        fullWidth
+                        label="Brand"
+                        placeholder="e.g., UrbanWear"
+                        value={formData.brand}
+                        onChange={(e) =>
+                          handleProductChange("brand", e.target.value)
+                        }
+                        variant="outlined"
+                        sx={{ ...fieldSx, flex: { sm: "1 1 0" }, minWidth: { sm: 0 } }}
+                      />
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        sx={{
+                          ...fieldSx,
+                          flex: { sm: "1 1 0" },
+                          minWidth: { xs: "100%", sm: 0 },
+                          maxWidth: { xs: "100%", sm: "none" },
+                        }}
+                      >
+                        <InputLabel id="category-label">Category</InputLabel>
+                        <Select
+                          labelId="category-label"
+                          label="Category"
+                          value={formData.category_id ?? ""}
+                          onChange={(e) =>
+                            handleProductChange("category_id", e.target.value)
+                          }
+                          MenuProps={{
+                            PaperProps: { style: { maxHeight: 320, minWidth: 240 } },
+                            anchorOrigin: { vertical: "bottom", horizontal: "left" },
+                            transformOrigin: { vertical: "top", horizontal: "left" },
+                          }}
+                        >
+                          <MenuItem value="">
+                            <em>None</em>
+                          </MenuItem>
+                          {categories.map((cat) => (
+                            <MenuItem key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                        {categories.length === 0 && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mt: 0.5, display: "block" }}
+                          >
+                            No categories available. Create categories in the admin panel.
+                          </Typography>
+                        )}
+                      </FormControl>
+                    </Stack>
                   </Grid>
 
                   <Grid item xs={12}>
