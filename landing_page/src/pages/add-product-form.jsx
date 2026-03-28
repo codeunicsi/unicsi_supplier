@@ -133,7 +133,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     title: "",
     description: "",
     brand: "",
-    categoryId: "",
+    category_id: "",
     approval_status: "draft",
     lifecycle_status: "inactive",
     productGallery: [],
@@ -142,6 +142,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     minimum_order_quantity: 1,
     mrp: 0,
     bulk_price: 0,
+    images: [],
   });
   const [expandedVariant, setExpandedVariant] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -185,9 +186,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       compare_at_price: 0,
       inventory_quantity: 0,
       weight_grams: 0,
+      title: "",
       option1: "",
       option2: "",
+      option3: "",
       attributes: {},
+      images: [],
     };
 
     setFormData((prev) => ({
@@ -223,9 +227,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
   const handleProductImageUpload = (files) => {
     if (files) {
+      const fileArray = Array.from(files);
       setFormData((prev) => ({
         ...prev,
         productGallery: [...prev.productGallery, ...Array.from(files)],
+        images: [...prev.images, ...fileArray],
       }));
     }
   };
@@ -234,6 +240,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     setFormData((prev) => ({
       ...prev,
       productGallery: prev.productGallery.filter((_, i) => i !== index),
+      images: prev.images.filter((_, i) => i !== index), // ← sync removal too
     }));
 
   const addOption = () =>
@@ -305,43 +312,60 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       return;
     }
 
-    const payload = {
-      title: formData.title,
-      description: formData.description,
-      brand: formData.brand,
+    const form = new FormData();
 
-      categoryId: Number(formData.categoryId),
+    // ── Top-level fields ──
+    form.append("title", formData.title);
+    form.append("description", formData.description);
+    form.append("brand", formData.brand);
+    form.append("category_id", formData.category_id);
+    form.append("approval_status", formData.approval_status);
 
-      // use selected value
-      approval_status: formData.approval_status,
+    // ── Options & Variants as JSON strings ──
+    form.append(
+      "options",
+      JSON.stringify(
+        formData.options.map((opt, idx) => ({
+          name: opt.name,
+          position: idx + 1,
+          values: opt.values,
+        })),
+      ),
+    );
 
-      minimum_order_quantity: Number(formData.minimum_order_quantity),
-      mrp: Number(formData.mrp),
-      bulk_price: Number(formData.bulk_price),
+    form.append(
+      "variants",
+      JSON.stringify(
+        formData.variants.map((variant) => ({
+          sku: variant.sku,
+          title: variant.title,
+          price: Number(variant.price),
+          compare_at_price: Number(variant.compare_at_price),
+          inventory_quantity: Number(variant.inventory_quantity),
+          weight_grams: Number(variant.weight_grams),
+          option1: variant.option1 || null,
+          option2: variant.option2 || null,
+          option3: variant.option3 || null,
+          images: [],
+          dimension_cm: {
+            height: Number(variant.dimension_cm?.height) || 0,
+            width: Number(variant.dimension_cm?.width) || 0,
+            length: Number(variant.dimension_cm?.length) || 0,
+          },
+        })),
+      ),
+    );
 
-      options: formData.options.map((opt, idx) => ({
-        name: opt.name,
-        position: idx + 1,
-        values: opt.values,
-      })),
-
-      variants: formData.variants.map((variant) => ({
-        sku: variant.sku,
-        price: Number(variant.price),
-        compare_at_price: Number(variant.compare_at_price),
-        inventory_quantity: Number(variant.inventory_quantity),
-        weight_grams: Number(variant.weight_grams),
-        option1: variant.option1 || null,
-        option2: variant.option2 || null,
-        attributes: variant.attributes || {},
-      })),
-    };
+    // ── Images — append each file with the field name the server expects ──
+    formData.images.forEach((file) => {
+      form.append("images", file); // ← must match server's multer field name
+    });
 
     try {
       if (productId) {
-        await updateProduct(productId, payload);
+        await updateProduct(productId, form);
       } else {
-        await addProduct(payload);
+        await addProduct(form);
       }
     } catch (err) {
       console.log(err);
@@ -353,16 +377,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       title: "",
       description: "",
       brand: "",
-      categoryId: "",
+      category_id: "",
       approval_status: "draft",
       lifecycle_status: "inactive",
       productGallery: [],
       options: [],
       variants: [],
-
       minimum_order_quantity: 1,
       mrp: 0,
       bulk_price: 0,
+      images: [],
     });
 
     onSuccess?.();
@@ -523,7 +547,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           handleProductChange("brand", e.target.value)
                         }
                         variant="outlined"
-                        sx={{ ...fieldSx, flex: { sm: "1 1 0" }, minWidth: { sm: 0 } }}
+                        sx={{
+                          ...fieldSx,
+                          flex: { sm: "1 1 0" },
+                          minWidth: { sm: 0 },
+                        }}
                       />
                       <FormControl
                         fullWidth
@@ -544,9 +572,17 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             handleProductChange("category_id", e.target.value)
                           }
                           MenuProps={{
-                            PaperProps: { style: { maxHeight: 320, minWidth: 240 } },
-                            anchorOrigin: { vertical: "bottom", horizontal: "left" },
-                            transformOrigin: { vertical: "top", horizontal: "left" },
+                            PaperProps: {
+                              style: { maxHeight: 320, minWidth: 240 },
+                            },
+                            anchorOrigin: {
+                              vertical: "bottom",
+                              horizontal: "left",
+                            },
+                            transformOrigin: {
+                              vertical: "top",
+                              horizontal: "left",
+                            },
                           }}
                         >
                           <MenuItem value="">
@@ -564,7 +600,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             color="text.secondary"
                             sx={{ mt: 0.5, display: "block" }}
                           >
-                            No categories available. Create categories in the admin panel.
+                            No categories available. Create categories in the
+                            admin panel.
                           </Typography>
                         )}
                       </FormControl>
@@ -1125,6 +1162,23 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
+                                label="Title"
+                                placeholder="e.g., Black Small"
+                                value={variant.title}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "title",
+                                    e.target.value,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                fullWidth
                                 label="Price"
                                 type="number"
                                 placeholder="499"
@@ -1263,6 +1317,25 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
+                            <Grid item xs={12} sm={4}>
+                              {" "}
+                              {/* ← add this */}
+                              <TextField
+                                fullWidth
+                                label="Option 3"
+                                placeholder="e.g., Material"
+                                value={variant.option3}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "option3",
+                                    e.target.value,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
 
                             {/* ── Dimensions ── */}
                             <Grid item xs={12}>
@@ -1278,13 +1351,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Length"
                                 type="number"
-                                value={variant.length_cm}
+                                value={variant.dimension_cm?.length ?? 0}
                                 onChange={(e) =>
-                                  updateVariant(
-                                    variant.id,
-                                    "length_cm",
-                                    parseFloat(e.target.value) || 0,
-                                  )
+                                  updateVariant(variant.id, "dimension_cm", {
+                                    ...variant.dimension_cm,
+                                    length: parseFloat(e.target.value) || 0,
+                                  })
                                 }
                                 size="small"
                                 sx={fieldSx}
@@ -1295,13 +1367,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Width"
                                 type="number"
-                                value={variant.width_cm}
+                                value={variant.dimension_cm?.width ?? 0}
                                 onChange={(e) =>
-                                  updateVariant(
-                                    variant.id,
-                                    "width_cm",
-                                    parseFloat(e.target.value) || 0,
-                                  )
+                                  updateVariant(variant.id, "dimension_cm", {
+                                    ...variant.dimension_cm,
+                                    width: parseFloat(e.target.value) || 0,
+                                  })
                                 }
                                 size="small"
                                 sx={fieldSx}
@@ -1312,13 +1383,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Height"
                                 type="number"
-                                value={variant.height_cm}
+                                value={variant.dimension_cm?.height ?? 0}
                                 onChange={(e) =>
-                                  updateVariant(
-                                    variant.id,
-                                    "height_cm",
-                                    parseFloat(e.target.value) || 0,
-                                  )
+                                  updateVariant(variant.id, "dimension_cm", {
+                                    ...variant.dimension_cm,
+                                    height: parseFloat(e.target.value) || 0,
+                                  })
                                 }
                                 size="small"
                                 sx={fieldSx}
