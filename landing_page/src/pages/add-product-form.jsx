@@ -123,6 +123,43 @@ const fieldSx = {
   "& .MuiInputBase-input": { color: "#000" },
 };
 
+/** API variants use variant_id; form state uses id for keys and updates. */
+function normalizeVariantFromApi(v, idx) {
+  const attrs =
+    v.attributes && typeof v.attributes === "object" && !Array.isArray(v.attributes)
+      ? { ...v.attributes }
+      : {};
+  const dimRaw =
+    v.dimension_cm && typeof v.dimension_cm === "object"
+      ? v.dimension_cm
+      : attrs.dimension_cm && typeof attrs.dimension_cm === "object"
+        ? attrs.dimension_cm
+        : {};
+  const rowId = v.variant_id || v.id || `new-${idx}`;
+  return {
+    ...v,
+    id: rowId,
+    variant_id: v.variant_id,
+    sku: v.sku ?? "",
+    title: v.title ?? "",
+    price: Number(v.price) || 0,
+    compare_at_price: Number(v.compare_at_price) || 0,
+    inventory_quantity: Number(v.inventory_quantity) || 0,
+    weight_grams: Number(v.weight_grams) || 0,
+    option1: v.option1 ?? "",
+    option2: v.option2 ?? "",
+    option3: v.option3 ?? "",
+    attributes: attrs,
+    dimension_cm: {
+      height: Number(dimRaw.height ?? dimRaw.h ?? 0) || 0,
+      width: Number(dimRaw.width ?? dimRaw.w ?? 0) || 0,
+      length: Number(dimRaw.length ?? dimRaw.l ?? 0) || 0,
+    },
+    is_active: v.is_active !== false,
+    images: Array.isArray(v.images) ? v.images : [],
+  };
+}
+
 export default function AddProductForm({ initialProduct, onSuccess }) {
   const params = useParams();
   const productId = params.product_id;
@@ -158,6 +195,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
   useEffect(() => {
     if (product?.data) {
+      const rawVariants = product.data.variants;
+      const variants = Array.isArray(rawVariants)
+        ? rawVariants.map((v, idx) => normalizeVariantFromApi(v, idx))
+        : [];
       setFormData((prev) => ({
         ...prev,
         title: product.data.title ?? prev.title,
@@ -166,7 +207,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         category_id: product.data.category_id ?? prev.category_id ?? "",
         approval_status: product.data.approval_status ?? prev.approval_status,
         productGallery: product.data.images ?? prev.productGallery,
-        variants: product.data.variants ?? prev.variants,
+        variants,
       }));
     }
   }, [product]);
@@ -281,44 +322,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         .map((opt, idx) => ({ ...opt, position: idx + 1 })),
     }));
 
-  const handleSaveDraft = async (e) => {
-    e.preventDefault();
-    const payload = {
-      ...formData,
-      approval_status: "draft",
-      lifecycle_status: formData.lifecycle_status || "inactive",
-      id: formData.id || Date.now().toString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      await addProduct(payload);
-    } catch (err) {
-      console.log(err);
-    }
-
-    alert("Product saved as draft successfully!");
-    onSuccess?.();
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (formData.variants.length === 0) {
-      alert("Please add at least one variant");
-      return;
-    }
-
+  const buildProductFormData = (approvalStatus) => {
     const form = new FormData();
-
-    // ── Top-level fields ──
     form.append("title", formData.title);
     form.append("description", formData.description);
     form.append("brand", formData.brand);
     form.append("category_id", formData.category_id);
-    form.append("approval_status", formData.approval_status);
-
-    // ── Options & Variants as JSON strings ──
+    form.append("approval_status", approvalStatus);
     form.append(
       "options",
       JSON.stringify(
@@ -329,11 +339,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         })),
       ),
     );
-
     form.append(
       "variants",
       JSON.stringify(
         formData.variants.map((variant) => ({
+          ...(variant.variant_id ? { variant_id: variant.variant_id } : {}),
           sku: variant.sku,
           title: variant.title,
           price: Number(variant.price),
@@ -352,11 +362,48 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         })),
       ),
     );
-
-    // ── Images — append each file with the field name the server expects ──
     formData.images.forEach((file) => {
-      form.append("images", file); // ← must match server's multer field name
+      form.append("images", file);
     });
+    return form;
+  };
+
+  const apiErrorMessage = (err) =>
+    err?.response?.data?.error ||
+    err?.response?.data?.message ||
+    err?.message ||
+    "Request failed";
+
+  const handleSaveDraft = async (e) => {
+    e.preventDefault();
+    if (formData.variants.length === 0) {
+      alert("Please add at least one variant");
+      return;
+    }
+    try {
+      const form = buildProductFormData("draft");
+      if (productId) {
+        await updateProduct(productId, form);
+      } else {
+        await addProduct(form);
+      }
+      alert("Product saved as draft successfully!");
+      onSuccess?.();
+    } catch (err) {
+      alert(apiErrorMessage(err));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (formData.variants.length === 0) {
+      alert("Please add at least one variant");
+      return;
+    }
+
+    const approvalForSubmit = productId ? formData.approval_status : "submitted";
+    const form = buildProductFormData(approvalForSubmit);
 
     try {
       if (productId) {
@@ -365,7 +412,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         await addProduct(form);
       }
     } catch (err) {
-      console.log(err);
+      alert(apiErrorMessage(err));
+      return;
     }
 
     alert("Product submitted successfully!");
@@ -986,8 +1034,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             >
                               <Chip
                                 label={
-                                  variant.price > 0
-                                    ? `$${variant.price.toFixed(2)}`
+                                  Number(variant.price) > 0
+                                    ? `₹${Number(variant.price).toFixed(2)}`
                                     : "No price"
                                 }
                                 size="small"
@@ -1113,7 +1161,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      $
+                                      ₹
                                     </InputAdornment>
                                   ),
                                 }}
@@ -1139,7 +1187,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      $
+                                      ₹
                                     </InputAdornment>
                                   ),
                                 }}

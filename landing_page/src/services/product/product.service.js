@@ -18,12 +18,14 @@ export const getCategories = async () => {
 
 export const addProduct = async (productData) => {
     try {
+        const isFormData =
+            typeof FormData !== "undefined" && productData instanceof FormData;
         const response = await axios.post(`${API_URL}/suppliers/stores/products`,
             productData,
             {
                 headers: {
-                    "Content-Type": "multipart/form-data",
                     authorization: "Bearer " + getToken(),
+                    ...(isFormData ? {} : { "Content-Type": "application/json" }),
                 }
             }
         );
@@ -67,12 +69,14 @@ export const getSingleProduct = async (productId) => {
 // update product
 export const updateProduct = async (productId, productData) => {
     try {
+        const isFormData =
+            typeof FormData !== "undefined" && productData instanceof FormData;
         const response = await axios.put(`${API_URL}/suppliers/stores/products/${productId}`,
             productData,
             {
                 headers: {
-                    "Content-Type": "multipart/form-data",
                     authorization: "Bearer " + getToken(),
+                    ...(isFormData ? {} : { "Content-Type": "application/json" }),
                 }
             }
         );
