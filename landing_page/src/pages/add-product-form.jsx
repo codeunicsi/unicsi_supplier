@@ -134,6 +134,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     description: "",
     brand: "",
     category_id: "",
+    mrp: 0,
+    bulk_price: 0,
+    transfer_price: 0,
     approval_status: "draft",
     lifecycle_status: "inactive",
     productGallery: [],
@@ -164,6 +167,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         description: product.data.description ?? prev.description,
         brand: product.data.brand ?? prev.brand,
         category_id: product.data.category_id ?? prev.category_id ?? "",
+        mrp: product.data.mrp ?? "",
+        bulk_price: product.data.bulk_price ?? "",
+        transfer_price: product.data.transfer_price ?? "",
         approval_status: product.data.approval_status ?? prev.approval_status,
         productGallery: product.data.images ?? prev.productGallery,
         variants: product.data.variants ?? prev.variants,
@@ -317,6 +323,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     form.append("brand", formData.brand);
     form.append("category_id", formData.category_id);
     form.append("approval_status", formData.approval_status);
+    form.append("mrp", formData.mrp);
+    form.append("bulk_price", formData.bulk_price);
+    form.append("transfer_price", formData.transfer_price);
 
     // ── Options & Variants as JSON strings ──
     form.append(
@@ -381,6 +390,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       options: [],
       variants: [],
       images: [],
+      mrp: "",
+      bulk_price: "",
+      transfer_price: "",
     });
 
     onSuccess?.();
@@ -601,7 +613,53 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       </FormControl>
                     </Stack>
                   </Grid>
+                  <Grid item xs={12}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 700, color: "#000", mb: 1 }}
+                    >
+                      Pricing
+                    </Typography>
+                  </Grid>
 
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="MRP"
+                      type="text"
+                      value={formData.mrp}
+                      onChange={(e) =>
+                        handleProductChange("mrp", e.target.value)
+                      }
+                      sx={fieldSx}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Bulk Price"
+                      type="text"
+                      value={formData.bulk_price}
+                      onChange={(e) =>
+                        handleProductChange("bulk_price", e.target.value)
+                      }
+                      sx={fieldSx}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} sm={4}>
+                    <TextField
+                      fullWidth
+                      label="Transfer Price"
+                      type="text"
+                      value={formData.transfer_price}
+                      onChange={(e) =>
+                        handleProductChange("transfer_price", e.target.value)
+                      }
+                      sx={fieldSx}
+                    />
+                  </Grid>
                   <Grid item xs={12}>
                     <Box
                       sx={{
@@ -1182,7 +1240,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            {/* <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
                                 label="Material"
@@ -1198,7 +1256,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 size="small"
                                 sx={fieldSx}
                               />
-                            </Grid>
+                            </Grid> */}
 
                             <Grid item xs={12} sm={6}>
                               <TextField
@@ -1239,8 +1297,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               {/* ← add this */}
                               <TextField
                                 fullWidth
-                                label="Option 3"
-                                placeholder="e.g., Material"
+                                label="Material"
+                                placeholder="Cotton"
                                 value={variant.option3}
                                 onChange={(e) =>
                                   updateVariant(
