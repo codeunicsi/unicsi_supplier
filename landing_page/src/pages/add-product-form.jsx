@@ -123,6 +123,43 @@ const fieldSx = {
   "& .MuiInputBase-input": { color: "#000" },
 };
 
+/** API variants use variant_id; form state uses id for keys and updates. */
+function normalizeVariantFromApi(v, idx) {
+  const attrs =
+    v.attributes && typeof v.attributes === "object" && !Array.isArray(v.attributes)
+      ? { ...v.attributes }
+      : {};
+  const dimRaw =
+    v.dimension_cm && typeof v.dimension_cm === "object"
+      ? v.dimension_cm
+      : attrs.dimension_cm && typeof attrs.dimension_cm === "object"
+        ? attrs.dimension_cm
+        : {};
+  const rowId = v.variant_id || v.id || `new-${idx}`;
+  return {
+    ...v,
+    id: rowId,
+    variant_id: v.variant_id,
+    sku: v.sku ?? "",
+    title: v.title ?? "",
+    price: Number(v.price) || 0,
+    compare_at_price: Number(v.compare_at_price) || 0,
+    inventory_quantity: Number(v.inventory_quantity) || 0,
+    weight_grams: Number(v.weight_grams) || 0,
+    option1: v.option1 ?? "",
+    option2: v.option2 ?? "",
+    option3: v.option3 ?? "",
+    attributes: attrs,
+    dimension_cm: {
+      height: Number(dimRaw.height ?? dimRaw.h ?? 0) || 0,
+      width: Number(dimRaw.width ?? dimRaw.w ?? 0) || 0,
+      length: Number(dimRaw.length ?? dimRaw.l ?? 0) || 0,
+    },
+    is_active: v.is_active !== false,
+    images: Array.isArray(v.images) ? v.images : [],
+  };
+}
+
 export default function AddProductForm({ initialProduct, onSuccess }) {
   const params = useParams();
   const productId = params.product_id;
@@ -133,12 +170,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     title: "",
     description: "",
     brand: "",
-    categoryId: "",
+    category_id: "",
     approval_status: "draft",
     lifecycle_status: "inactive",
     productGallery: [],
     options: [],
     variants: [],
+    images: [],
   });
   const [expandedVariant, setExpandedVariant] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -157,6 +195,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
   useEffect(() => {
     if (product?.data) {
+      const rawVariants = product.data.variants;
+      const variants = Array.isArray(rawVariants)
+        ? rawVariants.map((v, idx) => normalizeVariantFromApi(v, idx))
+        : [];
       setFormData((prev) => ({
         ...prev,
         title: product.data.title ?? prev.title,
@@ -165,7 +207,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         category_id: product.data.category_id ?? prev.category_id ?? "",
         approval_status: product.data.approval_status ?? prev.approval_status,
         productGallery: product.data.images ?? prev.productGallery,
-        variants: product.data.variants ?? prev.variants,
+        variants,
       }));
     }
   }, [product]);
@@ -182,9 +224,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       compare_at_price: 0,
       inventory_quantity: 0,
       weight_grams: 0,
+      title: "",
       option1: "",
       option2: "",
+      option3: "",
       attributes: {},
+      images: [],
     };
 
     setFormData((prev) => ({
@@ -220,9 +265,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
   const handleProductImageUpload = (files) => {
     if (files) {
+      const fileArray = Array.from(files);
       setFormData((prev) => ({
         ...prev,
         productGallery: [...prev.productGallery, ...Array.from(files)],
+        images: [...prev.images, ...fileArray],
       }));
     }
   };
@@ -231,6 +278,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     setFormData((prev) => ({
       ...prev,
       productGallery: prev.productGallery.filter((_, i) => i !== index),
+      images: prev.images.filter((_, i) => i !== index), // ← sync removal too
     }));
 
   const addOption = () =>
@@ -274,24 +322,76 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         .map((opt, idx) => ({ ...opt, position: idx + 1 })),
     }));
 
+  const buildProductFormData = (approvalStatus) => {
+    const form = new FormData();
+    form.append("title", formData.title);
+    form.append("description", formData.description);
+    form.append("brand", formData.brand);
+    form.append("category_id", formData.category_id);
+    form.append("approval_status", approvalStatus);
+    form.append(
+      "options",
+      JSON.stringify(
+        formData.options.map((opt, idx) => ({
+          name: opt.name,
+          position: idx + 1,
+          values: opt.values,
+        })),
+      ),
+    );
+    form.append(
+      "variants",
+      JSON.stringify(
+        formData.variants.map((variant) => ({
+          ...(variant.variant_id ? { variant_id: variant.variant_id } : {}),
+          sku: variant.sku,
+          title: variant.title,
+          price: Number(variant.price),
+          compare_at_price: Number(variant.compare_at_price),
+          inventory_quantity: Number(variant.inventory_quantity),
+          weight_grams: Number(variant.weight_grams),
+          option1: variant.option1 || null,
+          option2: variant.option2 || null,
+          option3: variant.option3 || null,
+          images: [],
+          dimension_cm: {
+            height: Number(variant.dimension_cm?.height) || 0,
+            width: Number(variant.dimension_cm?.width) || 0,
+            length: Number(variant.dimension_cm?.length) || 0,
+          },
+        })),
+      ),
+    );
+    formData.images.forEach((file) => {
+      form.append("images", file);
+    });
+    return form;
+  };
+
+  const apiErrorMessage = (err) =>
+    err?.response?.data?.error ||
+    err?.response?.data?.message ||
+    err?.message ||
+    "Request failed";
+
   const handleSaveDraft = async (e) => {
     e.preventDefault();
-    const payload = {
-      ...formData,
-      approval_status: "draft",
-      lifecycle_status: formData.lifecycle_status || "inactive",
-      id: formData.id || Date.now().toString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      await addProduct(payload);
-    } catch (err) {
-      console.log(err);
+    if (formData.variants.length === 0) {
+      alert("Please add at least one variant");
+      return;
     }
-
-    alert("Product saved as draft successfully!");
-    onSuccess?.();
+    try {
+      const form = buildProductFormData("draft");
+      if (productId) {
+        await updateProduct(productId, form);
+      } else {
+        await addProduct(form);
+      }
+      alert("Product saved as draft successfully!");
+      onSuccess?.();
+    } catch (err) {
+      alert(apiErrorMessage(err));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -302,42 +402,18 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       return;
     }
 
-    const payload = {
-      title: formData.title,
-      description: formData.description,
-      brand: formData.brand,
-
-      categoryId: Number(formData.categoryId),
-
-      // use selected value
-      approval_status: formData.approval_status,
-
-      options: formData.options.map((opt, idx) => ({
-        name: opt.name,
-        position: idx + 1,
-        values: opt.values,
-      })),
-
-      variants: formData.variants.map((variant) => ({
-        sku: variant.sku,
-        price: Number(variant.price),
-        compare_at_price: Number(variant.compare_at_price),
-        inventory_quantity: Number(variant.inventory_quantity),
-        weight_grams: Number(variant.weight_grams),
-        option1: variant.option1 || null,
-        option2: variant.option2 || null,
-        attributes: variant.attributes || {},
-      })),
-    };
+    const approvalForSubmit = productId ? formData.approval_status : "submitted";
+    const form = buildProductFormData(approvalForSubmit);
 
     try {
       if (productId) {
-        await updateProduct(productId, payload);
+        await updateProduct(productId, form);
       } else {
-        await addProduct(payload);
+        await addProduct(form);
       }
     } catch (err) {
-      console.log(err);
+      alert(apiErrorMessage(err));
+      return;
     }
 
     alert("Product submitted successfully!");
@@ -346,12 +422,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       title: "",
       description: "",
       brand: "",
-      categoryId: "",
+      category_id: "",
       approval_status: "draft",
       lifecycle_status: "inactive",
       productGallery: [],
       options: [],
       variants: [],
+      images: [],
     });
 
     onSuccess?.();
@@ -512,7 +589,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           handleProductChange("brand", e.target.value)
                         }
                         variant="outlined"
-                        sx={{ ...fieldSx, flex: { sm: "1 1 0" }, minWidth: { sm: 0 } }}
+                        sx={{
+                          ...fieldSx,
+                          flex: { sm: "1 1 0" },
+                          minWidth: { sm: 0 },
+                        }}
                       />
                       <FormControl
                         fullWidth
@@ -533,9 +614,17 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             handleProductChange("category_id", e.target.value)
                           }
                           MenuProps={{
-                            PaperProps: { style: { maxHeight: 320, minWidth: 240 } },
-                            anchorOrigin: { vertical: "bottom", horizontal: "left" },
-                            transformOrigin: { vertical: "top", horizontal: "left" },
+                            PaperProps: {
+                              style: { maxHeight: 320, minWidth: 240 },
+                            },
+                            anchorOrigin: {
+                              vertical: "bottom",
+                              horizontal: "left",
+                            },
+                            transformOrigin: {
+                              vertical: "top",
+                              horizontal: "left",
+                            },
                           }}
                         >
                           <MenuItem value="">
@@ -553,7 +642,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             color="text.secondary"
                             sx={{ mt: 0.5, display: "block" }}
                           >
-                            No categories available. Create categories in the admin panel.
+                            No categories available. Create categories in the
+                            admin panel.
                           </Typography>
                         )}
                       </FormControl>
@@ -944,8 +1034,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             >
                               <Chip
                                 label={
-                                  variant.price > 0
-                                    ? `$${variant.price.toFixed(2)}`
+                                  Number(variant.price) > 0
+                                    ? `₹${Number(variant.price).toFixed(2)}`
                                     : "No price"
                                 }
                                 size="small"
@@ -1037,6 +1127,23 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
+                                label="Title"
+                                placeholder="e.g., Black Small"
+                                value={variant.title}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "title",
+                                    e.target.value,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <TextField
+                                fullWidth
                                 label="Price"
                                 type="number"
                                 placeholder="499"
@@ -1054,7 +1161,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      $
+                                      ₹
                                     </InputAdornment>
                                   ),
                                 }}
@@ -1080,7 +1187,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
-                                      $
+                                      ₹
                                     </InputAdornment>
                                   ),
                                 }}
@@ -1175,6 +1282,25 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
+                            <Grid item xs={12} sm={4}>
+                              {" "}
+                              {/* ← add this */}
+                              <TextField
+                                fullWidth
+                                label="Option 3"
+                                placeholder="e.g., Material"
+                                value={variant.option3}
+                                onChange={(e) =>
+                                  updateVariant(
+                                    variant.id,
+                                    "option3",
+                                    e.target.value,
+                                  )
+                                }
+                                size="small"
+                                sx={fieldSx}
+                              />
+                            </Grid>
 
                             {/* ── Dimensions ── */}
                             <Grid item xs={12}>
@@ -1190,13 +1316,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Length"
                                 type="number"
-                                value={variant.length_cm}
+                                value={variant.dimension_cm?.length ?? 0}
                                 onChange={(e) =>
-                                  updateVariant(
-                                    variant.id,
-                                    "length_cm",
-                                    parseFloat(e.target.value) || 0,
-                                  )
+                                  updateVariant(variant.id, "dimension_cm", {
+                                    ...variant.dimension_cm,
+                                    length: parseFloat(e.target.value) || 0,
+                                  })
                                 }
                                 size="small"
                                 sx={fieldSx}
@@ -1207,13 +1332,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Width"
                                 type="number"
-                                value={variant.width_cm}
+                                value={variant.dimension_cm?.width ?? 0}
                                 onChange={(e) =>
-                                  updateVariant(
-                                    variant.id,
-                                    "width_cm",
-                                    parseFloat(e.target.value) || 0,
-                                  )
+                                  updateVariant(variant.id, "dimension_cm", {
+                                    ...variant.dimension_cm,
+                                    width: parseFloat(e.target.value) || 0,
+                                  })
                                 }
                                 size="small"
                                 sx={fieldSx}
@@ -1224,13 +1348,12 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fullWidth
                                 label="Height"
                                 type="number"
-                                value={variant.height_cm}
+                                value={variant.dimension_cm?.height ?? 0}
                                 onChange={(e) =>
-                                  updateVariant(
-                                    variant.id,
-                                    "height_cm",
-                                    parseFloat(e.target.value) || 0,
-                                  )
+                                  updateVariant(variant.id, "dimension_cm", {
+                                    ...variant.dimension_cm,
+                                    height: parseFloat(e.target.value) || 0,
+                                  })
                                 }
                                 size="small"
                                 sx={fieldSx}
