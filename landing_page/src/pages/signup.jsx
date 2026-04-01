@@ -18,7 +18,7 @@ const Signup = () => {
     name: "",
     email: "",
     password: "",
-    role: "SUPPLIER" || "RESELLER" || "ADMIN",
+    role: "SUPPLIER",
     otp: "",
   });
 
@@ -208,18 +208,15 @@ const Signup = () => {
         />
 
         {/* Role */}
+        {/* Role */}
         <div className="mb-4">
           <label className="text-sm font-medium mb-1 block">Role</label>
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full border rounded-lg px-3 py-2"
-          >
-            <option value="SUPPLIER">Supplier</option>
-            <option value="RESELLER">Reseller</option>
-            <option value="ADMIN">Admin</option>
-          </select>
+          <input
+            type="text"
+            value="Supplier"
+            readOnly
+            className="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed"
+          />
         </div>
 
         {/* Signup Button */}
