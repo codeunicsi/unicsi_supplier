@@ -290,7 +290,7 @@ export default function SubmitTicket() {
   const [resetKey, setResetKey] = useState(0);
   const fileRef = useRef(null);
 
-  const requesterEmail = "5918280628@shop101.com";
+  const requesterEmail = "dispute@unicsi.com";
 
   const handleAttach = (e) => {
     const files = Array.from(e.target.files);

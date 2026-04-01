@@ -15,217 +15,9 @@ import Paper from "@mui/material/Paper";
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
-// ── Sample Data ───────────────────────────────────────────────────────────────
-const PAST_PAYMENTS = [
-  {
-    id: 1,
-    date: "06 Mar 2026",
-    cycle: "Weekly",
-    cms: [
-      { id: "CITIN26632921420", amount: "₹16,358.68" },
-      { id: "CITIN26632928913", amount: "₹1,442.09" },
-    ],
-    hasSheet: true,
-    hasInvoice: false,
-  },
-  {
-    id: 2,
-    date: "28 Feb 2026",
-    cycle: "Monthly",
-    cms: [
-      { id: "-", amount: "₹0" },
-      { id: "-", amount: "₹0" },
-    ],
-    hasSheet: false,
-    hasInvoice: true,
-  },
-  {
-    id: 3,
-    date: "27 Feb 2026",
-    cycle: "Weekly",
-    cms: [
-      { id: "CITIN26629616143", amount: "₹21,618.28" },
-      { id: "CITIN26629618924", amount: "₹1,468.56" },
-    ],
-    hasSheet: true,
-    hasInvoice: false,
-  },
-  {
-    id: 4,
-    date: "20 Feb 2026",
-    cycle: "Weekly",
-    cms: [
-      { id: "CITIN26621034521", amount: "₹9,240.00" },
-      { id: "CITIN26621038812", amount: "₹820.50" },
-    ],
-    hasSheet: true,
-    hasInvoice: true,
-  },
-  {
-    id: 5,
-    date: "13 Feb 2026",
-    cycle: "Monthly",
-    cms: [
-      { id: "CITIN26614200111", amount: "₹32,115.40" },
-      { id: "-", amount: "₹0" },
-    ],
-    hasSheet: false,
-    hasInvoice: true,
-  },
-];
-
-const UPCOMING_PAYMENTS = [
-  {
-    id: 1,
-    image: null,
-    product: "Reading Glasses",
-    qty: 1,
-    variant: "1",
-    sku: "FDDAILYGLASSESPOWER-+1.00",
-    orderId: "6131845714",
-    orderDate: "16 Feb 2026",
-    price: "₹73",
-    partner: "Ekart surface new",
-    trackingId: "CIQC0025000713",
-    status: "Delivered",
-    deliveredOn: "03 Mar 2026",
-  },
-  {
-    id: 2,
-    image: null,
-    product: "Disposable Nitrile Non-Slip Anti-Scratch Gloves",
-    qty: 1,
-    variant: "Free Size",
-    sku: "Disposable Nitrile Gloves - Pack of 50",
-    orderId: "5713000791",
-    orderDate: "19 Feb 2026",
-    price: "₹198",
-    partner: "Ekart Testing",
-    trackingId: "PFPC0025141816",
-    status: "Delivered",
-    deliveredOn: "28 Feb 2026",
-  },
-  {
-    id: 3,
-    image: null,
-    product: "Reading Glasses",
-    qty: 1,
-    variant: "1",
-    sku: "FDDAILYGLASSESPOWER-+1.00",
-    orderId: "6369184197",
-    orderDate: "20 Feb 2026",
-    price: "₹73",
-    partner: "Ekart Testing",
-    trackingId: "PFPC0025179132",
-    status: "Delivered",
-    deliveredOn: "28 Feb 2026",
-  },
-  {
-    id: 4,
-    image: null,
-    product: "Disposable Nitrile Non-Slip Anti-Scratch Gloves",
-    qty: 1,
-    variant: "Free Size",
-    sku: "Disposable Nitrile Gloves - Pack of 50",
-    orderId: "5384533983",
-    orderDate: "20 Feb 2026",
-    price: "₹198",
-    partner: "Delhivery",
-    trackingId: "280890192525674",
-    status: "Delivered",
-    deliveredOn: "06 Mar 2026",
-  },
-  {
-    id: 5,
-    image: null,
-    product: "Reading Glasses",
-    qty: 1,
-    variant: "1",
-    sku: "FDDAILYGLASSESPOWER-+1.00",
-    orderId: "7710758133",
-    orderDate: "21 Feb 2026",
-    price: "₹73",
-    partner: "Ekart Testing",
-    trackingId: "PFPC0025208647",
-    status: "Delivered",
-    deliveredOn: "28 Feb 2026",
-  },
-  {
-    id: 6,
-    image: null,
-    product: "Baby Bloom Pillow",
-    qty: 1,
-    variant: "Free Size",
-    sku: "Baby Shaping Head Support Pillow - Assorted Colour",
-    orderId: "5148949686",
-    orderDate: "21 Feb 2026",
-    price: "₹216",
-    partner: "Delhivery",
-    trackingId: "280890192674903",
-    status: "Delivered",
-    deliveredOn: "28 Feb 2026",
-  },
-  {
-    id: 7,
-    image: null,
-    product: "Reading Glasses",
-    qty: 1,
-    variant: "1",
-    sku: "FDDAILYGLASSESPOWER-+1.00",
-    orderId: "6850626364",
-    orderDate: "22 Feb 2026",
-    price: "₹73",
-    partner: "Ekart Testing",
-    trackingId: "PFPC0025259338",
-    status: "Delivered",
-    deliveredOn: "01 Mar 2026",
-  },
-  {
-    id: 8,
-    image: null,
-    product: "Yoga Mat Premium",
-    qty: 1,
-    variant: "Blue",
-    sku: "YOGAMAT-PREMIUM-BLU",
-    orderId: "8821045671",
-    orderDate: "23 Feb 2026",
-    price: "₹450",
-    partner: "Blue Dart",
-    trackingId: "BD0029187345",
-    status: "In Transit",
-    deliveredOn: "—",
-  },
-  {
-    id: 9,
-    image: null,
-    product: "Steel Water Bottle 1L",
-    qty: 2,
-    variant: "Silver",
-    sku: "SWB-1L-SILVER",
-    orderId: "9012834561",
-    orderDate: "24 Feb 2026",
-    price: "₹380",
-    partner: "Delhivery",
-    trackingId: "280891023456123",
-    status: "Delivered",
-    deliveredOn: "02 Mar 2026",
-  },
-  {
-    id: 10,
-    image: null,
-    product: "Bamboo Cutting Board",
-    qty: 1,
-    variant: "Large",
-    sku: "BCB-LARGE-001",
-    orderId: "7834512096",
-    orderDate: "25 Feb 2026",
-    price: "₹290",
-    partner: "Ekart Testing",
-    trackingId: "PFPC0025312890",
-    status: "Delivered",
-    deliveredOn: "03 Mar 2026",
-  },
-];
+// Payment data: populate from API when wired; empty until then.
+const PAST_PAYMENTS = [];
+const UPCOMING_PAYMENTS = [];
 
 const QUICK_RANGES = [
   { label: "3 Days", days: 3 },
@@ -855,14 +647,7 @@ function DateRangePicker({ value, onChange }) {
     </Box>
   );
 }
-const PARTNER_OPTIONS = [
-  "All Partners",
-  "Ekart",
-  "Delhivery",
-  "Blue Dart",
-  "DTDC",
-  "Xpressbees",
-];
+const PARTNER_OPTIONS = ["All Partners"];
 const SEARCH_FIELDS = ["Order ID", "CMS ID", "SKU ID"];
 
 // ── Shared DataGrid sx ────────────────────────────────────────────────────────
@@ -1241,7 +1026,7 @@ function PastPaymentsTab() {
 
   return (
     <Box>
-      {/* Last Payment summary card */}
+      {/* Last payment summary — populated from API when wired */}
       <Box
         sx={{
           mb: 3,
@@ -1253,63 +1038,8 @@ function PastPaymentsTab() {
           maxWidth: 520,
         }}
       >
-        <Box sx={{ fontSize: "0.875rem", color: "#444", mb: 1 }}>
-          Last Payment <strong style={{ color: "#000" }}>(6th Mar 2026)</strong>
-          :
-        </Box>
-        <Box
-          sx={{
-            fontSize: "2rem",
-            fontWeight: 900,
-            letterSpacing: "-0.03em",
-            background: GRADIENT,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            mb: 2,
-          }}
-        >
-          ₹17,800.77
-        </Box>
-        <Box
-          sx={{
-            display: "flex",
-            borderTop: "1px solid #e0f4f7",
-            pt: 1.5,
-            gap: 0,
-          }}
-        >
-          <Box sx={{ flex: 1, borderRight: "1px solid #e0f4f7", pr: 2 }}>
-            <Box
-              sx={{
-                fontSize: "0.72rem",
-                color: "#888",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                mb: 0.3,
-              }}
-            >
-              Delivered
-            </Box>
-            <Box sx={{ fontSize: "1rem", fontWeight: 700, color: "#2e7d1e" }}>
-              ₹18,614.97
-            </Box>
-          </Box>
-          <Box sx={{ flex: 1, pl: 2 }}>
-            <Box
-              sx={{
-                fontSize: "0.72rem",
-                color: "#888",
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                mb: 0.3,
-              }}
-            >
-              Adjustment
-            </Box>
-            <Box sx={{ fontSize: "1rem", fontWeight: 700, color: "#c62828" }}>
-              ₹-814.2
-            </Box>
-          </Box>
+        <Box sx={{ fontSize: "0.875rem", color: "#555" }}>
+          No payment summary available yet.
         </Box>
       </Box>
 
