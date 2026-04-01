@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
@@ -12,68 +12,7 @@ interface Report {
   status: StatusType;
 }
 
-const REPORTS: Report[] = [
-  {
-    id: 1,
-    name: "GST_Report_Loox Shop4b9f84e3-ec4d-4292-b1d0-85bffdcd1c1c",
-    requestedOn: "04 Mar 2026 05:32 AM",
-    status: "Completed",
-  },
-  {
-    id: 2,
-    name: "GST_Report_Loox Shope5fdfce1-a26f-4b03-8ff2-a7743b533289",
-    requestedOn: "09 Feb 2026 14:59 PM",
-    status: "Completed",
-  },
-  {
-    id: 3,
-    name: "GST_Report_Loox Shop35d8bc04-a846-4af8-afc9-1e0b35e7bd5f",
-    requestedOn: "04 Feb 2026 05:32 AM",
-    status: "Processing",
-  },
-  {
-    id: 4,
-    name: "GST_Report_Loox Shopf846154e-54d6-43e6-b97b-4cdcf39f2e7e",
-    requestedOn: "07 Jan 2026 20:57 PM",
-    status: "Completed",
-  },
-  {
-    id: 5,
-    name: "GST_Report_Loox Shop3cca41a3-6995-441e-8583-afbd19745eed",
-    requestedOn: "04 Jan 2026 05:32 AM",
-    status: "Completed",
-  },
-  {
-    id: 6,
-    name: "GST_Report_Loox Shopca6bea87-296a-4b5f-8647-1c10c4861f26",
-    requestedOn: "12 Dec 2025 16:49 PM",
-    status: "Failed",
-  },
-  {
-    id: 7,
-    name: "GST_Report_Loox Shop7fa2c019-13b4-4e91-bc44-9d2e6f3a8d01",
-    requestedOn: "01 Dec 2025 09:15 AM",
-    status: "Completed",
-  },
-  {
-    id: 8,
-    name: "GST_Report_Loox Shop2b3d8e4f-77cc-4d12-b561-8a9e0f1c2345",
-    requestedOn: "20 Nov 2025 11:40 AM",
-    status: "Processing",
-  },
-  {
-    id: 9,
-    name: "GST_Report_Loox Shopd9e1f832-5a6b-4c78-a923-1b4c7d8e9f01",
-    requestedOn: "05 Nov 2025 08:22 AM",
-    status: "Completed",
-  },
-  {
-    id: 10,
-    name: "GST_Report_Loox Shop6c2f1a94-3e5d-4b87-c012-9d8e7f6a5b43",
-    requestedOn: "28 Oct 2025 17:05 PM",
-    status: "Completed",
-  },
-];
+const REPORTS: Report[] = [];
 
 const PAGE_SIZE = 5;
 
@@ -308,27 +247,35 @@ export default function ReportsTable() {
 
         {/* Top pagination */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "0.85rem", color: "#555" }}>
-            Showing{" "}
-            <strong style={{ color: "#000" }}>
-              {(page - 1) * PAGE_SIZE + 1}–
-              {Math.min(page * PAGE_SIZE, REPORTS.length)}
-            </strong>{" "}
-            Reports of{" "}
-            <strong style={{ color: "#000" }}>{REPORTS.length}</strong>
-          </span>
-          <div style={{ display: "flex", gap: 6 }}>
-            <NavArrow
-              arrow="‹"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-            />
-            <NavArrow
-              arrow="›"
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            />
-          </div>
+          {REPORTS.length === 0 ? (
+            <span style={{ fontSize: "0.85rem", color: "#555" }}>
+              <strong style={{ color: "#000" }}>0</strong> reports
+            </span>
+          ) : (
+            <>
+              <span style={{ fontSize: "0.85rem", color: "#555" }}>
+                Showing{" "}
+                <strong style={{ color: "#000" }}>
+                  {(page - 1) * PAGE_SIZE + 1}–
+                  {Math.min(page * PAGE_SIZE, REPORTS.length)}
+                </strong>{" "}
+                Reports of{" "}
+                <strong style={{ color: "#000" }}>{REPORTS.length}</strong>
+              </span>
+              <div style={{ display: "flex", gap: 6 }}>
+                <NavArrow
+                  arrow="‹"
+                  disabled={page === 1 || totalPages === 0}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                />
+                <NavArrow
+                  arrow="›"
+                  disabled={page >= totalPages || totalPages === 0}
+                  onClick={() => setPage((p) => p + 1)}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -369,73 +316,91 @@ export default function ReportsTable() {
         </div>
 
         {/* Data rows */}
-        {paginated.map((report, idx) => {
-          const isEven = idx % 2 === 0;
-          return (
-            <div
-              key={report.id}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 220px 160px 150px",
-                padding: "18px 24px",
-                gap: 16,
-                alignItems: "center",
-                background: isEven ? "#fff" : "#f8fdfe",
-                borderBottom:
-                  idx < paginated.length - 1 ? "1px solid #e8f6f9" : "none",
-                transition: "background 0.15s ease",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = "#edf8fb")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = isEven ? "#fff" : "#f8fdfe")
-              }
-            >
-              <span
+        {REPORTS.length === 0 ? (
+          <div
+            style={{
+              padding: "48px 24px",
+              textAlign: "center",
+              fontSize: "0.9rem",
+              color: "#555",
+              fontWeight: 500,
+            }}
+          >
+            You don&apos;t have any reports to show.
+          </div>
+        ) : (
+          paginated.map((report, idx) => {
+            const isEven = idx % 2 === 0;
+            return (
+              <div
+                key={report.id}
                 style={{
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  color: "#000",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 220px 160px 150px",
+                  padding: "18px 24px",
+                  gap: 16,
+                  alignItems: "center",
+                  background: isEven ? "#fff" : "#f8fdfe",
+                  borderBottom:
+                    idx < paginated.length - 1 ? "1px solid #e8f6f9" : "none",
+                  transition: "background 0.15s ease",
                 }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#edf8fb")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = isEven
+                    ? "#fff"
+                    : "#f8fdfe")
+                }
               >
-                {report.name}
-              </span>
-              <span style={{ fontSize: "0.875rem", color: "#444" }}>
-                {report.requestedOn}
-              </span>
-              <div>
-                <StatusBadge status={report.status} />
+                <span
+                  style={{
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "#000",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {report.name}
+                </span>
+                <span style={{ fontSize: "0.875rem", color: "#444" }}>
+                  {report.requestedOn}
+                </span>
+                <div>
+                  <StatusBadge status={report.status} />
+                </div>
+                <div>
+                  <DownloadButton onClick={() => handleDownload(report.name)} />
+                </div>
               </div>
-              <div>
-                <DownloadButton onClick={() => handleDownload(report.name)} />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       {/* ── Bottom Pagination ── */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 6,
-          marginTop: 20,
-        }}
-      >
-        {Array.from({ length: totalPages }, (_, i) => (
-          <PageButton
-            key={i}
-            page={i + 1}
-            active={page === i + 1}
-            onClick={() => setPage(i + 1)}
-          />
-        ))}
-      </div>
+      {totalPages > 0 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 6,
+            marginTop: 20,
+          }}
+        >
+          {Array.from({ length: totalPages }, (_, i) => (
+            <PageButton
+              key={i}
+              page={i + 1}
+              active={page === i + 1}
+              onClick={() => setPage(i + 1)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
