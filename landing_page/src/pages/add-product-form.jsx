@@ -126,7 +126,7 @@ const fieldSx = {
 export default function AddProductForm({ initialProduct, onSuccess }) {
   const params = useParams();
   const productId = params.product_id;
-  const navigate = useNavigate(); // ← add this
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState(0);
   const [formData, setFormData] = useState({
@@ -243,7 +243,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     setFormData((prev) => ({
       ...prev,
       productGallery: prev.productGallery.filter((_, i) => i !== index),
-      images: prev.images.filter((_, i) => i !== index), // ← sync removal too
+      images: prev.images.filter((_, i) => i !== index),
     }));
 
   const addOption = () =>
@@ -287,6 +287,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         .map((opt, idx) => ({ ...opt, position: idx + 1 })),
     }));
 
+  // ✅ FIX 1: alert and onSuccess only fire on success, error is caught and shown
   const handleSaveDraft = async (e) => {
     e.preventDefault();
     const payload = {
@@ -299,14 +300,15 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
     try {
       await addProduct(payload);
+      alert("Product saved as draft successfully!");
+      onSuccess?.();
     } catch (err) {
       console.log(err);
+      alert("Failed to save draft: " + (err?.message || "Unknown error"));
     }
-
-    alert("Product saved as draft successfully!");
-    onSuccess?.();
   };
 
+  // ✅ FIX 2: alert, reset, and navigate only fire on success, error is caught and shown
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -362,9 +364,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       ),
     );
 
-    // ── Images — append each file with the field name the server expects ──
+    // ── Images ──
     formData.images.forEach((file) => {
-      form.append("images", file); // ← must match server's multer field name
+      form.append("images", file);
     });
 
     try {
@@ -373,32 +375,40 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       } else {
         await addProduct(form);
       }
+
+      alert("Product submitted successfully!");
+
+      setFormData({
+        title: "",
+        description: "",
+        brand: "",
+        category_id: "",
+        approval_status: "draft",
+        lifecycle_status: "inactive",
+        productGallery: [],
+        options: [],
+        variants: [],
+        images: [],
+        mrp: "",
+        bulk_price: "",
+        transfer_price: "",
+      });
+
+      onSuccess?.();
+      navigate("/products");
     } catch (err) {
       console.log(err);
+      const apiError = err?.response?.data?.error;
+      const apiMessage = err?.response?.data?.message;
+      const fallback = err?.message || "Unknown error";
+
+      alert(
+        "Failed to submit product: " + (apiError || apiMessage || fallback),
+      );
     }
-
-    alert("Product submitted successfully!");
-
-    setFormData({
-      title: "",
-      description: "",
-      brand: "",
-      category_id: "",
-      approval_status: "draft",
-      lifecycle_status: "inactive",
-      productGallery: [],
-      options: [],
-      variants: [],
-      images: [],
-      mrp: "",
-      bulk_price: "",
-      transfer_price: "",
-    });
-
-    onSuccess?.();
-    navigate("/products");
   };
 
+  // ✅ FIX 3: isLoading check is back at the top level of the component, not inside handleSubmit
   if (isLoading) {
     return (
       <Box
@@ -496,7 +506,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                         gap: "8px",
                       }}
                     >
-                      {/* Step circle */}
                       <span
                         style={{
                           width: 22,
@@ -1240,23 +1249,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            {/* <Grid item xs={12} sm={4}>
-                              <TextField
-                                fullWidth
-                                label="Material"
-                                placeholder="cotton"
-                                value={variant.attributes?.material || ""}
-                                onChange={(e) =>
-                                  updateVariantAttribute(
-                                    variant.id,
-                                    "material",
-                                    e.target.value,
-                                  )
-                                }
-                                size="small"
-                                sx={fieldSx}
-                              />
-                            </Grid> */}
 
                             <Grid item xs={12} sm={6}>
                               <TextField
@@ -1293,8 +1285,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               />
                             </Grid>
                             <Grid item xs={12} sm={4}>
-                              {" "}
-                              {/* ← add this */}
                               <TextField
                                 fullWidth
                                 label="Material"
