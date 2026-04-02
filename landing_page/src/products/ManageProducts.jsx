@@ -24,18 +24,20 @@ export default function ManageProducts() {
   });
 
   return (
-    <div style={{ width: "60%" }}>
+    <div className="w-full max-w-full px-4 sm:px-6 lg:px-8">
       <h2 className="text-lg font-semibold mb-4">Manage Products</h2>
       <Tabs tabItems={["Inventory", "Approved", "Purchase Order"]} />
       <SubTabs tabItems={["Pending", "Approved", "Closed"]} />
 
-      <ProductTable
-        data={EMPTY_PRODUCTS}
-        isLoading={false}
-        error={null}
-        updateInventory={updateInventory}
-        isUpdating={isPending}
-      />
+      <div className="w-full overflow-x-auto">
+        <ProductTable
+          data={EMPTY_PRODUCTS}
+          isLoading={false}
+          error={null}
+          updateInventory={updateInventory}
+          isUpdating={isPending}
+        />
+      </div>
     </div>
   );
 }

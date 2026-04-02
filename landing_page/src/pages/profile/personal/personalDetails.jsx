@@ -111,9 +111,9 @@ export default function PersonalDetails() {
     const loadProfile = async () => {
       const res = await fetchProfile();
       const data = res.data.data;
-      const lastPart = data?.supplier_id.substring(
-        data?.supplier_id.lastIndexOf("-") + 1,
-      );
+      const lastPart = data?.supplier_id
+        .substring(data?.supplier_id.lastIndexOf("-") + 1)
+        .slice(0, 3); // ← only take first 2 characters
       setFormData({
         supplierId: "SUP-" + lastPart || "SUP-XXXX",
         phoneNumber: data.number || "",
