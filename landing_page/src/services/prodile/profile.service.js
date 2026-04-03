@@ -28,8 +28,20 @@ export const AddGstDetails = (data) => {
 export const getGstDetails = () => {
   return api.get("/suppliers/stores/gstDetails");
 };
-    
 
 export const updateGstDetails = (data) => {
   return api.put("/suppliers/stores/gstDetails", data);
+};
+
+export const getBulkOrders = async () => {
+  const data = await api.get("suppliers/bulk-orders");
+  return data;
+};
+
+export const uploadBiltiDetails = async (formData) => {
+  return await api.post("suppliers/upload-bilti", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
