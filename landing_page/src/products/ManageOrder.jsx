@@ -125,7 +125,7 @@ export default function ManageOrder() {
     if (!number) {
       return setUploadState((prev) => ({
         ...prev,
-        [orderId]: { ...state, error: "Enter AWB number." },
+        [orderId]: { ...state, error: "Enter Bilti number." },
       }));
     }
 
@@ -329,7 +329,7 @@ export default function ManageOrder() {
                           onChange={(e) =>
                             handleNumberChange(orderId, e.target.value)
                           }
-                          placeholder="AWB number"
+                          placeholder="Bilti number"
                           className="border px-3 py-2 text-xs rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
                         />
 
