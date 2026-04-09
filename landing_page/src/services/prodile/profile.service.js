@@ -45,3 +45,12 @@ export const uploadBiltiDetails = async (formData) => {
     },
   });
 };
+
+export const getRequestProducts = async () => {
+  const data = await api.get("suppliers/source-requests/submitted");
+  return data;
+};
+
+export const postAddNewAddress = async (formData) => {
+  return await api.post("suppliers/stores/warehouses", formData);
+};
