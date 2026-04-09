@@ -9,6 +9,7 @@ import { useAuth } from "../../auth/AuthContext";
 const menuItems = [
   { name: "Manage Orders", path: "/order" },
   { name: "Manage RTO / Returns", path: "/rto-returns" },
+  { name: "Penalties", path: "/penalties" },
   { name: "Add Product", path: "/products" },
   { name: "Product Requirement", path: "/product-requirement" },
   { name: "Manage Products", path: "/manage-products" },

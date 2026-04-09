@@ -24,6 +24,7 @@ import AnalyticsIcon from "@mui/icons-material/Analytics";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import GavelIcon from "@mui/icons-material/Gavel";
 import ContactSupportIcon from "@mui/icons-material/ContactSupport";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { fetchProfile } from "../../services/prodile/profile.service";
@@ -41,6 +42,7 @@ const menuItems = [
     icon: AssignmentReturnIcon,
     path: "/rto-returns",
   },
+  { name: "Penalties", icon: GavelIcon, path: "/penalties" },
   { name: "Add Product", icon: AddShoppingCartIcon, path: "/products" },
   {
     name: "Product Requirement",
@@ -60,6 +62,7 @@ const pendingMenuItems = [
   { name: "Profile", icon: AccountCircleIcon, path: "/profile" },
   { name: "Setting", icon: SettingsIcon, path: "/settings" },
   { name: "FAQs", icon: HelpOutlineIcon, path: "/faqs" },
+  { name: "Penalties", icon: GavelIcon, path: "/penalties" },
   { name: "Supports", icon: ContactSupportIcon, path: "/supports" },
 ];
 
