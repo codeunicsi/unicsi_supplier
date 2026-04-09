@@ -121,7 +121,7 @@ function SectionLabel({ icon, children }) {
 }
 
 // ── File upload input ─────────────────────────────────────────────────────────
-function FileInput({ name, file, onChange, disabled }) {
+function FileInput({ name, label, file, onChange, disabled }) {
   const isUrl = typeof file === "string" && file.length > 0;
   const fileName = file?.name || (isUrl ? "Uploaded file" : null);
 
@@ -137,7 +137,7 @@ function FileInput({ name, file, onChange, disabled }) {
           letterSpacing: "0.04em",
         }}
       >
-        Upload Document
+        {label || "Upload Document"}
       </Box>
       <label
         htmlFor={`file-${name}`}
@@ -154,10 +154,10 @@ function FileInput({ name, file, onChange, disabled }) {
             borderRadius: "10px",
             background: disabled ? "#f4fbfc" : "#f8fdfe",
             px: 2,
-            height: "40px", // matches MUI size="small" TextField height
+            height: "40px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "flex-end", // always right-aligned
+            justifyContent: "flex-end",
             transition: "all 0.2s",
             opacity: disabled ? 0.6 : 1,
             "&:hover": disabled
@@ -277,8 +277,12 @@ export default function GstDetails() {
     panCardNumber: "",
     adharCardNumber: "",
     gstCertificate: "",
-    panCardNumberImage: "",
-    adharCardNumberImage: "",
+    // PAN — split into front + back
+    panCardFrontImage: "",
+    panCardBackImage: "",
+    // Aadhaar — split into front + back
+    adharCardFrontImage: "",
+    adharCardBackImage: "",
     gstStatus: false,
   });
 
@@ -296,8 +300,10 @@ export default function GstDetails() {
         payload.append("panCardNumber", formData.panCardNumber);
         payload.append("adharCardNumber", formData.adharCardNumber);
         payload.append("gstCertificate", formData.gstCertificate);
-        payload.append("panCardNumberImage", formData.panCardNumberImage);
-        payload.append("adharCardNumberImage", formData.adharCardNumberImage);
+        payload.append("panCardFrontImage", formData.panCardFrontImage);
+        payload.append("panCardBackImage", formData.panCardBackImage);
+        payload.append("adharCardFrontImage", formData.adharCardFrontImage);
+        payload.append("adharCardBackImage", formData.adharCardBackImage);
 
         const token = "Bearer " + localStorage.getItem("token");
         const res = await axios.post(
@@ -330,8 +336,11 @@ export default function GstDetails() {
           panCardNumber: res.data?.data?.pan_number,
           adharCardNumber: res.data?.data?.andhar_number,
           gstCertificate: res.data?.data?.gst_image,
-          panCardNumberImage: res.data?.data?.pan_image,
-          adharCardNumberImage: res.data?.data?.andhar_image,
+          // Update these keys to match your actual API response
+          panCardFrontImage: res.data?.data?.pan_front_image,
+          panCardBackImage: res.data?.data?.pan_back_image,
+          adharCardFrontImage: res.data?.data?.andhar_front_image,
+          adharCardBackImage: res.data?.data?.andhar_back_image,
           gstStatus: res.data?.data?.gst_status,
         });
       })
@@ -547,6 +556,7 @@ export default function GstDetails() {
             <Grid item xs={12} sm={6}>
               <FileInput
                 name="gstCertificate"
+                label="GST Certificate"
                 file={formData.gstCertificate}
                 onChange={handleChange}
                 disabled={isVerified}
@@ -590,10 +600,11 @@ export default function GstDetails() {
                 sx={fieldSx}
               />
             </Grid>
+            {/* ── PAN front + back ── */}
             <Grid
               item
               xs={12}
-              sm={6}
+              sm={3}
               sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -601,8 +612,27 @@ export default function GstDetails() {
               }}
             >
               <FileInput
-                name="panCardNumberImage"
-                file={formData.panCardNumberImage}
+                name="panCardFrontImage"
+                label="Front Page"
+                file={formData.panCardFrontImage}
+                onChange={handleChange}
+                disabled={isVerified}
+              />
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              sm={3}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+              }}
+            >
+              <FileInput
+                name="panCardBackImage"
+                label="Back Page"
+                file={formData.panCardBackImage}
                 onChange={handleChange}
                 disabled={isVerified}
               />
@@ -648,10 +678,11 @@ export default function GstDetails() {
                 sx={fieldSx}
               />
             </Grid>
+            {/* ── Aadhaar front + back ── */}
             <Grid
               item
               xs={12}
-              sm={6}
+              sm={3}
               sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -659,8 +690,27 @@ export default function GstDetails() {
               }}
             >
               <FileInput
-                name="adharCardNumberImage"
-                file={formData.adharCardNumberImage}
+                name="adharCardFrontImage"
+                label="Front Page"
+                file={formData.adharCardFrontImage}
+                onChange={handleChange}
+                disabled={isVerified}
+              />
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              sm={3}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+              }}
+            >
+              <FileInput
+                name="adharCardBackImage"
+                label="Back Page"
+                file={formData.adharCardBackImage}
                 onChange={handleChange}
                 disabled={isVerified}
               />
