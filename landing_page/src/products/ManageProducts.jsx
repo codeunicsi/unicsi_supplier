@@ -1,14 +1,25 @@
-import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { useQueryClient, useMutation, useQuery } from "@tanstack/react-query";
 import ProductTable from "./ProductTable";
 import Tabs from "./Tabs";
 import SubTabs from "./SubTabs";
-import { updateInventory as updateInventoryApi } from "../services/product/product.service";
+import {
+  updateInventory as updateInventoryApi,
+  getProducts,
+} from "../services/product/product.service";
 
-/** Empty catalog until products are loaded from the API again. */
 const EMPTY_PRODUCTS = { data: { products: [] } };
 
 export default function ManageProducts() {
   const queryClient = useQueryClient();
+
+  const {
+    data: productsData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["products"],
+    queryFn: getProducts,
+  });
 
   const { mutate: updateInventory, isPending } = useMutation({
     mutationFn: ({ sku, quantity, action }) =>
@@ -24,15 +35,16 @@ export default function ManageProducts() {
   });
 
   return (
-    <div style={{ width: "60%" }}>
+    <div>
       <h2 className="text-lg font-semibold mb-4">Manage Products</h2>
+
       <Tabs tabItems={["Inventory", "Approved", "Purchase Order"]} />
       <SubTabs tabItems={["Pending", "Approved", "Closed"]} />
 
       <ProductTable
-        data={EMPTY_PRODUCTS}
-        isLoading={false}
-        error={null}
+        data={productsData}
+        isLoading={isLoading}
+        error={error}
         updateInventory={updateInventory}
         isUpdating={isPending}
       />
