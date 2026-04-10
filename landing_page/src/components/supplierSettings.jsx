@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Container,
   Box,
@@ -9,21 +9,16 @@ import {
   CardContent,
   TextField,
   Switch,
-  FormControlLabel,
   Divider,
   Stack,
   Typography,
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   IconButton,
-  Chip,
-  Paper,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -32,11 +27,17 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import {
+  getSupplierProfile,
+  postSaveNewAddress,
+  getSaveNewAddressById,
+  putNewAddressById,
+  deleteNewAddressById,
+} from "../services/prodile/profile.service";
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
-// ── Shared field sx ───────────────────────────────────────────────────────────
 const fieldSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
@@ -52,7 +53,6 @@ const fieldSx = {
   "& .MuiSelect-select": { color: "#000" },
 };
 
-// ── Gradient Button ───────────────────────────────────────────────────────────
 function GradientButton({
   children,
   onClick,
@@ -61,6 +61,7 @@ function GradientButton({
   startIcon,
   size = "medium",
   fullWidth = false,
+  disabled = false,
 }) {
   const [hovered, setHovered] = useState(false);
   const pad = size === "small" ? "6px 14px" : "10px 22px";
@@ -78,6 +79,7 @@ function GradientButton({
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -90,7 +92,8 @@ function GradientButton({
         borderRadius: "10px",
         fontSize,
         fontWeight: 600,
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
         transition: "all 0.2s ease",
         ...(danger
           ? dangerStyle
@@ -121,7 +124,6 @@ function GradientButton({
   );
 }
 
-// ── Teal Switch ───────────────────────────────────────────────────────────────
 const switchSx = {
   "& .MuiSwitch-switchBase.Mui-checked": { color: "#0097b2" },
   "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
@@ -129,7 +131,6 @@ const switchSx = {
   },
 };
 
-// ── Card shell ────────────────────────────────────────────────────────────────
 function SettingsCard({ icon, title, subtitle, children }) {
   return (
     <Card
@@ -142,7 +143,6 @@ function SettingsCard({ icon, title, subtitle, children }) {
         height: "100%",
       }}
     >
-      {/* Header */}
       <Box
         sx={{
           px: 3,
@@ -192,7 +192,6 @@ function SettingsCard({ icon, title, subtitle, children }) {
   );
 }
 
-// ── Field Label ───────────────────────────────────────────────────────────────
 function FieldLabel({ children }) {
   return (
     <Box
@@ -210,29 +209,12 @@ function FieldLabel({ children }) {
   );
 }
 
-// ── Labeled Select ────────────────────────────────────────────────────────────
 function LabeledSelect({ label, name, value, onChange, options }) {
   return (
     <Box>
       <FieldLabel>{label}</FieldLabel>
       <FormControl fullWidth size="small">
-        <Select
-          name={name}
-          value={value}
-          onChange={onChange}
-          sx={
-            fieldSx["& .MuiOutlinedInput-root"]
-              ? fieldSx
-              : {
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "10px",
-                    "&:hover fieldset": { borderColor: "#0097b2" },
-                    "&.Mui-focused fieldset": { borderColor: "#0097b2" },
-                  },
-                  "& .MuiSelect-select": { color: "#000" },
-                }
-          }
-        >
+        <Select name={name} value={value} onChange={onChange} sx={fieldSx}>
           {options.map((o) => (
             <MenuItem key={o.value} value={o.value}>
               {o.label}
@@ -244,30 +226,55 @@ function LabeledSelect({ label, name, value, onChange, options }) {
   );
 }
 
+const EMPTY_ADDRESS = {
+  id: null,
+  fullName: "",
+  companyName: "",
+  email: "",
+  phone: "",
+  street: "",
+  city: "",
+  state: "",
+  zipCode: "",
+  country: "IN",
+  isDefault: false,
+  isEnabled: true,
+};
+
+// GET /:id returns { success: true, data: [{ warehouse_id, name, address, ... }] }
+// unwrap the array and map to local shape
+const mapDetailToAddress = (detail, overrides = {}) => ({
+  id: detail.warehouse_id ?? null,
+  fullName: detail.name ?? "",
+  companyName: detail.companyName ?? "",
+  email: detail.email ?? "",
+  phone: detail.phone ?? "",
+  street: detail.address ?? "",
+  city: detail.city ?? "",
+  state: detail.state ?? "",
+  zipCode: detail.pincode ?? "",
+  country: detail.country ?? "IN",
+  isDefault: overrides.isDefault ?? false,
+  isEnabled: detail.is_active ?? true,
+});
+
+// Helper: always unwrap array response from GET /:id
+const unwrapDetail = (data) => (Array.isArray(data) ? data[0] : data);
+
 export default function SupplierSettings() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [pickupAddresses, setPickupAddresses] = useState([]);
   const [editingAddressId, setEditingAddressId] = useState(null);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [supplierId, setSupplierId] = useState(null);
 
-  // ── Delete confirmation state ──
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deletingAddress, setDeletingAddress] = useState(false);
+
   const addressToDelete = pickupAddresses.find((a) => a.id === deleteConfirmId);
 
-  const [newAddress, setNewAddress] = useState({
-    id: null,
-    fullName: "",
-    companyName: "",
-    email: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    zipCode: "",
-    country: "IN",
-    isDefault: false,
-    isEnabled: true,
-  });
+  const [newAddress, setNewAddress] = useState(EMPTY_ADDRESS);
 
   const [shippingLabel, setShippingLabel] = useState({
     labelProvider: "dhl",
@@ -285,117 +292,197 @@ export default function SupplierSettings() {
     defaultCarrier: "dhl",
   });
 
+  useEffect(() => {
+    const fetchSupplier = async () => {
+      try {
+        const res = await getSupplierProfile();
+        const id = res?.data?.data?.supplier_id;
+        console.log(id);
+        setSupplierId(id);
+      } catch (error) {
+        console.error("Failed to fetch supplier profile", error);
+      }
+    };
+    fetchSupplier();
+  }, []);
+
+  // ── Build API payload from local state ────────────────────────────────────
+  const buildPayload = () => ({
+    supplier_id: supplierId,
+    name: newAddress.fullName,
+    companyName: newAddress.companyName,
+    email: newAddress.email,
+    phone: newAddress.phone,
+    address: newAddress.street,
+    city: newAddress.city,
+    state: newAddress.state,
+    pincode: newAddress.zipCode,
+    country: newAddress.country,
+    isDefault: newAddress.isDefault,
+    isEnabled: newAddress.isEnabled,
+  });
+
+  // ── Save address: POST (create) or PUT (update) ───────────────────────────
+  const handleSaveAddress = async () => {
+    if (!newAddress.fullName || !newAddress.street || !newAddress.city) {
+      alert("Please fill in Full Name, Street Address, and City");
+      return;
+    }
+    if (!supplierId) {
+      alert("Supplier profile not loaded yet. Please wait and try again.");
+      return;
+    }
+
+    setSavingAddress(true);
+    try {
+      if (editingAddressId !== null) {
+        // ── UPDATE: PUT then re-fetch ─────────────────────────────────────
+        await putNewAddressById(editingAddressId, buildPayload());
+
+        const detailRes = await getSaveNewAddressById(editingAddressId);
+        // FIX: GET returns array — unwrap it
+        const detail = unwrapDetail(detailRes?.data?.data);
+
+        const updatedAddress = mapDetailToAddress(detail, {
+          isDefault: newAddress.isDefault,
+        });
+
+        setPickupAddresses((prev) =>
+          prev.map((a) => (a.id === editingAddressId ? updatedAddress : a)),
+        );
+      } else {
+        // ── CREATE: POST → get warehouse_id → GET by id ───────────────────
+        const saveRes = await postSaveNewAddress(buildPayload());
+        // POST returns: { success: true, data: { warehouse_id, ... } }
+        const saveData = saveRes?.data?.data;
+        const warehouseId = saveData?.warehouse_id;
+
+        if (!warehouseId) {
+          console.error("POST response shape:", saveRes?.data);
+          throw new Error("No warehouse_id returned from save API");
+        }
+
+        // FIX: use warehouseId (not editingAddressId which is null here)
+        const detailRes = await getSaveNewAddressById(warehouseId);
+        // FIX: GET returns array — unwrap it
+        const detail = unwrapDetail(detailRes?.data?.data);
+
+        const populatedAddress = mapDetailToAddress(detail, {
+          isDefault: newAddress.isDefault,
+        });
+
+        setPickupAddresses((prev) => [...prev, populatedAddress]);
+      }
+
+      showSaveSuccess();
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error saving address:", error);
+      alert("Failed to save address. Please try again.");
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleShippingLabelChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setShippingLabel({
-      ...shippingLabel,
+    setShippingLabel((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
   const handleAutoShippingChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setAutoShipping({
-      ...autoShipping,
+    setAutoShipping((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
   const handleAddressChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setNewAddress({
-      ...newAddress,
+    setNewAddress((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
-    });
+    }));
   };
 
-  const handleSaveSettings = () => {
+  const showSaveSuccess = () => {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
   const handleAddAddress = () => {
     setEditingAddressId(null);
-    setNewAddress({
-      id: null,
-      fullName: "",
-      companyName: "",
-      email: "",
-      phone: "",
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "IN",
-      isDefault: false,
-      isEnabled: true,
-    });
+    setNewAddress(EMPTY_ADDRESS);
     setOpenDialog(true);
   };
 
-  const handleEditAddress = (address) => {
-    setEditingAddressId(address.id);
-    setNewAddress(address);
-    setOpenDialog(true);
+  // FIX: correct signature — takes address object, not ("address", address)
+  const handleEditAddress = async (address) => {
+    if (!address.id) {
+      console.error("No id found on address:", address);
+      return;
+    }
+    try {
+      const res = await getSaveNewAddressById(address.id);
+      // FIX: GET returns array — unwrap it
+      const detail = unwrapDetail(res?.data?.data);
+
+      const mapped = mapDetailToAddress(detail, {
+        isDefault: address.isDefault,
+      });
+
+      setEditingAddressId(address.id);
+      setNewAddress(mapped);
+      setOpenDialog(true);
+    } catch (error) {
+      console.error("Edit fetch failed:", error);
+    }
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setEditingAddressId(null);
+    setNewAddress(EMPTY_ADDRESS);
   };
 
-  const handleSaveAddress = () => {
-    if (!newAddress.fullName || !newAddress.street || !newAddress.city) {
-      alert("Please fill in all required fields");
-      return;
-    }
-    if (editingAddressId !== null) {
-      setPickupAddresses(
-        pickupAddresses.map((a) =>
-          a.id === editingAddressId ? newAddress : a,
-        ),
+  const handleDeleteClick = (id) => setDeleteConfirmId(id);
+  const handleCancelDelete = () => setDeleteConfirmId(null);
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmId) return;
+    setDeletingAddress(true);
+    try {
+      await deleteNewAddressById(deleteConfirmId);
+      setPickupAddresses((prev) =>
+        prev.filter((a) => a.id !== deleteConfirmId),
       );
-    } else {
-      setPickupAddresses([
-        ...pickupAddresses,
-        { ...newAddress, id: Date.now() },
-      ]);
+      setDeleteConfirmId(null);
+      showSaveSuccess();
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      alert("Failed to delete address. Please try again.");
+    } finally {
+      setDeletingAddress(false);
     }
-    handleSaveSettings();
-    handleCloseDialog();
-  };
-
-  // ── Delete: open confirmation ──
-  const handleDeleteClick = (id) => {
-    setDeleteConfirmId(id);
-  };
-
-  // ── Delete: confirmed ──
-  const handleConfirmDelete = () => {
-    setPickupAddresses(pickupAddresses.filter((a) => a.id !== deleteConfirmId));
-    setDeleteConfirmId(null);
-    handleSaveSettings();
-  };
-
-  // ── Delete: cancelled ──
-  const handleCancelDelete = () => {
-    setDeleteConfirmId(null);
   };
 
   const handleToggleAddress = (id) =>
-    setPickupAddresses(
-      pickupAddresses.map((a) =>
-        a.id === id ? { ...a, isEnabled: !a.isEnabled } : a,
-      ),
+    setPickupAddresses((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, isEnabled: !a.isEnabled } : a)),
     );
 
   const handleSetDefault = (id) => {
-    setPickupAddresses(
-      pickupAddresses.map((a) => ({ ...a, isDefault: a.id === id })),
+    setPickupAddresses((prev) =>
+      prev.map((a) => ({ ...a, isDefault: a.id === id })),
     );
-    handleSaveSettings();
+    showSaveSuccess();
   };
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f4fbfc", py: 4 }}>
       <Container maxWidth="lg">
@@ -441,7 +528,7 @@ export default function SupplierSettings() {
             <Box
               sx={{ fontSize: "0.875rem", fontWeight: 600, color: "#2e7d1e" }}
             >
-              Settings saved successfully!
+              Saved successfully!
             </Box>
           </Box>
         )}
@@ -513,10 +600,9 @@ export default function SupplierSettings() {
                   onChange={handleShippingLabelChange}
                   options={[
                     { value: "pdf", label: "PDF" },
-                    { value: "zil", label: "ZIP" },
+                    { value: "zip", label: "ZIP" },
                   ]}
                 />
-
                 <Box
                   sx={{
                     display: "flex",
@@ -550,10 +636,9 @@ export default function SupplierSettings() {
                     sx={switchSx}
                   />
                 </Box>
-
                 <GradientButton
                   fullWidth
-                  onClick={handleSaveSettings}
+                  onClick={() => showSaveSuccess()}
                   startIcon={
                     <SaveIcon
                       sx={{
@@ -641,7 +726,6 @@ export default function SupplierSettings() {
                         { value: "24", label: "24 hours" },
                       ]}
                     />
-
                     {[
                       {
                         name: "generateLabel",
@@ -694,7 +778,7 @@ export default function SupplierSettings() {
 
                 <GradientButton
                   fullWidth
-                  onClick={handleSaveSettings}
+                  onClick={() => showSaveSuccess()}
                   startIcon={
                     <SaveIcon
                       sx={{
@@ -896,10 +980,12 @@ export default function SupplierSettings() {
                                 mt: 0.3,
                               }}
                             >
-                              {address.email} · {address.phone}
+                              {address.email}
+                              {address.phone ? ` · ${address.phone}` : ""}
                             </Box>
                           </Box>
                           <Stack direction="row" spacing={0.5}>
+                            {/* FIX: correct call — just pass address */}
                             <IconButton
                               size="small"
                               onClick={() => handleEditAddress(address)}
@@ -949,8 +1035,8 @@ export default function SupplierSettings() {
                           >
                             <Switch
                               checked={address.isEnabled}
-                              onChange={() => handleToggleAddress(address.id)}
                               size="small"
+                              onChange={() => handleToggleAddress(address.id)}
                               sx={switchSx}
                             />
                             <Box
@@ -997,7 +1083,7 @@ export default function SupplierSettings() {
             },
           }}
         >
-          <DialogTitle
+          <Box
             sx={{
               background: GRADIENT,
               color: "#fff",
@@ -1010,34 +1096,34 @@ export default function SupplierSettings() {
             {editingAddressId !== null
               ? "✏️ Edit Pickup Address"
               : "📍 Add New Pickup Address"}
-          </DialogTitle>
+          </Box>
 
           <DialogContent sx={{ pt: 3, px: 3 }}>
             <Stack spacing={2}>
               {[
                 {
-                  label: "Full Name",
+                  label: "Full Name *",
                   name: "fullName",
                   placeholder: "John Doe",
                 },
+                // {
+                //   label: "Company Name",
+                //   name: "companyName",
+                //   placeholder: "Your Company",
+                // },
+                // {
+                //   label: "Email",
+                //   name: "email",
+                //   placeholder: "john@example.com",
+                //   type: "email",
+                // },
+                // {
+                //   label: "Phone",
+                //   name: "phone",
+                //   placeholder: "+91 98765 43210",
+                // },
                 {
-                  label: "Company Name",
-                  name: "companyName",
-                  placeholder: "Your Company",
-                },
-                {
-                  label: "Email",
-                  name: "email",
-                  placeholder: "john@example.com",
-                  type: "email",
-                },
-                {
-                  label: "Phone",
-                  name: "phone",
-                  placeholder: "+91 98765 43210",
-                },
-                {
-                  label: "Street Address",
+                  label: "Street Address *",
                   name: "street",
                   placeholder: "123 Business Street",
                 },
@@ -1059,7 +1145,7 @@ export default function SupplierSettings() {
 
               <Grid container spacing={1.5}>
                 <Grid item xs={6}>
-                  <FieldLabel>City</FieldLabel>
+                  <FieldLabel>City *</FieldLabel>
                   <TextField
                     fullWidth
                     name="city"
@@ -1085,7 +1171,7 @@ export default function SupplierSettings() {
               </Grid>
 
               <Box>
-                <FieldLabel>ZIP Code</FieldLabel>
+                <FieldLabel>ZIP / Pincode</FieldLabel>
                 <TextField
                   fullWidth
                   name="zipCode"
@@ -1122,11 +1208,22 @@ export default function SupplierSettings() {
           </DialogContent>
 
           <DialogActions sx={{ px: 3, py: 2.5, gap: 1 }}>
-            <GradientButton secondary onClick={handleCloseDialog}>
+            <GradientButton
+              secondary
+              onClick={handleCloseDialog}
+              disabled={savingAddress}
+            >
               Cancel
             </GradientButton>
-            <GradientButton onClick={handleSaveAddress}>
-              {editingAddressId !== null ? "Update Address" : "Save Address"}
+            <GradientButton
+              onClick={handleSaveAddress}
+              disabled={savingAddress}
+            >
+              {savingAddress
+                ? "Saving..."
+                : editingAddressId !== null
+                  ? "Update Address"
+                  : "Save Address"}
             </GradientButton>
           </DialogActions>
         </Dialog>
@@ -1146,7 +1243,6 @@ export default function SupplierSettings() {
             },
           }}
         >
-          {/* Red warning header */}
           <Box
             sx={{
               background: "linear-gradient(135deg, #e53935 0%, #ef5350 100%)",
@@ -1177,17 +1273,10 @@ export default function SupplierSettings() {
           </Box>
 
           <DialogContent sx={{ pt: 3, pb: 1, px: 3 }}>
-            <Box
-              sx={{
-                fontSize: "0.9rem",
-                color: "#333",
-                lineHeight: 1.6,
-              }}
-            >
+            <Box sx={{ fontSize: "0.9rem", color: "#333", lineHeight: 1.6 }}>
               Are you sure you want to delete this address?
             </Box>
 
-            {/* Address preview */}
             {addressToDelete && (
               <Box
                 sx={{
@@ -1220,23 +1309,25 @@ export default function SupplierSettings() {
               </Box>
             )}
 
-            <Box
-              sx={{
-                mt: 2,
-                fontSize: "0.8rem",
-                color: "#999",
-              }}
-            >
+            <Box sx={{ mt: 2, fontSize: "0.8rem", color: "#999" }}>
               This action cannot be undone.
             </Box>
           </DialogContent>
 
           <DialogActions sx={{ px: 3, py: 2.5, gap: 1 }}>
-            <GradientButton secondary onClick={handleCancelDelete}>
+            <GradientButton
+              secondary
+              onClick={handleCancelDelete}
+              disabled={deletingAddress}
+            >
               Cancel
             </GradientButton>
-            <GradientButton danger onClick={handleConfirmDelete}>
-              Yes, Delete
+            <GradientButton
+              danger
+              onClick={handleConfirmDelete}
+              disabled={deletingAddress}
+            >
+              {deletingAddress ? "Deleting..." : "Yes, Delete"}
             </GradientButton>
           </DialogActions>
         </Dialog>
