@@ -51,6 +51,21 @@ export const getRequestProducts = async () => {
   return data;
 };
 
-export const postAddNewAddress = async (formData) => {
+export const getSupplierProfile = async () => {
+  return await api.get("suppliers/profile/personalDetails");
+};
+
+// profile.service.js
+
+export const postSaveNewAddress = async (formData) => {
   return await api.post("suppliers/stores/warehouses", formData);
+};
+export const getSaveNewAddressById = async (warehouseId) => {
+  return await api.get(`suppliers/stores/warehouses/${warehouseId}`);
+};
+export const putNewAddressById = async (warehouseId, formData) => {
+  return await api.put(`suppliers/stores/warehouses/${warehouseId}`, formData);
+};
+export const deleteNewAddressById = async (warehouseId) => {
+  return await api.delete(`suppliers/stores/warehouses/${warehouseId}`);
 };

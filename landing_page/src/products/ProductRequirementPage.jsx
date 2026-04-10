@@ -26,7 +26,7 @@ export default function ManageProductsPage() {
         }));
         setProducts(mapped);
       } catch (err) {
-        setError("Failed to load products.");
+        setError("Failed to load products.", err.message);
       } finally {
         setLoading(false);
       }
