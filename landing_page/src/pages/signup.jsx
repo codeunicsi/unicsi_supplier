@@ -180,16 +180,16 @@ const Signup = () => {
               disabled={loading || otpVerified}
               className={`px-3 py-3 mt-2.5 rounded-md text-sm font-semibold transition-opacity ${
                 otpVerified
-                  ? "bg-green-600 text-white cursor-not-allowed"
-                  : "text-white"
+                  ? "text-white cursor-not-allowed bg-green-600"
+                  : "text-white bg-gray-500"
               }`}
               style={
-                otpVerified
-                  ? undefined
-                  : {
+                otpVerified && form.password.trim()
+                  ? {
                       background:
                         "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)",
                     }
+                  : undefined
               }
             >
               {otpVerified ? "Verified" : loading ? "Verifying..." : "Verify"}
@@ -222,12 +222,8 @@ const Signup = () => {
         {/* Signup Button */}
         <button
           type="submit"
-          disabled={!otpVerified || loading}
-          className={`w-full py-2 rounded-lg font-medium transition-opacity ${
-            otpVerified
-              ? "text-white"
-              : "bg-gray-400 text-white cursor-not-allowed"
-          }`}
+          disabled={!otpVerified || !form.password.trim() || loading}
+          className={`w-full py-2 rounded-lg font-medium transition-opacity ${otpVerified && form.password.trim() ? "text-white" : "bg-gray-400 text-white cursor-not-allowed"}`}
           style={
             otpVerified
               ? {
