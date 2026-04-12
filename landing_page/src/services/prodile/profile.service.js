@@ -60,8 +60,8 @@ export const getSupplierProfile = async () => {
 export const postSaveNewAddress = async (formData) => {
   return await api.post("suppliers/stores/warehouses", formData);
 };
-export const getSaveNewAddressById = async (warehouseId) => {
-  return await api.get(`suppliers/stores/warehouses/${warehouseId}`);
+export const getAllSaveNewAddress = async () => {
+  return await api.get(`suppliers/stores/warehouses`);
 };
 export const putNewAddressById = async (warehouseId, formData) => {
   return await api.put(`suppliers/stores/warehouses/${warehouseId}`, formData);

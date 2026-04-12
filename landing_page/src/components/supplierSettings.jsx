@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  Skeleton,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -30,7 +31,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   getSupplierProfile,
   postSaveNewAddress,
-  getSaveNewAddressById,
+  getAllSaveNewAddress,
   putNewAddressById,
   deleteNewAddressById,
 } from "../services/prodile/profile.service";
@@ -241,30 +242,64 @@ const EMPTY_ADDRESS = {
   isEnabled: true,
 };
 
-// GET /:id returns { success: true, data: [{ warehouse_id, name, address, ... }] }
-// unwrap the array and map to local shape
-const mapDetailToAddress = (detail, overrides = {}) => ({
-  id: detail.warehouse_id ?? null,
-  fullName: detail.name ?? "",
-  companyName: detail.companyName ?? "",
-  email: detail.email ?? "",
-  phone: detail.phone ?? "",
-  street: detail.address ?? "",
-  city: detail.city ?? "",
-  state: detail.state ?? "",
-  zipCode: detail.pincode ?? "",
-  country: detail.country ?? "IN",
+// Map API warehouse object → local address shape
+const mapWarehouseToAddress = (item, overrides = {}) => ({
+  id: item.warehouse_id ?? null,
+  fullName: item.name ?? "",
+  companyName: item.companyName ?? "",
+  email: item.email ?? "",
+  phone: item.phone ?? "",
+  street: item.address ?? "",
+  city: item.city ?? "",
+  state: item.state ?? "",
+  zipCode: item.pincode ?? "",
+  country: item.country ?? "IN",
   isDefault: overrides.isDefault ?? false,
-  isEnabled: detail.is_active ?? true,
+  isEnabled: item.is_active ?? true,
 });
 
-// Helper: always unwrap array response from GET /:id
-const unwrapDetail = (data) => (Array.isArray(data) ? data[0] : data);
+// Address skeleton loader card
+function AddressSkeleton() {
+  return (
+    <Box
+      sx={{
+        p: 2.5,
+        borderRadius: "12px",
+        border: "1.5px solid #e0f4f7",
+        background: "#fff",
+      }}
+    >
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+        <Box sx={{ flex: 1 }}>
+          <Skeleton variant="text" width="40%" height={22} sx={{ mb: 0.5 }} />
+          <Skeleton variant="text" width="70%" height={18} />
+          <Skeleton variant="text" width="50%" height={16} sx={{ mt: 0.3 }} />
+        </Box>
+        <Box sx={{ display: "flex", gap: 0.5 }}>
+          <Skeleton variant="rounded" width={32} height={32} />
+          <Skeleton variant="rounded" width={32} height={32} />
+        </Box>
+      </Box>
+      <Skeleton variant="text" width="100%" height={1} sx={{ my: 1.5 }} />
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Skeleton variant="rounded" width={60} height={24} />
+        <Skeleton variant="rounded" width={100} height={30} />
+      </Box>
+    </Box>
+  );
+}
 
 export default function SupplierSettings() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [pickupAddresses, setPickupAddresses] = useState([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [savingAddress, setSavingAddress] = useState(false);
   const [supplierId, setSupplierId] = useState(null);
@@ -292,12 +327,12 @@ export default function SupplierSettings() {
     defaultCarrier: "dhl",
   });
 
+  // ── Fetch supplier ID on mount ──────────────────────────────────────────
   useEffect(() => {
     const fetchSupplier = async () => {
       try {
         const res = await getSupplierProfile();
         const id = res?.data?.data?.supplier_id;
-        console.log(id);
         setSupplierId(id);
       } catch (error) {
         console.error("Failed to fetch supplier profile", error);
@@ -306,7 +341,26 @@ export default function SupplierSettings() {
     fetchSupplier();
   }, []);
 
-  // ── Build API payload from local state ────────────────────────────────────
+  // ── Fetch ALL addresses on mount ────────────────────────────────────────
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      setLoadingAddresses(true);
+      try {
+        const res = await getAllSaveNewAddress();
+        // API returns: { success: true, data: [ { warehouse_id, name, ... }, ... ] }
+        const list = res?.data?.data ?? [];
+        const mapped = list.map((item) => mapWarehouseToAddress(item));
+        setPickupAddresses(mapped);
+      } catch (error) {
+        console.error("Failed to fetch addresses", error);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
+
+  // ── Build API payload from local state ──────────────────────────────────
   const buildPayload = () => ({
     supplier_id: supplierId,
     name: newAddress.fullName,
@@ -319,10 +373,10 @@ export default function SupplierSettings() {
     pincode: newAddress.zipCode,
     country: newAddress.country,
     isDefault: newAddress.isDefault,
-    isEnabled: newAddress.isEnabled,
+    is_active: newAddress.isEnabled,
   });
 
-  // ── Save address: POST (create) or PUT (update) ───────────────────────────
+  // ── Save address: POST (create) or PUT (update) ─────────────────────────
   const handleSaveAddress = async () => {
     if (!newAddress.fullName || !newAddress.street || !newAddress.city) {
       alert("Please fill in Full Name, Street Address, and City");
@@ -336,42 +390,37 @@ export default function SupplierSettings() {
     setSavingAddress(true);
     try {
       if (editingAddressId !== null) {
-        // ── UPDATE: PUT then re-fetch ─────────────────────────────────────
-        await putNewAddressById(editingAddressId, buildPayload());
+        // ── UPDATE ──────────────────────────────────────────────────────
+        const res = await putNewAddressById(editingAddressId, buildPayload());
 
-        const detailRes = await getSaveNewAddressById(editingAddressId);
-        // FIX: GET returns array — unwrap it
-        const detail = unwrapDetail(detailRes?.data?.data);
-
-        const updatedAddress = mapDetailToAddress(detail, {
-          isDefault: newAddress.isDefault,
-        });
+        // Prefer server response; fall back to local state
+        const serverData = res?.data?.data;
+        const updatedAddress = serverData
+          ? mapWarehouseToAddress(serverData, {
+              isDefault: newAddress.isDefault,
+            })
+          : { ...newAddress, id: editingAddressId };
 
         setPickupAddresses((prev) =>
           prev.map((a) => (a.id === editingAddressId ? updatedAddress : a)),
         );
       } else {
-        // ── CREATE: POST → get warehouse_id → GET by id ───────────────────
+        // ── CREATE ──────────────────────────────────────────────────────
         const saveRes = await postSaveNewAddress(buildPayload());
-        // POST returns: { success: true, data: { warehouse_id, ... } }
+        // POST returns: { success: true, data: { warehouse_id, name, city, ... } }
         const saveData = saveRes?.data?.data;
-        const warehouseId = saveData?.warehouse_id;
 
-        if (!warehouseId) {
+        if (!saveData?.warehouse_id) {
           console.error("POST response shape:", saveRes?.data);
           throw new Error("No warehouse_id returned from save API");
         }
 
-        // FIX: use warehouseId (not editingAddressId which is null here)
-        const detailRes = await getSaveNewAddressById(warehouseId);
-        // FIX: GET returns array — unwrap it
-        const detail = unwrapDetail(detailRes?.data?.data);
-
-        const populatedAddress = mapDetailToAddress(detail, {
+        // Map the POST response directly — no need for a follow-up GET
+        const populatedAddress = mapWarehouseToAddress(saveData, {
           isDefault: newAddress.isDefault,
         });
 
-        setPickupAddresses((prev) => [...prev, populatedAddress]);
+        setPickupAddresses((prev) => [populatedAddress, ...prev]);
       }
 
       showSaveSuccess();
@@ -384,7 +433,7 @@ export default function SupplierSettings() {
     }
   };
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Generic change handlers ─────────────────────────────────────────────
   const handleShippingLabelChange = (e) => {
     const { name, value, type, checked } = e.target;
     setShippingLabel((prev) => ({
@@ -420,27 +469,28 @@ export default function SupplierSettings() {
     setOpenDialog(true);
   };
 
-  // FIX: correct signature — takes address object, not ("address", address)
-  const handleEditAddress = async (address) => {
+  // ── Edit: populate form from existing local state (no extra GET needed) ─
+  const handleEditAddress = (address) => {
     if (!address.id) {
       console.error("No id found on address:", address);
       return;
     }
-    try {
-      const res = await getSaveNewAddressById(address.id);
-      // FIX: GET returns array — unwrap it
-      const detail = unwrapDetail(res?.data?.data);
-
-      const mapped = mapDetailToAddress(detail, {
-        isDefault: address.isDefault,
-      });
-
-      setEditingAddressId(address.id);
-      setNewAddress(mapped);
-      setOpenDialog(true);
-    } catch (error) {
-      console.error("Edit fetch failed:", error);
-    }
+    setEditingAddressId(address.id);
+    setNewAddress({
+      id: address.id,
+      fullName: address.fullName,
+      companyName: address.companyName,
+      email: address.email,
+      phone: address.phone,
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      zipCode: address.zipCode,
+      country: address.country || "IN",
+      isDefault: address.isDefault,
+      isEnabled: address.isEnabled,
+    });
+    setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
@@ -482,7 +532,7 @@ export default function SupplierSettings() {
     showSaveSuccess();
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f4fbfc", py: 4 }}>
       <Container maxWidth="lg">
@@ -830,7 +880,7 @@ export default function SupplierSettings() {
                         fontWeight: 700,
                       }}
                     >
-                      {pickupAddresses.length}
+                      {loadingAddresses ? "..." : pickupAddresses.length}
                     </Box>
                   </Box>
                   <GradientButton secondary onClick={handleAddAddress}>
@@ -838,7 +888,14 @@ export default function SupplierSettings() {
                   </GradientButton>
                 </Box>
 
-                {pickupAddresses.length === 0 ? (
+                {/* Loading skeletons */}
+                {loadingAddresses ? (
+                  <Stack spacing={2}>
+                    {[1, 2, 3].map((i) => (
+                      <AddressSkeleton key={i} />
+                    ))}
+                  </Stack>
+                ) : pickupAddresses.length === 0 ? (
                   <Box
                     sx={{
                       p: 4,
@@ -915,6 +972,7 @@ export default function SupplierSettings() {
                                 gap: 1,
                                 alignItems: "center",
                                 mb: 0.5,
+                                flexWrap: "wrap",
                               }}
                             >
                               <Box
@@ -924,7 +982,7 @@ export default function SupplierSettings() {
                                   color: "#000",
                                 }}
                               >
-                                {address.fullName}
+                                {address.fullName || "—"}
                               </Box>
                               {address.isDefault && (
                                 <Box
@@ -970,22 +1028,35 @@ export default function SupplierSettings() {
                               </Box>
                             )}
                             <Box sx={{ fontSize: "0.85rem", color: "#333" }}>
-                              {address.street}, {address.city}, {address.state}{" "}
-                              {address.zipCode}, {address.country}
+                              {[
+                                address.street,
+                                address.city,
+                                address.state,
+                                address.zipCode,
+                                address.country,
+                              ]
+                                .filter(Boolean)
+                                .join(", ")}
                             </Box>
-                            <Box
-                              sx={{
-                                fontSize: "0.8rem",
-                                color: "#777",
-                                mt: 0.3,
-                              }}
-                            >
-                              {address.email}
-                              {address.phone ? ` · ${address.phone}` : ""}
-                            </Box>
+                            {(address.email || address.phone) && (
+                              <Box
+                                sx={{
+                                  fontSize: "0.8rem",
+                                  color: "#777",
+                                  mt: 0.3,
+                                }}
+                              >
+                                {[address.email, address.phone]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </Box>
+                            )}
                           </Box>
-                          <Stack direction="row" spacing={0.5}>
-                            {/* FIX: correct call — just pass address */}
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            sx={{ flexShrink: 0, ml: 1 }}
+                          >
                             <IconButton
                               size="small"
                               onClick={() => handleEditAddress(address)}
@@ -1106,22 +1177,6 @@ export default function SupplierSettings() {
                   name: "fullName",
                   placeholder: "John Doe",
                 },
-                // {
-                //   label: "Company Name",
-                //   name: "companyName",
-                //   placeholder: "Your Company",
-                // },
-                // {
-                //   label: "Email",
-                //   name: "email",
-                //   placeholder: "john@example.com",
-                //   type: "email",
-                // },
-                // {
-                //   label: "Phone",
-                //   name: "phone",
-                //   placeholder: "+91 98765 43210",
-                // },
                 {
                   label: "Street Address *",
                   name: "street",
@@ -1295,7 +1350,7 @@ export default function SupplierSettings() {
                     mb: 0.4,
                   }}
                 >
-                  {addressToDelete.fullName}
+                  {addressToDelete.fullName || "—"}
                 </Box>
                 {addressToDelete.companyName && (
                   <Box sx={{ fontSize: "0.8rem", color: "#666", mb: 0.2 }}>
@@ -1303,8 +1358,14 @@ export default function SupplierSettings() {
                   </Box>
                 )}
                 <Box sx={{ fontSize: "0.8rem", color: "#555" }}>
-                  {addressToDelete.street}, {addressToDelete.city},{" "}
-                  {addressToDelete.state} {addressToDelete.zipCode}
+                  {[
+                    addressToDelete.street,
+                    addressToDelete.city,
+                    addressToDelete.state,
+                    addressToDelete.zipCode,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
                 </Box>
               </Box>
             )}
