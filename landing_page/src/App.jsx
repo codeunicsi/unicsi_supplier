@@ -27,6 +27,7 @@ import ReportsTable from "./pages/ReportsTable";
 import SubmitTicket from "./pages/SubmitTicket";
 import PaymentsPage from "./pages/Payment";
 import Faq from "./pages/Faqs";
+import ShopifyOrders from "./pages/shopify-orders";
 
 function App() {
   return (
@@ -54,6 +55,7 @@ function App() {
           <Route path="/vendor" element={<VendorDashboard />} /> */}
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/order" element={<ManageOrders />} />
+            <Route path="/shopify-orders" element={<ShopifyOrders />} />
             <Route path="/products" element={<ProductsList />} />
             <Route path="/products/add" element={<AddProductForm />} />
             <Route

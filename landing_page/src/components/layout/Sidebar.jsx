@@ -36,6 +36,7 @@ const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
 const menuItems = [
   { name: "Manage Orders", icon: ReceiptLongIcon, path: "/order" },
+  { name: "Shopify Orders", icon: ReceiptLongIcon, path: "/shopify-orders" },
   {
     name: "Manage RTO / Returns",
     icon: AssignmentReturnIcon,
