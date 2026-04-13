@@ -239,6 +239,7 @@ const EMPTY_ADDRESS = {
   country: "IN",
   isDefault: false,
   isEnabled: true,
+  pickupAddressId: "",
 };
 
 // GET /:id returns { success: true, data: [{ warehouse_id, name, address, ... }] }
@@ -256,6 +257,7 @@ const mapDetailToAddress = (detail, overrides = {}) => ({
   country: detail.country ?? "IN",
   isDefault: overrides.isDefault ?? false,
   isEnabled: detail.is_active ?? true,
+  pickupAddressId: detail.pickup_address_id ?? "",
 });
 
 // Helper: always unwrap array response from GET /:id
@@ -320,6 +322,7 @@ export default function SupplierSettings() {
     country: newAddress.country,
     isDefault: newAddress.isDefault,
     isEnabled: newAddress.isEnabled,
+    pickup_address_id: newAddress.pickupAddressId || null,
   });
 
   // ── Save address: POST (create) or PUT (update) ───────────────────────────
@@ -337,7 +340,8 @@ export default function SupplierSettings() {
     try {
       if (editingAddressId !== null) {
         // ── UPDATE: PUT then re-fetch ─────────────────────────────────────
-        await putNewAddressById(editingAddressId, buildPayload());
+        const updatePayload = buildPayload();
+        await putNewAddressById(editingAddressId, updatePayload);
 
         const detailRes = await getSaveNewAddressById(editingAddressId);
         // FIX: GET returns array — unwrap it
@@ -352,7 +356,8 @@ export default function SupplierSettings() {
         );
       } else {
         // ── CREATE: POST → get warehouse_id → GET by id ───────────────────
-        const saveRes = await postSaveNewAddress(buildPayload());
+        const createPayload = buildPayload();
+        const saveRes = await postSaveNewAddress(createPayload);
         // POST returns: { success: true, data: { warehouse_id, ... } }
         const saveData = saveRes?.data?.data;
         const warehouseId = saveData?.warehouse_id;
@@ -377,7 +382,7 @@ export default function SupplierSettings() {
       showSaveSuccess();
       handleCloseDialog();
     } catch (error) {
-      console.error("Error saving address:", error);
+      console.error("[handleSaveAddress] error:", error?.message, error?.response?.status, error?.response?.data);
       alert("Failed to save address. Please try again.");
     } finally {
       setSavingAddress(false);
@@ -983,6 +988,26 @@ export default function SupplierSettings() {
                               {address.email}
                               {address.phone ? ` · ${address.phone}` : ""}
                             </Box>
+                            {address.pickupAddressId && (
+                              <Box
+                                sx={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 0.5,
+                                  mt: 0.5,
+                                  background: "rgba(0,151,178,0.08)",
+                                  color: "#0097b2",
+                                  border: "1px solid rgba(0,151,178,0.25)",
+                                  borderRadius: "6px",
+                                  px: 1,
+                                  py: 0.2,
+                                  fontSize: "0.7rem",
+                                  fontWeight: 700,
+                                }}
+                              >
+                                iThink ID: {address.pickupAddressId}
+                              </Box>
+                            )}
                           </Box>
                           <Stack direction="row" spacing={0.5}>
                             {/* FIX: correct call — just pass address */}
@@ -1178,6 +1203,19 @@ export default function SupplierSettings() {
                   value={newAddress.zipCode}
                   onChange={handleAddressChange}
                   placeholder="400001"
+                  size="small"
+                  sx={fieldSx}
+                />
+              </Box>
+
+              <Box>
+                <FieldLabel>Pickup Address ID (iThink)</FieldLabel>
+                <TextField
+                  fullWidth
+                  name="pickupAddressId"
+                  value={newAddress.pickupAddressId}
+                  onChange={handleAddressChange}
+                  placeholder="e.g. 1293"
                   size="small"
                   sx={fieldSx}
                 />

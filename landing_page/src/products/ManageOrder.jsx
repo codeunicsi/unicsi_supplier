@@ -8,6 +8,7 @@ import {
   getBulkOrders,
   uploadBiltiDetails,
 } from "../services/prodile/profile.service";
+import api from "../api.jsx";
 
 const ORDER_TABS = [
   "On Hold",
@@ -35,6 +36,8 @@ export default function ManageOrder() {
 
   // upload state per orderId
   const [uploadState, setUploadState] = useState({});
+  /** @type {{ [orderId: string]: { loading?: boolean; error?: string | null; labelUrl?: string } }} */
+  const [shipmentState, setShipmentState] = useState({});
   const fileRefs = useRef({});
 
   useEffect(() => {
@@ -44,7 +47,21 @@ export default function ManageOrder() {
       setBulkError(null);
       try {
         const res = await getBulkOrders();
-        setBulkOrders(res?.data?.data.orders ?? []);
+        const orders = res?.data?.data?.orders ?? [];
+        setBulkOrders(orders);
+        // Initialize shipment state from existing order data
+        const initialShipmentState = {};
+        orders.forEach((order) => {
+          if (order.waybill || order.labelUrl) {
+            initialShipmentState[order.orderId] = {
+              loading: false,
+              error: null,
+              waybill: order.waybill || null,
+              labelUrl: order.labelUrl || null,
+            };
+          }
+        });
+        setShipmentState(initialShipmentState);
       } catch (err) {
         setBulkError(err?.message || "Failed to fetch bulk orders.");
       } finally {
@@ -171,6 +188,40 @@ export default function ManageOrder() {
     }
   };
 
+  const handleCreateShipment = async (orderId) => {
+    setShipmentState((prev) => ({
+      ...prev,
+      [orderId]: { ...prev[orderId], loading: true, error: null },
+    }));
+    try {
+      const { data } = await api.post(
+        `suppliers/supplier/orders/${orderId}/create-shipment`,
+      );
+      if (!data?.success) {
+        throw new Error(data?.message || "Create shipment failed");
+      }
+      setShipmentState((prev) => ({
+        ...prev,
+        [orderId]: {
+          loading: false,
+          error: null,
+          waybill: data.waybill || null,
+          labelUrl: data.label_url,
+        },
+      }));
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Create shipment failed.";
+      setShipmentState((prev) => ({
+        ...prev,
+        [orderId]: { ...prev[orderId], loading: false, error: msg },
+      }));
+    }
+  };
+
   return (
     <div>
       {/* Section tabs */}
@@ -233,7 +284,7 @@ export default function ManageOrder() {
                         Order #{orderId}
                       </span>
                       <span className="text-xs text-gray-500">
-                        {order.status}
+                        {order.orderStatus ?? order.status}
                       </span>
                     </div>
 
@@ -242,8 +293,42 @@ export default function ManageOrder() {
                       <BulkOrderTable orders={[order]} />
                     </div>
 
-                    {/* Upload UI */}
+                    {/* Shipment + bilti */}
                     <div className="border-t bg-gray-50 p-3 space-y-3">
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {!shipmentState[orderId]?.waybill ? (
+                          <button
+                            type="button"
+                            onClick={() => handleCreateShipment(orderId)}
+                            disabled={shipmentState[orderId]?.loading}
+                            className="bg-emerald-600 text-white px-3 py-2 text-xs rounded hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            {shipmentState[orderId]?.loading
+                              ? "Creating…"
+                              : "Create Shipment"}
+                          </button>
+                        ) : (
+                          <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">
+                            AWB: {shipmentState[orderId].waybill}
+                          </span>
+                        )}
+                        {shipmentState[orderId]?.labelUrl ? (
+                          <a
+                            href={shipmentState[orderId].labelUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center px-3 py-2 text-xs rounded border border-blue-600 text-blue-600 hover:bg-blue-50"
+                          >
+                            Download Label
+                          </a>
+                        ) : null}
+                      </div>
+                      {shipmentState[orderId]?.error ? (
+                        <p className="text-red-500 text-xs">
+                          {shipmentState[orderId].error}
+                        </p>
+                      ) : null}
+
                       {/* Image previews */}
                       {previews.length > 0 && (
                         <div className="flex flex-wrap gap-2">
