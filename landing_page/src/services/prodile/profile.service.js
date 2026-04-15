@@ -69,3 +69,7 @@ export const putNewAddressById = async (warehouseId, formData) => {
 export const deleteNewAddressById = async (warehouseId) => {
   return await api.delete(`suppliers/stores/warehouses/${warehouseId}`);
 };
+
+export const shopifyOrders = async () => {
+  return await api.get("suppliers/stores/shopify-orders");
+};

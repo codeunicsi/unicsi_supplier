@@ -50,6 +50,7 @@ function GradientButton({
   startIcon,
   fullWidth = false,
   type = "button",
+  disabled = false,
 }) {
   const [hovered, setHovered] = useState(false);
   const pad = size === "small" ? "7px 16px" : "10px 24px";
@@ -59,6 +60,7 @@ function GradientButton({
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -70,7 +72,7 @@ function GradientButton({
         borderRadius: "10px",
         fontSize,
         fontWeight: 600,
-        cursor: "pointer",
+        cursor: disabled ? "not-allowed" : "pointer",
         whiteSpace: "nowrap",
         transition: "all 0.2s ease",
         width: fullWidth ? "100%" : "auto",
@@ -96,6 +98,7 @@ function GradientButton({
                   ? "0 4px 14px rgba(0,151,178,0.3)"
                   : "0 2px 8px rgba(0,151,178,0.18)",
               }),
+        opacity: disabled ? 0.6 : 1,
       }}
     >
       {startIcon && (
@@ -146,6 +149,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
   });
   const [expandedVariant, setExpandedVariant] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", productId],
@@ -316,7 +320,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       alert("Please add at least one variant");
       return;
     }
-
+    setSubmitting(true);
     const form = new FormData();
 
     // ── Top-level fields ──
@@ -405,6 +409,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       alert(
         "Failed to submit product: " + (apiError || apiMessage || fallback),
       );
+    } finally {
+      setSubmitting(false); // 🔥 stop loading (VERY IMPORTANT)
     }
   };
 
@@ -1383,8 +1389,21 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                   <GradientButton secondary onClick={() => setActiveTab(0)}>
                     ← Back to Details
                   </GradientButton>
-                  <GradientButton onClick={handleSubmit}>
-                    Submit Product
+                  <GradientButton onClick={handleSubmit} disabled={submitting}>
+                    {submitting ? (
+                      <span
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                        }}
+                      >
+                        <CircularProgress size={16} sx={{ color: "#fff" }} />
+                        Submitting...
+                      </span>
+                    ) : (
+                      "Submit Product"
+                    )}
                   </GradientButton>
                 </Stack>
               </Box>
