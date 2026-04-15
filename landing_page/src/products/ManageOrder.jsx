@@ -271,9 +271,7 @@ export default function ManageOrder() {
     }
   };
 
-  const formatStatus = (status) =>
-    status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
+ 
   // ── Render ────────────────────────────────────────────────────────
   return (
     <div>
