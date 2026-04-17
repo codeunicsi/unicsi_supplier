@@ -5,15 +5,14 @@ import BulkOrderTable from "./Bulkordertable";
 import {
   getBulkOrders,
   uploadBiltiDetails,
+  fetchAllAddresses,
 } from "../services/prodile/profile.service";
-import { shopifyOrders } from "../services/prodile/profile.service"; // ← add this import
+import { shopifyOrders } from "../services/prodile/profile.service";
 
 const ORDER_HEADERS = [
   "Product",
   "SKU",
   "Stock",
-  // "Cost Price",
-  // "Sale Price",
   "Status",
   "Inventory Management",
   "Weight (G)",
@@ -27,6 +26,219 @@ const SLA_STATUS_OPTIONS = [
   { value: "on_track", label: "On Track" },
 ];
 
+// ── Create Shipment Modal ─────────────────────────────────────────────────────
+function CreateShipmentModal({ row, onClose, onConfirm }) {
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [rtoSameAddress, setRtoSameAddress] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetchAllAddresses();
+        // Support both res.data and res.data.data shapes
+        const all = res?.data?.data ?? res?.data ?? [];
+        const active = all.filter((a) => a.is_active && !a.is_deleted);
+        setAddresses(active);
+        if (active.length > 0) setSelectedAddressId(active[0].warehouse_id);
+      } catch (err) {
+        setError(err?.message || "Failed to load addresses.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const handleConfirm = async () => {
+    if (!selectedAddressId) return;
+    setConfirming(true);
+    try {
+      await onConfirm({
+        row,
+        warehouseId: selectedAddressId,
+        rtoSameAddress,
+      });
+      onClose();
+    } catch (err) {
+      setError(err?.message || "Failed to create shipment.");
+    } finally {
+      setConfirming(false);
+    }
+  };
+
+  return (
+    // Backdrop
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b">
+          <h2 className="text-base font-semibold text-gray-800">
+            Create Shipment
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-4">
+          <p className="text-sm font-medium text-gray-600 mb-3">
+            Select Pickup Address:
+          </p>
+
+          {loading ? (
+            <p className="text-center py-8 text-gray-400 text-sm">
+              Loading addresses…
+            </p>
+          ) : error ? (
+            <p className="text-center py-8 text-red-500 text-sm">{error}</p>
+          ) : addresses.length === 0 ? (
+            <p className="text-center py-8 text-gray-400 text-sm">
+              No active pickup addresses found.
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+              {addresses.map((addr) => (
+                <label
+                  key={addr.warehouse_id}
+                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedAddressId === addr.warehouse_id
+                      ? "border-blue-500 bg-blue-50"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="pickup_address"
+                    className="mt-0.5 accent-blue-600"
+                    checked={selectedAddressId === addr.warehouse_id}
+                    onChange={() => setSelectedAddressId(addr.warehouse_id)}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {addr.name}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {addr.address}, {addr.city}, {addr.state}, {addr.country}{" "}
+                      – {addr.pincode}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      Warehouse Code:{" "}
+                      <span className="font-medium text-gray-600">
+                        {addr.warehouse_code}
+                      </span>
+                    </p>
+                    {addr.is_active && (
+                      <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50">
+          {/* RTO toggle */}
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-gray-600 font-medium">
+              Use the same address for RTO?
+            </span>
+            <div className="flex items-center gap-2 text-xs">
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="rto"
+                  checked={rtoSameAddress}
+                  onChange={() => setRtoSameAddress(true)}
+                  className="accent-blue-600"
+                />
+                Yes
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input
+                  type="radio"
+                  name="rto"
+                  checked={!rtoSameAddress}
+                  onChange={() => setRtoSameAddress(false)}
+                  className="accent-blue-600"
+                />
+                No
+              </label>
+            </div>
+          </div>
+
+          {/* Confirm button */}
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedAddressId || confirming || loading}
+            className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2 rounded text-sm font-semibold hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {confirming ? (
+              <>
+                <svg
+                  className="w-3.5 h-3.5 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                Processing…
+              </>
+            ) : (
+              <>
+                <svg
+                  className="w-3.5 h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                CONFIRM SHIPMENT
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function ManageOrder() {
   const [activeSection, setActiveSection] = useState("orders");
 
@@ -37,6 +249,9 @@ export default function ManageOrder() {
   const [slaStatus, setSlaStatus] = useState("");
   const [skuId, setSkuId] = useState("");
   const [showHighPriority, setShowHighPriority] = useState(false);
+
+  // ── Shipment modal state ──────────────────────────────────────────
+  const [shipmentModal, setShipmentModal] = useState(null); // null | row object
 
   // ── Shopify orders state ──────────────────────────────────────────
   const [orders, setOrders] = useState([]);
@@ -63,9 +278,7 @@ export default function ManageOrder() {
     Refunded: ["refunded"],
   };
 
-  const ORDER_TABS = Object.keys(STATUS_MAP).map((label) => ({
-    label,
-  }));
+  const ORDER_TABS = Object.keys(STATUS_MAP).map((label) => ({ label }));
 
   // ── Fetch shopify orders on mount / tab switch ────────────────────
   useEffect(() => {
@@ -75,7 +288,6 @@ export default function ManageOrder() {
       setOrdersError(null);
       try {
         const res = await shopifyOrders();
-        // API returns { success, data: [...] }
         setOrders(res?.data?.data ?? []);
       } catch (err) {
         setOrdersError(err?.message || "Failed to fetch orders.");
@@ -105,26 +317,22 @@ export default function ManageOrder() {
   }, [activeSection]);
 
   // ── Derived: flatten items_json for table rows ────────────────────
-  // Each order can have multiple line items; we show one row per item.
   const tableRows = orders.flatMap((order) =>
     (order.items_json ?? []).map((item) => ({
       orderId: order.order_id,
       orderName: order.shopify_order_name,
       status: order.status,
-      // ── Fields shown in UI columns ──
       product: item.title,
       sku: item.sku,
-      stock: item.quantity, // quantity available maps to Stock
-      // costPrice: item.price, // supplier cost price
-      // salePrice: item.price, // sale price (same field until API exposes separately)
-      compareAt: null, // not in API yet — shown as "—"
-      inventoryManagement: null, // not in API yet — shown as "—"
-      weightG: null, // not in API yet — shown as "—"
+      stock: item.quantity,
+      compareAt: null,
+      inventoryManagement: null,
+      weightG: null,
       variantTitle: item.variantTitle,
     })),
   );
 
-  // ── Filter: SKU ID search (client-side) ───────────────────────────
+  // ── Filters ───────────────────────────────────────────────────────
   const [appliedSkuId, setAppliedSkuId] = useState("");
   const [_, setAppliedSlaStatus] = useState("");
 
@@ -141,29 +349,20 @@ export default function ManageOrder() {
   };
 
   const filteredRows = tableRows.filter((row) => {
-    // SKU filter
     if (
       appliedSkuId &&
       !row.sku?.toLowerCase().includes(appliedSkuId.toLowerCase())
-    ) {
+    )
       return false;
-    }
-
-    // Status filter
     const allowedStatuses = STATUS_MAP[activeOrderTab];
-
-    if (allowedStatuses.length > 0 && !allowedStatuses.includes(row.status)) {
+    if (allowedStatuses.length > 0 && !allowedStatuses.includes(row.status))
       return false;
-    }
-
     return true;
   });
 
   const getCount = (label) => {
     const statuses = STATUS_MAP[label];
-
     if (label === "All") return tableRows.length;
-
     return tableRows.filter((row) => statuses.includes(row.status)).length;
   };
 
@@ -172,7 +371,18 @@ export default function ManageOrder() {
   const handleDownloadHistory = () => console.log("Downloading history…");
   const handleDownloadTable = () => console.log("Downloading table…");
 
-  // ── Bulk upload handlers (unchanged) ─────────────────────────────
+  // ── Shipment confirm handler ──────────────────────────────────────
+  const handleConfirmShipment = async ({
+    row,
+    warehouseId,
+    rtoSameAddress,
+  }) => {
+    // TODO: wire to your actual create-shipment API
+    console.log("Creating shipment:", { row, warehouseId, rtoSameAddress });
+    // e.g. await createShipment({ orderId: row.orderId, warehouseId, rtoSameAddress });
+  };
+
+  // ── Bulk upload handlers ──────────────────────────────────────────
   const handleFileChange = (orderId, newFiles) => {
     const newFileArray = Array.from(newFiles);
     const newPreviews = newFileArray.map((file) => ({
@@ -274,6 +484,15 @@ export default function ManageOrder() {
   // ── Render ────────────────────────────────────────────────────────
   return (
     <div>
+      {/* Shipment Modal */}
+      {shipmentModal && (
+        <CreateShipmentModal
+          row={shipmentModal}
+          onClose={() => setShipmentModal(null)}
+          onConfirm={handleConfirmShipment}
+        />
+      )}
+
       {/* Section tabs */}
       <div className="flex gap-2 mb-6 border-b">
         <button
@@ -464,22 +683,6 @@ export default function ManageOrder() {
             </button>
             <div className="flex-1" />
             <div className="flex items-center gap-3 flex-wrap">
-              {/* <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded px-3 py-2">
-                <svg
-                  className="w-4 h-4 text-red-500 flex-shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-9a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm0-4a1 1 0 100 2 1 1 0 000-2z"
-                  />
-                </svg>
-                <span className="text-red-600 text-xs font-semibold">
-                  27 Orders Need Attention
-                </span>
-              </div> */}
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <div
                   onClick={() => setShowHighPriority((p) => !p)}
@@ -573,14 +776,6 @@ export default function ManageOrder() {
                           <td className="px-3 py-3 text-gray-600">
                             {row.stock}
                           </td>
-                          {/* Cost Price */}
-                          {/* <td className="px-3 py-3 text-gray-600">
-                            ₹{row.costPrice}
-                          </td>
-                          {/* Sale Price */}
-                          {/* <td className="px-3 py-3 text-gray-600">
-                            ₹{row.salePrice}
-                          </td> */}
                           {/* Status */}
                           <td className="px-3 py-3 text-gray-400">
                             {row.status}
@@ -589,10 +784,26 @@ export default function ManageOrder() {
                           <td className="px-3 py-3 text-gray-400">—</td>
                           {/* Weight (G) */}
                           <td className="px-3 py-3 text-gray-400">—</td>
-                          {/* Actions */}
+                          {/* Actions — Create Shipment button */}
                           <td className="px-3 py-3">
-                            <button className="text-blue-600 hover:underline text-xs font-medium">
-                              View
+                            <button
+                              onClick={() => setShipmentModal(row)}
+                              className="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-black transition-colors whitespace-nowrap"
+                            >
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2.5}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Create Shipment
                             </button>
                           </td>
                         </tr>
