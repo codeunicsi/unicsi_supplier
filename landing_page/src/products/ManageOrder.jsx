@@ -440,6 +440,7 @@ export default function ManageOrder() {
       stock: item.quantity,
       price: item.price,
       variantTitle: item.variantTitle,
+      labelUrl: order.label_url,
     })),
   );
 
@@ -874,25 +875,53 @@ export default function ManageOrder() {
                           <td className="px-3 py-3 text-gray-400">—</td>
                           <td className="px-3 py-3 text-gray-400">—</td>
                           <td className="px-3 py-3">
-                            <button
-                              onClick={() => setShipmentModal(row)}
-                              className="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-black transition-colors whitespace-nowrap"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
+                            {row.status === "processing" ? (
+                              <button
+                                onClick={() => {
+                                  if (row.labelUrl) {
+                                    window.open(row.labelUrl, "_blank"); // open PDF
+                                  } else {
+                                    alert("Label not available");
+                                  }
+                                }}
+                                className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-green-700 transition-colors whitespace-nowrap"
                               >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2.5}
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                              Create Shipment
-                            </button>
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2.5}
+                                    d="M12 5v14m7-7H5"
+                                  />
+                                </svg>
+                                Download Label
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => setShipmentModal(row)}
+                                className="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-black transition-colors whitespace-nowrap"
+                              >
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2.5}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                                Create Shipment
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))
