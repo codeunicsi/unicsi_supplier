@@ -83,3 +83,7 @@ export const deleteNewAddressById = async (warehouseId) => {
 export const shopifyOrders = async () => {
   return await api.get("suppliers/stores/shopify-orders");
 };
+
+export const createShipment = async (payload) => {
+  return await api.post("velocity/shipment/forward", payload);
+};

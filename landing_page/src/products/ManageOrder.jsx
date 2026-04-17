@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import Pagination from "../ui/Pagination";
-import ProductTable from "./ProductTable";
 import BulkOrderTable from "./Bulkordertable";
 import {
   getBulkOrders,
   uploadBiltiDetails,
   fetchAllAddresses,
+  createShipment, // ← add this export to your profile.service.js
 } from "../services/prodile/profile.service";
 import { shopifyOrders } from "../services/prodile/profile.service";
 
@@ -26,14 +26,83 @@ const SLA_STATUS_OPTIONS = [
   { value: "on_track", label: "On Track" },
 ];
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+function formatOrderDate(isoString) {
+  if (!isoString) return "";
+  const d = new Date(isoString);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+}
+
+function buildShipmentPayload(row, activeWarehouse, rtoSameAddress) {
+  const sa = row.shippingAddress ?? {};
+  const ba = row.billingAddress ?? {};
+
+  return {
+    order_id: row.orderId,
+    order_date: formatOrderDate(row.createdAt),
+    carrier_id: "",
+    billing_customer_name: ba.first_name ?? sa.first_name ?? "",
+    billing_last_name: ba.last_name ?? sa.last_name ?? "",
+    billing_address: ba.address1 ?? sa.address1 ?? "",
+    billing_city: ba.city ?? sa.city ?? "",
+    billing_pincode: ba.zip ?? sa.zip ?? "",
+    billing_state: ba.province ?? sa.province ?? "",
+    billing_country: ba.country ?? sa.country ?? "",
+    billing_email: row.customerEmail ?? "",
+    billing_phone: ba.phone ?? sa.phone ?? row.customerPhone ?? "9999999999",
+    shipping_is_billing: true,
+    print_label: true,
+    order_items: [
+      {
+        name: row.product,
+        sku: row.sku,
+        units: row.stock,
+        selling_price: parseFloat(row.price) || 0,
+        discount: 0,
+        tax: 0,
+      },
+    ],
+    payment_method: "PREPAID",
+    sub_total: parseFloat(row.totalPrice) || 0,
+    cod_collectible: 0,
+    length: 10,
+    breadth: 10,
+    height: 10,
+    weight: 1,
+    pickup_location: "Primary",
+    warehouse_id: activeWarehouse?.warehouse_code ?? "",
+    rto_warehouse_id: rtoSameAddress
+      ? ""
+      : (activeWarehouse?.warehouse_code ?? ""),
+    vendor_details: {
+      email: row.customerEmail ?? "",
+      phone: ba.phone ?? sa.phone ?? row.customerPhone ?? "9999999999",
+      name: `${ba.first_name ?? sa.first_name ?? ""} ${ba.last_name ?? sa.last_name ?? ""}`.trim(),
+      address: ba.address1 ?? sa.address1 ?? "",
+      address_2: ba.address2 ?? sa.address2 ?? "",
+      city: ba.city ?? sa.city ?? "",
+      state: ba.province ?? sa.province ?? "",
+      country: ba.country ?? sa.country ?? "",
+      pin_code: ba.zip ?? sa.zip ?? "",
+      pickup_location: "Primary",
+    },
+  };
+}
+
 // ── Create Shipment Modal ─────────────────────────────────────────────────────
 function CreateShipmentModal({ row, onClose, onConfirm }) {
   const [addresses, setAddresses] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
   const [rtoSameAddress, setRtoSameAddress] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [confirming, setConfirming] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -41,11 +110,10 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
       setError(null);
       try {
         const res = await fetchAllAddresses();
-        // Support both res.data and res.data.data shapes
         const all = res?.data?.data ?? res?.data ?? [];
         const active = all.filter((a) => a.is_active && !a.is_deleted);
         setAddresses(active);
-        if (active.length > 0) setSelectedAddressId(active[0].warehouse_id);
+        if (active.length > 0) setSelectedAddress(active[0]);
       } catch (err) {
         setError(err?.message || "Failed to load addresses.");
       } finally {
@@ -56,27 +124,33 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
   }, []);
 
   const handleConfirm = async () => {
-    if (!selectedAddressId) return;
+    if (!selectedAddress) return;
     setConfirming(true);
+    setError(null);
     try {
-      await onConfirm({
+      const payload = buildShipmentPayload(
         row,
-        warehouseId: selectedAddressId,
+        selectedAddress,
         rtoSameAddress,
-      });
-      onClose();
+      );
+      await onConfirm(payload);
+      setSuccess(true);
+      setTimeout(() => onClose(), 1200);
     } catch (err) {
-      setError(err?.message || "Failed to create shipment.");
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to create shipment.",
+      );
     } finally {
       setConfirming(false);
     }
   };
 
   return (
-    // Backdrop
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      onClick={(e) => e.target === e.currentTarget && !confirming && onClose()}
     >
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
         {/* Header */}
@@ -86,14 +160,38 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none"
-            aria-label="Close"
+            disabled={confirming}
+            className="text-gray-400 hover:text-gray-600 transition-colors text-lg leading-none disabled:opacity-40"
           >
             ✕
           </button>
         </div>
 
-        {/* Body */}
+        {/* Order summary strip */}
+        <div className="px-5 pt-3 pb-3 bg-gray-50 border-b">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            Order Details
+          </p>
+          <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-700">
+            <span>
+              <span className="text-gray-400">Order:</span> {row.orderName}
+            </span>
+            <span>
+              <span className="text-gray-400">Product:</span> {row.product}
+            </span>
+            <span>
+              <span className="text-gray-400">SKU:</span> {row.sku}
+            </span>
+            <span>
+              <span className="text-gray-400">Qty:</span> {row.stock}
+            </span>
+            <span>
+              <span className="text-gray-400">Amount:</span> ₹{row.totalPrice}
+            </span>
+          </div>
+        </div>
+
+        {/* Address list */}
         <div className="px-5 py-4">
           <p className="text-sm font-medium text-gray-600 mb-3">
             Select Pickup Address:
@@ -103,19 +201,19 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
             <p className="text-center py-8 text-gray-400 text-sm">
               Loading addresses…
             </p>
-          ) : error ? (
+          ) : error && addresses.length === 0 ? (
             <p className="text-center py-8 text-red-500 text-sm">{error}</p>
           ) : addresses.length === 0 ? (
             <p className="text-center py-8 text-gray-400 text-sm">
               No active pickup addresses found.
             </p>
           ) : (
-            <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
               {addresses.map((addr) => (
                 <label
                   key={addr.warehouse_id}
                   className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedAddressId === addr.warehouse_id
+                    selectedAddress?.warehouse_id === addr.warehouse_id
                       ? "border-blue-500 bg-blue-50"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
@@ -124,8 +222,10 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
                     type="radio"
                     name="pickup_address"
                     className="mt-0.5 accent-blue-600"
-                    checked={selectedAddressId === addr.warehouse_id}
-                    onChange={() => setSelectedAddressId(addr.warehouse_id)}
+                    checked={
+                      selectedAddress?.warehouse_id === addr.warehouse_id
+                    }
+                    onChange={() => setSelectedAddress(addr)}
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gray-800">
@@ -141,21 +241,22 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
                         {addr.warehouse_code}
                       </span>
                     </p>
-                    {addr.is_active && (
-                      <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                        Active
-                      </span>
-                    )}
+                    <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                      Active
+                    </span>
                   </div>
                 </label>
               ))}
             </div>
           )}
+
+          {error && addresses.length > 0 && (
+            <p className="mt-2 text-red-500 text-xs">{error}</p>
+          )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50">
-          {/* RTO toggle */}
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-600 font-medium">
               Use the same address for RTO?
@@ -184,13 +285,29 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
             </div>
           </div>
 
-          {/* Confirm button */}
           <button
             onClick={handleConfirm}
-            disabled={!selectedAddressId || confirming || loading}
+            disabled={!selectedAddress || confirming || loading || success}
             className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2 rounded text-sm font-semibold hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {confirming ? (
+            {success ? (
+              <>
+                <svg
+                  className="w-3.5 h-3.5 text-green-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Done!
+              </>
+            ) : confirming ? (
               <>
                 <svg
                   className="w-3.5 h-3.5 animate-spin"
@@ -241,28 +358,19 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ManageOrder() {
   const [activeSection, setActiveSection] = useState("orders");
-
-  // ── Orders tab state ──────────────────────────────────────────────
   const [activeOrderTab, setActiveOrderTab] = useState("All");
   const [activeSubTab, setActiveSubTab] = useState("New");
   const [viewMode, setViewMode] = useState("Aggregated");
   const [slaStatus, setSlaStatus] = useState("");
   const [skuId, setSkuId] = useState("");
   const [showHighPriority, setShowHighPriority] = useState(false);
-
-  // ── Shipment modal state ──────────────────────────────────────────
-  const [shipmentModal, setShipmentModal] = useState(null); // null | row object
-
-  // ── Shopify orders state ──────────────────────────────────────────
+  const [shipmentModal, setShipmentModal] = useState(null);
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState(null);
-
-  // ── Bulk orders state ─────────────────────────────────────────────
   const [bulkOrders, setBulkOrders] = useState([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [bulkError, setBulkError] = useState(null);
-
   const [uploadState, setUploadState] = useState({});
   const fileRefs = useRef({});
 
@@ -280,7 +388,6 @@ export default function ManageOrder() {
 
   const ORDER_TABS = Object.keys(STATUS_MAP).map((label) => ({ label }));
 
-  // ── Fetch shopify orders on mount / tab switch ────────────────────
   useEffect(() => {
     if (activeSection !== "orders") return;
     const fetchOrders = async () => {
@@ -298,7 +405,6 @@ export default function ManageOrder() {
     fetchOrders();
   }, [activeSection]);
 
-  // ── Fetch bulk orders ─────────────────────────────────────────────
   useEffect(() => {
     if (activeSection !== "bulk") return;
     const fetchBulkOrders = async () => {
@@ -316,25 +422,29 @@ export default function ManageOrder() {
     fetchBulkOrders();
   }, [activeSection]);
 
-  // ── Derived: flatten items_json for table rows ────────────────────
+  // Flatten orders — carry ALL fields the payload builder needs
   const tableRows = orders.flatMap((order) =>
     (order.items_json ?? []).map((item) => ({
       orderId: order.order_id,
       orderName: order.shopify_order_name,
       status: order.status,
+      createdAt: order.createdAt,
+      customerEmail: order.customer_email,
+      customerPhone: order.customer_phone,
+      shippingAddress: order.shipping_address,
+      billingAddress: order.billing_address,
+      totalPrice: order.total_price,
+      currency: order.currency,
       product: item.title,
       sku: item.sku,
       stock: item.quantity,
-      compareAt: null,
-      inventoryManagement: null,
-      weightG: null,
+      price: item.price,
       variantTitle: item.variantTitle,
     })),
   );
 
-  // ── Filters ───────────────────────────────────────────────────────
   const [appliedSkuId, setAppliedSkuId] = useState("");
-  const [_, setAppliedSlaStatus] = useState("");
+  const [_appliedSla, setAppliedSlaStatus] = useState("");
 
   const handleApplyFilters = () => {
     setAppliedSkuId(skuId.trim());
@@ -371,15 +481,10 @@ export default function ManageOrder() {
   const handleDownloadHistory = () => console.log("Downloading history…");
   const handleDownloadTable = () => console.log("Downloading table…");
 
-  // ── Shipment confirm handler ──────────────────────────────────────
-  const handleConfirmShipment = async ({
-    row,
-    warehouseId,
-    rtoSameAddress,
-  }) => {
-    // TODO: wire to your actual create-shipment API
-    console.log("Creating shipment:", { row, warehouseId, rtoSameAddress });
-    // e.g. await createShipment({ orderId: row.orderId, warehouseId, rtoSameAddress });
+  // Receives the fully-built payload from the modal
+  const handleConfirmShipment = async (payload) => {
+    console.log("Shipment payload →", JSON.stringify(payload, null, 2));
+    await createShipment(payload);
   };
 
   // ── Bulk upload handlers ──────────────────────────────────────────
@@ -481,7 +586,6 @@ export default function ManageOrder() {
     }
   };
 
-  // ── Render ────────────────────────────────────────────────────────
   return (
     <div>
       {/* Shipment Modal */}
@@ -509,7 +613,6 @@ export default function ManageOrder() {
         </button>
       </div>
 
-      {/* ── ORDERS TAB ─────────────────────────────────────────────── */}
       {activeSection === "orders" ? (
         <>
           <div className="flex items-center justify-between mb-4">
@@ -556,7 +659,6 @@ export default function ManageOrder() {
             </div>
           </div>
 
-          {/* Order status tabs */}
           <div className="flex gap-0 border-b mb-3 overflow-x-auto">
             {ORDER_TABS.map(({ label }) => (
               <button
@@ -570,11 +672,7 @@ export default function ManageOrder() {
               >
                 {label}
                 <span
-                  className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
-                    activeOrderTab === label
-                      ? "bg-blue-100 text-blue-700"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
+                  className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${activeOrderTab === label ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"}`}
                 >
                   {getCount(label)}
                 </span>
@@ -582,7 +680,6 @@ export default function ManageOrder() {
             ))}
           </div>
 
-          {/* Sub-tabs + Aggregated toggle */}
           <div className="flex items-center justify-between mb-3">
             <div className="flex gap-2">
               {["New", "Under Processing"].map((sub) => (
@@ -613,7 +710,6 @@ export default function ManageOrder() {
             </div>
           </div>
 
-          {/* Filters row */}
           <div className="flex flex-wrap gap-3 items-end mb-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-600">
@@ -718,7 +814,6 @@ export default function ManageOrder() {
             </div>
           </div>
 
-          {/* ── Orders Table ───────────────────────────────────────── */}
           {ordersLoading ? (
             <p className="text-center py-10 text-gray-500">Loading orders…</p>
           ) : ordersError ? (
@@ -761,7 +856,6 @@ export default function ManageOrder() {
                           <td className="px-3 py-3">
                             <input type="checkbox" className="rounded" />
                           </td>
-                          {/* Product */}
                           <td className="px-3 py-3">
                             <div className="font-medium text-gray-800">
                               {row.product}
@@ -770,21 +864,15 @@ export default function ManageOrder() {
                               {row.variantTitle}
                             </div>
                           </td>
-                          {/* SKU */}
                           <td className="px-3 py-3 text-gray-600">{row.sku}</td>
-                          {/* Stock */}
                           <td className="px-3 py-3 text-gray-600">
                             {row.stock}
                           </td>
-                          {/* Status */}
                           <td className="px-3 py-3 text-gray-400">
                             {row.status}
                           </td>
-                          {/* Inventory Management */}
                           <td className="px-3 py-3 text-gray-400">—</td>
-                          {/* Weight (G) */}
                           <td className="px-3 py-3 text-gray-400">—</td>
-                          {/* Actions — Create Shipment button */}
                           <td className="px-3 py-3">
                             <button
                               onClick={() => setShipmentModal(row)}
@@ -817,7 +905,6 @@ export default function ManageOrder() {
           )}
         </>
       ) : (
-        /* ── BULK ORDERS TAB ──────────────────────────────────────── */
         <>
           <h2 className="text-lg font-semibold mb-4">Manage Bulk Orders</h2>
           {bulkLoading ? (
