@@ -126,7 +126,7 @@ export default function ManageOrder() {
 
   // ── Filter: SKU ID search (client-side) ───────────────────────────
   const [appliedSkuId, setAppliedSkuId] = useState("");
-  const [appliedSlaStatus, setAppliedSlaStatus] = useState("");
+  const [_, setAppliedSlaStatus] = useState("");
 
   const handleApplyFilters = () => {
     setAppliedSkuId(skuId.trim());
@@ -271,7 +271,6 @@ export default function ManageOrder() {
     }
   };
 
- 
   // ── Render ────────────────────────────────────────────────────────
   return (
     <div>
@@ -581,7 +580,7 @@ export default function ManageOrder() {
                           {/* Sale Price */}
                           {/* <td className="px-3 py-3 text-gray-600">
                             ₹{row.salePrice}
-                          </td> */} 
+                          </td> */}
                           {/* Status */}
                           <td className="px-3 py-3 text-gray-400">
                             {row.status}
