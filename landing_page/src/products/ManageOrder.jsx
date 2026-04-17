@@ -12,10 +12,10 @@ const ORDER_HEADERS = [
   "Product",
   "SKU",
   "Stock",
-  "Cost Price",
-  "Sale Price",
+  // "Cost Price",
+  // "Sale Price",
   "Status",
-  "Inventory Man...",
+  "Inventory Management",
   "Weight (G)",
   "Actions",
 ];
@@ -115,8 +115,8 @@ export default function ManageOrder() {
       product: item.title,
       sku: item.sku,
       stock: item.quantity, // quantity available maps to Stock
-      costPrice: item.price, // supplier cost price
-      salePrice: item.price, // sale price (same field until API exposes separately)
+      // costPrice: item.price, // supplier cost price
+      // salePrice: item.price, // sale price (same field until API exposes separately)
       compareAt: null, // not in API yet — shown as "—"
       inventoryManagement: null, // not in API yet — shown as "—"
       weightG: null, // not in API yet — shown as "—"
@@ -126,7 +126,7 @@ export default function ManageOrder() {
 
   // ── Filter: SKU ID search (client-side) ───────────────────────────
   const [appliedSkuId, setAppliedSkuId] = useState("");
-  const [appliedSlaStatus, setAppliedSlaStatus] = useState("");
+  const [_, setAppliedSlaStatus] = useState("");
 
   const handleApplyFilters = () => {
     setAppliedSkuId(skuId.trim());
@@ -270,9 +270,6 @@ export default function ManageOrder() {
       }));
     }
   };
-
-  const formatStatus = (status) =>
-    status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   // ── Render ────────────────────────────────────────────────────────
   return (
@@ -577,13 +574,13 @@ export default function ManageOrder() {
                             {row.stock}
                           </td>
                           {/* Cost Price */}
-                          <td className="px-3 py-3 text-gray-600">
+                          {/* <td className="px-3 py-3 text-gray-600">
                             ₹{row.costPrice}
                           </td>
                           {/* Sale Price */}
-                          <td className="px-3 py-3 text-gray-600">
+                          {/* <td className="px-3 py-3 text-gray-600">
                             ₹{row.salePrice}
-                          </td>
+                          </td> */}
                           {/* Status */}
                           <td className="px-3 py-3 text-gray-400">
                             {row.status}
