@@ -63,13 +63,27 @@ export const postSaveNewAddress = async (formData) => {
 export const getSaveNewAddressById = async (warehouseId) => {
   return await api.get(`suppliers/stores/warehouses/${warehouseId}`);
 };
+export const fetchAllAddresses = async () => {
+  return await api.get("suppliers/stores/warehouses");
+};
 export const putNewAddressById = async (warehouseId, formData) => {
   return await api.put(`suppliers/stores/warehouses/${warehouseId}`, formData);
 };
+
+export const toggleWarehouseStatus = async (warehouseId, isActive) => {
+  return await api.put(`suppliers/stores/warehouses/${warehouseId}/toggle`, {
+    is_active: isActive,
+  });
+};
+
 export const deleteNewAddressById = async (warehouseId) => {
   return await api.delete(`suppliers/stores/warehouses/${warehouseId}`);
 };
 
 export const shopifyOrders = async () => {
   return await api.get("suppliers/stores/shopify-orders");
+};
+
+export const createShipment = async (payload) => {
+  return await api.post("velocity/shipment/forward", payload);
 };

@@ -30,10 +30,19 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 import {
   getSupplierProfile,
   postSaveNewAddress,
-  getSaveNewAddressById,
   putNewAddressById,
   deleteNewAddressById,
+  fetchAllAddresses,
+  getGstDetails,
+  toggleWarehouseStatus, // ADD THIS to your profile.service.js
 } from "../services/prodile/profile.service";
+
+// ── Service function to add in profile.service.js ─────────────────────────────
+// export const toggleWarehouseStatus = (warehouseId, isActive) =>
+//   axiosInstance.post(
+//     `/suppliers/stores/warehouses/${warehouseId}/toggle`,
+//     { is_active: isActive }
+//   );
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
@@ -237,13 +246,12 @@ const EMPTY_ADDRESS = {
   state: "",
   zipCode: "",
   country: "IN",
-  isDefault: false,
-  isEnabled: true,
+  gstNumber: "",
 };
 
 // GET /:id returns { success: true, data: [{ warehouse_id, name, address, ... }] }
 // unwrap the array and map to local shape
-const mapDetailToAddress = (detail, overrides = {}) => ({
+const mapDetailToAddress = (detail) => ({
   id: detail.warehouse_id ?? null,
   fullName: detail.name ?? "",
   companyName: detail.companyName ?? "",
@@ -254,12 +262,8 @@ const mapDetailToAddress = (detail, overrides = {}) => ({
   state: detail.state ?? "",
   zipCode: detail.pincode ?? "",
   country: detail.country ?? "IN",
-  isDefault: overrides.isDefault ?? false,
-  isEnabled: detail.is_active ?? true,
+  isEnabled: detail.is_active ?? false,
 });
-
-// Helper: always unwrap array response from GET /:id
-const unwrapDetail = (data) => (Array.isArray(data) ? data[0] : data);
 
 export default function SupplierSettings() {
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -268,6 +272,23 @@ export default function SupplierSettings() {
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [savingAddress, setSavingAddress] = useState(false);
   const [supplierId, setSupplierId] = useState(null);
+  const [togglingId, setTogglingId] = useState(null); // tracks which address is being toggled
+  const [supplierProfile, setSupplierProfile] = useState({
+    email: "",
+    phone: "",
+    gstNumber: "",
+  });
+
+  const fetchPickupAddresses = async () => {
+    try {
+      const res = await fetchAllAddresses();
+      const raw = res?.data?.data ?? [];
+      const addresses = Array.isArray(raw) ? raw : [raw];
+      setPickupAddresses(addresses.map((detail) => mapDetailToAddress(detail)));
+    } catch (error) {
+      console.error("Failed to fetch pickup addresses", error);
+    }
+  };
 
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deletingAddress, setDeletingAddress] = useState(false);
@@ -276,34 +297,38 @@ export default function SupplierSettings() {
 
   const [newAddress, setNewAddress] = useState(EMPTY_ADDRESS);
 
-  const [shippingLabel, setShippingLabel] = useState({
-    labelProvider: "dhl",
-    defaultSize: "a4",
-    autoGenerate: true,
-    labelFormat: "pdf",
-  });
-
-  const [autoShipping, setAutoShipping] = useState({
-    enabled: false,
-    autoShipAfterPayment: true,
-    autoShipDelay: "0",
-    generateLabel: true,
-    notifyCustomer: true,
-    defaultCarrier: "dhl",
-  });
-
   useEffect(() => {
     const fetchSupplier = async () => {
       try {
         const res = await getSupplierProfile();
-        const id = res?.data?.data?.supplier_id;
-        console.log(id);
-        setSupplierId(id);
+        const data = res?.data?.data;
+        setSupplierId(data?.supplier_id);
+        setSupplierProfile((prev) => ({
+          ...prev,
+          email: data?.email || "",
+          phone: data?.number || "",
+        }));
       } catch (error) {
         console.error("Failed to fetch supplier profile", error);
       }
     };
+
+    const fetchGstDetails = async () => {
+      try {
+        const res = await getGstDetails();
+        const data = res?.data?.data;
+        setSupplierProfile((prev) => ({
+          ...prev,
+          gstNumber: data?.gst_number || "",
+        }));
+      } catch (error) {
+        console.error("Failed to fetch GST details", error);
+      }
+    };
+
     fetchSupplier();
+    fetchGstDetails();
+    fetchPickupAddresses();
   }, []);
 
   // ── Build API payload from local state ────────────────────────────────────
@@ -312,20 +337,29 @@ export default function SupplierSettings() {
     name: newAddress.fullName,
     companyName: newAddress.companyName,
     email: newAddress.email,
-    phone: newAddress.phone,
+    phone_number: newAddress.phone,
     address: newAddress.street,
     city: newAddress.city,
     state: newAddress.state,
     pincode: newAddress.zipCode,
     country: newAddress.country,
+    gst_number: newAddress.gstNumber,
     isDefault: newAddress.isDefault,
     isEnabled: newAddress.isEnabled,
   });
 
   // ── Save address: POST (create) or PUT (update) ───────────────────────────
   const handleSaveAddress = async () => {
-    if (!newAddress.fullName || !newAddress.street || !newAddress.city) {
-      alert("Please fill in Full Name, Street Address, and City");
+    if (
+      !newAddress.fullName ||
+      !newAddress.email ||
+      !newAddress.phone ||
+      !newAddress.street ||
+      !newAddress.city
+    ) {
+      alert(
+        "Please fill in all required fields: Full Name, Email, Phone, Street Address, and City",
+      );
       return;
     }
     if (!supplierId) {
@@ -336,42 +370,32 @@ export default function SupplierSettings() {
     setSavingAddress(true);
     try {
       if (editingAddressId !== null) {
-        // ── UPDATE: PUT then re-fetch ─────────────────────────────────────
+        // ── UPDATE: PUT then update local state ─────────────────────────────
         await putNewAddressById(editingAddressId, buildPayload());
 
-        const detailRes = await getSaveNewAddressById(editingAddressId);
-        // FIX: GET returns array — unwrap it
-        const detail = unwrapDetail(detailRes?.data?.data);
-
-        const updatedAddress = mapDetailToAddress(detail, {
-          isDefault: newAddress.isDefault,
-        });
-
         setPickupAddresses((prev) =>
-          prev.map((a) => (a.id === editingAddressId ? updatedAddress : a)),
+          prev.map((a) =>
+            a.id === editingAddressId
+              ? {
+                  ...a,
+                  fullName: newAddress.fullName,
+                  companyName: newAddress.companyName,
+                  email: newAddress.email,
+                  phone: newAddress.phone,
+                  street: newAddress.street,
+                  city: newAddress.city,
+                  state: newAddress.state,
+                  zipCode: newAddress.zipCode,
+                  country: newAddress.country,
+                  isDefault: newAddress.isDefault,
+                  isEnabled: newAddress.isEnabled,
+                }
+              : a,
+          ),
         );
       } else {
-        // ── CREATE: POST → get warehouse_id → GET by id ───────────────────
-        const saveRes = await postSaveNewAddress(buildPayload());
-        // POST returns: { success: true, data: { warehouse_id, ... } }
-        const saveData = saveRes?.data?.data;
-        const warehouseId = saveData?.warehouse_id;
-
-        if (!warehouseId) {
-          console.error("POST response shape:", saveRes?.data);
-          throw new Error("No warehouse_id returned from save API");
-        }
-
-        // FIX: use warehouseId (not editingAddressId which is null here)
-        const detailRes = await getSaveNewAddressById(warehouseId);
-        // FIX: GET returns array — unwrap it
-        const detail = unwrapDetail(detailRes?.data?.data);
-
-        const populatedAddress = mapDetailToAddress(detail, {
-          isDefault: newAddress.isDefault,
-        });
-
-        setPickupAddresses((prev) => [...prev, populatedAddress]);
+        await postSaveNewAddress(buildPayload());
+        await fetchPickupAddresses();
       }
 
       showSaveSuccess();
@@ -385,22 +409,6 @@ export default function SupplierSettings() {
   };
 
   // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleShippingLabelChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setShippingLabel((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleAutoShippingChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setAutoShipping((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
   const handleAddressChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNewAddress((prev) => ({
@@ -416,31 +424,24 @@ export default function SupplierSettings() {
 
   const handleAddAddress = () => {
     setEditingAddressId(null);
-    setNewAddress(EMPTY_ADDRESS);
+    setNewAddress({
+      ...EMPTY_ADDRESS,
+      email: supplierProfile.email,
+      phone: supplierProfile.phone,
+      gstNumber: supplierProfile.gstNumber,
+    });
     setOpenDialog(true);
   };
 
-  // FIX: correct signature — takes address object, not ("address", address)
-  const handleEditAddress = async (address) => {
+  const handleEditAddress = (address) => {
     if (!address.id) {
       console.error("No id found on address:", address);
       return;
     }
-    try {
-      const res = await getSaveNewAddressById(address.id);
-      // FIX: GET returns array — unwrap it
-      const detail = unwrapDetail(res?.data?.data);
 
-      const mapped = mapDetailToAddress(detail, {
-        isDefault: address.isDefault,
-      });
-
-      setEditingAddressId(address.id);
-      setNewAddress(mapped);
-      setOpenDialog(true);
-    } catch (error) {
-      console.error("Edit fetch failed:", error);
-    }
+    setEditingAddressId(address.id);
+    setNewAddress(address);
+    setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
@@ -470,10 +471,45 @@ export default function SupplierSettings() {
     }
   };
 
-  const handleToggleAddress = (id) =>
-    setPickupAddresses((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, isEnabled: !a.isEnabled } : a)),
-    );
+  // ── Toggle address active status ──────────────────────────────────────────
+  // Rules:
+  //   • Only ONE address can be enabled (is_active: true) at a time.
+  //   • If trying to enable an address while another is already enabled → block with alert.
+  //   • Calls POST /suppliers/stores/warehouses/:warehouse_id/toggle with { is_active: bool }
+  //   • Local state only updates after the API call succeeds.
+  const handleToggleAddress = async (id) => {
+    const target = pickupAddresses.find((a) => a.id === id);
+    if (!target) return;
+
+    const newIsActive = !target.isEnabled;
+
+    // Block enabling if another address is already enabled
+    if (newIsActive) {
+      const alreadyEnabled = pickupAddresses.find(
+        (a) => a.id !== id && a.isEnabled,
+      );
+      if (alreadyEnabled) {
+        alert(
+          `Only one address can be active at a time.\nPlease disable "${alreadyEnabled.fullName}" before enabling this address.`,
+        );
+        return;
+      }
+    }
+
+    setTogglingId(id);
+    try {
+      await toggleWarehouseStatus(id, newIsActive);
+      setPickupAddresses((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, isEnabled: newIsActive } : a)),
+      );
+      showSaveSuccess();
+    } catch (error) {
+      console.error("Failed to toggle warehouse status:", error);
+      alert("Failed to update address status. Please try again.");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   const handleSetDefault = (id) => {
     setPickupAddresses((prev) =>
@@ -570,230 +606,6 @@ export default function SupplierSettings() {
         </Box>
 
         <Grid container spacing={3}>
-          {/* ── Shipping Label Settings ── */}
-          <Grid item xs={12} md={6}>
-            <SettingsCard
-              icon={
-                <LocalShippingIcon
-                  sx={{ "& path": { fill: "#fff !important" } }}
-                />
-              }
-              title="Shipping Label Settings"
-              subtitle="Configure label generation preferences"
-            >
-              <Stack spacing={2.5}>
-                <LabeledSelect
-                  label="Default Label Size"
-                  name="defaultSize"
-                  value={shippingLabel.defaultSize}
-                  onChange={handleShippingLabelChange}
-                  options={[
-                    { value: "a4", label: "A4" },
-                    { value: "a6", label: "A6 (4×6)" },
-                    { value: "letter", label: "Letter" },
-                  ]}
-                />
-                <LabeledSelect
-                  label="Label Format"
-                  name="labelFormat"
-                  value={shippingLabel.labelFormat}
-                  onChange={handleShippingLabelChange}
-                  options={[
-                    { value: "pdf", label: "PDF" },
-                    { value: "zip", label: "ZIP" },
-                  ]}
-                />
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    background: "#f0fafc",
-                    border: "1px solid #d0eef3",
-                    borderRadius: "10px",
-                    px: 2,
-                    py: 1.2,
-                  }}
-                >
-                  <Box>
-                    <Box
-                      sx={{
-                        fontSize: "0.875rem",
-                        fontWeight: 600,
-                        color: "#000",
-                      }}
-                    >
-                      Auto-generate labels
-                    </Box>
-                    <Box sx={{ fontSize: "0.75rem", color: "#666" }}>
-                      For new orders automatically
-                    </Box>
-                  </Box>
-                  <Switch
-                    name="autoGenerate"
-                    checked={shippingLabel.autoGenerate}
-                    onChange={handleShippingLabelChange}
-                    sx={switchSx}
-                  />
-                </Box>
-                <GradientButton
-                  fullWidth
-                  onClick={() => showSaveSuccess()}
-                  startIcon={
-                    <SaveIcon
-                      sx={{
-                        fontSize: 16,
-                        "& path": { fill: "#fff !important" },
-                      }}
-                    />
-                  }
-                >
-                  Save Label Settings
-                </GradientButton>
-              </Stack>
-            </SettingsCard>
-          </Grid>
-
-          {/* ── Auto Shipping Settings ── */}
-          <Grid item xs={12} md={6}>
-            <SettingsCard
-              icon={
-                <LocalShippingIcon
-                  sx={{ "& path": { fill: "#fff !important" } }}
-                />
-              }
-              title="Auto Shipping Settings"
-              subtitle="Enable automatic order shipping"
-            >
-              <Stack spacing={2.5}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    background: "#f0fafc",
-                    border: "1px solid #d0eef3",
-                    borderRadius: "10px",
-                    px: 2,
-                    py: 1.2,
-                  }}
-                >
-                  <Box>
-                    <Box
-                      sx={{
-                        fontSize: "0.875rem",
-                        fontWeight: 600,
-                        color: "#000",
-                      }}
-                    >
-                      Enable Auto Shipping
-                    </Box>
-                    <Box sx={{ fontSize: "0.75rem", color: "#666" }}>
-                      Automatically ship paid orders
-                    </Box>
-                  </Box>
-                  <Switch
-                    name="enabled"
-                    checked={autoShipping.enabled}
-                    onChange={handleAutoShippingChange}
-                    sx={switchSx}
-                  />
-                </Box>
-
-                {autoShipping.enabled && (
-                  <>
-                    <LabeledSelect
-                      label="Default Carrier"
-                      name="defaultCarrier"
-                      value={autoShipping.defaultCarrier}
-                      onChange={handleAutoShippingChange}
-                      options={[
-                        { value: "dhl", label: "DHL" },
-                        { value: "fedex", label: "FedEx" },
-                        { value: "ups", label: "UPS" },
-                        { value: "usps", label: "USPS" },
-                      ]}
-                    />
-                    <LabeledSelect
-                      label="Auto Ship After Payment"
-                      name="autoShipDelay"
-                      value={autoShipping.autoShipDelay}
-                      onChange={handleAutoShippingChange}
-                      options={[
-                        { value: "0", label: "Immediately" },
-                        { value: "1", label: "1 hour" },
-                        { value: "4", label: "4 hours" },
-                        { value: "24", label: "24 hours" },
-                      ]}
-                    />
-                    {[
-                      {
-                        name: "generateLabel",
-                        label: "Auto-generate shipping label",
-                        sub: "Create label on ship",
-                      },
-                      {
-                        name: "notifyCustomer",
-                        label: "Notify customer when shipped",
-                        sub: "Send shipping confirmation",
-                      },
-                    ].map(({ name, label, sub }) => (
-                      <Box
-                        key={name}
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          background: "#f0fafc",
-                          border: "1px solid #d0eef3",
-                          borderRadius: "10px",
-                          px: 2,
-                          py: 1.2,
-                        }}
-                      >
-                        <Box>
-                          <Box
-                            sx={{
-                              fontSize: "0.875rem",
-                              fontWeight: 600,
-                              color: "#000",
-                            }}
-                          >
-                            {label}
-                          </Box>
-                          <Box sx={{ fontSize: "0.75rem", color: "#666" }}>
-                            {sub}
-                          </Box>
-                        </Box>
-                        <Switch
-                          name={name}
-                          checked={autoShipping[name]}
-                          onChange={handleAutoShippingChange}
-                          sx={switchSx}
-                        />
-                      </Box>
-                    ))}
-                  </>
-                )}
-
-                <GradientButton
-                  fullWidth
-                  onClick={() => showSaveSuccess()}
-                  startIcon={
-                    <SaveIcon
-                      sx={{
-                        fontSize: 16,
-                        "& path": { fill: "#fff !important" },
-                      }}
-                    />
-                  }
-                >
-                  Save Shipping Settings
-                </GradientButton>
-              </Stack>
-            </SettingsCard>
-          </Grid>
-
           {/* ── Pickup Addresses ── */}
           <Grid item xs={12}>
             <SettingsCard
@@ -883,185 +695,258 @@ export default function SupplierSettings() {
                     </Box>
                   </Box>
                 ) : (
-                  <Stack spacing={2}>
-                    {pickupAddresses.map((address) => (
-                      <Box
-                        key={address.id}
-                        sx={{
-                          p: 2.5,
-                          borderRadius: "12px",
-                          border: address.isDefault
-                            ? "1.5px solid #0097b2"
-                            : "1.5px solid #e0f4f7",
-                          background: address.isEnabled ? "#fff" : "#f8f8f8",
-                          transition: "all 0.2s",
-                          boxShadow: address.isDefault
-                            ? "0 2px 12px rgba(0,151,178,0.12)"
-                            : "none",
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "flex-start",
-                            mb: 1.5,
-                          }}
-                        >
-                          <Box sx={{ flex: 1 }}>
+                  <Grid container spacing={2}>
+                    {pickupAddresses.map((address) => {
+                      const isToggling = togglingId === address.id;
+                      // Check if some OTHER address is already enabled (blocks enabling this one)
+                      const anotherIsEnabled = pickupAddresses.some(
+                        (a) => a.id !== address.id && a.isEnabled,
+                      );
+                      // Switch is disabled while an API call is in progress OR
+                      // if this address is inactive but another is already active
+                      const switchDisabled =
+                        isToggling || (!address.isEnabled && anotherIsEnabled);
+
+                      return (
+                        <Grid item xs={12} md={6} key={address.id}>
+                          <Box
+                            sx={{
+                              p: 2.5,
+                              borderRadius: "12px",
+                              border: address.isDefault
+                                ? "1.5px solid #0097b2"
+                                : "1.5px solid #e0f4f7",
+                              background: address.isEnabled
+                                ? "#fff"
+                                : "#f8f8f8",
+                              transition: "all 0.2s",
+                              boxShadow: address.isDefault
+                                ? "0 2px 12px rgba(0,151,178,0.12)"
+                                : "none",
+                              // Visually dim the card if another address is active
+                              // and this one is not, so the user can tell it's blocked
+                              opacity:
+                                !address.isEnabled && anotherIsEnabled
+                                  ? 0.65
+                                  : 1,
+                            }}
+                          >
                             <Box
                               sx={{
                                 display: "flex",
-                                gap: 1,
+                                justifyContent: "space-between",
+                                alignItems: "flex-start",
+                                mb: 1.5,
+                              }}
+                            >
+                              <Box sx={{ flex: 1 }}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    gap: 1,
+                                    alignItems: "center",
+                                    mb: 0.5,
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      fontSize: "0.95rem",
+                                      fontWeight: 700,
+                                      color: "#000",
+                                    }}
+                                  >
+                                    {address.fullName}
+                                  </Box>
+                                  {address.isDefault && (
+                                    <Box
+                                      sx={{
+                                        background: GRADIENT,
+                                        color: "#fff",
+                                        borderRadius: "20px",
+                                        px: 1.2,
+                                        py: 0.2,
+                                        fontSize: "0.68rem",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Default
+                                    </Box>
+                                  )}
+                                  {!address.isEnabled && (
+                                    <Box
+                                      sx={{
+                                        background: "rgba(229,57,53,0.1)",
+                                        color: "#c62828",
+                                        border: "1px solid rgba(229,57,53,0.3)",
+                                        borderRadius: "20px",
+                                        px: 1.2,
+                                        py: 0.2,
+                                        fontSize: "0.68rem",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Disabled
+                                    </Box>
+                                  )}
+                                  {address.isEnabled && (
+                                    <Box
+                                      sx={{
+                                        background: "rgba(46,125,30,0.1)",
+                                        color: "#2e7d1e",
+                                        border: "1px solid rgba(46,125,30,0.3)",
+                                        borderRadius: "20px",
+                                        px: 1.2,
+                                        py: 0.2,
+                                        fontSize: "0.68rem",
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      Active
+                                    </Box>
+                                  )}
+                                </Box>
+                                {address.companyName && (
+                                  <Box
+                                    sx={{
+                                      fontSize: "0.8rem",
+                                      color: "#666",
+                                      mb: 0.3,
+                                    }}
+                                  >
+                                    {address.companyName}
+                                  </Box>
+                                )}
+                                <Box
+                                  sx={{ fontSize: "0.85rem", color: "#333" }}
+                                >
+                                  {address.street}, {address.city},{" "}
+                                  {address.state} {address.zipCode},{" "}
+                                  {address.country}
+                                </Box>
+                                <Box
+                                  sx={{
+                                    fontSize: "0.8rem",
+                                    color: "#777",
+                                    mt: 0.3,
+                                  }}
+                                >
+                                  {address.email}
+                                  {address.phone ? ` · ${address.phone}` : ""}
+                                </Box>
+                              </Box>
+                              <Stack direction="row" spacing={0.5}>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleEditAddress(address)}
+                                  sx={{
+                                    color: "#0097b2",
+                                    border: "1px solid #d0eef3",
+                                    borderRadius: "8px",
+                                    "&:hover": {
+                                      background: "rgba(0,151,178,0.08)",
+                                    },
+                                  }}
+                                >
+                                  <EditIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleDeleteClick(address.id)}
+                                  sx={{
+                                    color: "#e53935",
+                                    border: "1px solid rgba(229,57,53,0.25)",
+                                    borderRadius: "8px",
+                                    "&:hover": {
+                                      background: "rgba(229,57,53,0.07)",
+                                    },
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </Stack>
+                            </Box>
+
+                            <Divider sx={{ borderColor: "#e0f4f7", my: 1.5 }} />
+
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
                                 alignItems: "center",
-                                mb: 0.5,
                               }}
                             >
                               <Box
                                 sx={{
-                                  fontSize: "0.95rem",
-                                  fontWeight: 700,
-                                  color: "#000",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
                                 }}
                               >
-                                {address.fullName}
-                              </Box>
-                              {address.isDefault && (
+                                {/* ── Toggle Switch ── */}
+                                <Switch
+                                  checked={address.isEnabled}
+                                  size="small"
+                                  disabled={switchDisabled}
+                                  onChange={() =>
+                                    handleToggleAddress(address.id)
+                                  }
+                                  sx={{
+                                    ...switchSx,
+                                    // Grey out the switch when disabled due to another being active
+                                    opacity: switchDisabled ? 0.5 : 1,
+                                  }}
+                                />
                                 <Box
                                   sx={{
-                                    background: GRADIENT,
-                                    color: "#fff",
-                                    borderRadius: "20px",
-                                    px: 1.2,
-                                    py: 0.2,
-                                    fontSize: "0.68rem",
-                                    fontWeight: 700,
+                                    fontSize: "0.8rem",
+                                    color: isToggling
+                                      ? "#999"
+                                      : address.isEnabled
+                                        ? "#2e7d1e"
+                                        : "#999",
+                                    fontWeight: 500,
                                   }}
                                 >
-                                  Default
+                                  {isToggling
+                                    ? "Updating..."
+                                    : address.isEnabled
+                                      ? "Enabled"
+                                      : "Disabled"}
                                 </Box>
-                              )}
-                              {!address.isEnabled && (
-                                <Box
-                                  sx={{
-                                    background: "rgba(229,57,53,0.1)",
-                                    color: "#c62828",
-                                    border: "1px solid rgba(229,57,53,0.3)",
-                                    borderRadius: "20px",
-                                    px: 1.2,
-                                    py: 0.2,
-                                    fontSize: "0.68rem",
-                                    fontWeight: 700,
-                                  }}
-                                >
-                                  Disabled
-                                </Box>
-                              )}
-                            </Box>
-                            {address.companyName && (
-                              <Box
-                                sx={{
-                                  fontSize: "0.8rem",
-                                  color: "#666",
-                                  mb: 0.3,
-                                }}
-                              >
-                                {address.companyName}
+
+                                {/* Hint shown when this address is blocked by another active one */}
+                                {!address.isEnabled && anotherIsEnabled && (
+                                  <Box
+                                    sx={{
+                                      fontSize: "0.72rem",
+                                      color: "#e07b00",
+                                      background: "rgba(224,123,0,0.08)",
+                                      border: "1px solid rgba(224,123,0,0.25)",
+                                      borderRadius: "6px",
+                                      px: 1,
+                                      py: 0.2,
+                                      fontWeight: 500,
+                                    }}
+                                  >
+                                    Disable active address first
+                                  </Box>
+                                )}
                               </Box>
-                            )}
-                            <Box sx={{ fontSize: "0.85rem", color: "#333" }}>
-                              {address.street}, {address.city}, {address.state}{" "}
-                              {address.zipCode}, {address.country}
-                            </Box>
-                            <Box
-                              sx={{
-                                fontSize: "0.8rem",
-                                color: "#777",
-                                mt: 0.3,
-                              }}
-                            >
-                              {address.email}
-                              {address.phone ? ` · ${address.phone}` : ""}
+                              {!address.isDefault && (
+                                <GradientButton
+                                  size="small"
+                                  secondary
+                                  onClick={() => handleSetDefault(address.id)}
+                                >
+                                  Set as Default
+                                </GradientButton>
+                              )}
                             </Box>
                           </Box>
-                          <Stack direction="row" spacing={0.5}>
-                            {/* FIX: correct call — just pass address */}
-                            <IconButton
-                              size="small"
-                              onClick={() => handleEditAddress(address)}
-                              sx={{
-                                color: "#0097b2",
-                                border: "1px solid #d0eef3",
-                                borderRadius: "8px",
-                                "&:hover": {
-                                  background: "rgba(0,151,178,0.08)",
-                                },
-                              }}
-                            >
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleDeleteClick(address.id)}
-                              sx={{
-                                color: "#e53935",
-                                border: "1px solid rgba(229,57,53,0.25)",
-                                borderRadius: "8px",
-                                "&:hover": {
-                                  background: "rgba(229,57,53,0.07)",
-                                },
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </Stack>
-                        </Box>
-
-                        <Divider sx={{ borderColor: "#e0f4f7", my: 1.5 }} />
-
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <Switch
-                              checked={address.isEnabled}
-                              size="small"
-                              onChange={() => handleToggleAddress(address.id)}
-                              sx={switchSx}
-                            />
-                            <Box
-                              sx={{
-                                fontSize: "0.8rem",
-                                color: address.isEnabled ? "#2e7d1e" : "#999",
-                                fontWeight: 500,
-                              }}
-                            >
-                              {address.isEnabled ? "Enabled" : "Disabled"}
-                            </Box>
-                          </Box>
-                          {!address.isDefault && (
-                            <GradientButton
-                              size="small"
-                              secondary
-                              onClick={() => handleSetDefault(address.id)}
-                            >
-                              Set as Default
-                            </GradientButton>
-                          )}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Stack>
+                        </Grid>
+                      );
+                    })}
+                  </Grid>
                 )}
               </Stack>
             </SettingsCard>
@@ -1106,22 +991,22 @@ export default function SupplierSettings() {
                   name: "fullName",
                   placeholder: "John Doe",
                 },
-                // {
-                //   label: "Company Name",
-                //   name: "companyName",
-                //   placeholder: "Your Company",
-                // },
-                // {
-                //   label: "Email",
-                //   name: "email",
-                //   placeholder: "john@example.com",
-                //   type: "email",
-                // },
-                // {
-                //   label: "Phone",
-                //   name: "phone",
-                //   placeholder: "+91 98765 43210",
-                // },
+                {
+                  label: "GST Number",
+                  name: "gstNumber",
+                  placeholder: "22AAAAA0000A1Z5",
+                },
+                {
+                  label: "Email *",
+                  name: "email",
+                  placeholder: "john@example.com",
+                  type: "email",
+                },
+                {
+                  label: "Phone *",
+                  name: "phone",
+                  placeholder: "+91 98765 43210",
+                },
                 {
                   label: "Street Address *",
                   name: "street",
