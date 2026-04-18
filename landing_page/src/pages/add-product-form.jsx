@@ -49,7 +49,7 @@ function GradientButton({
   size = "medium",
   startIcon,
   fullWidth = false,
-  type = "button",
+  type = "button", // ✅ always default to "button" to prevent accidental form submit
   disabled = false,
 }) {
   const [hovered, setHovered] = useState(false);
@@ -58,7 +58,7 @@ function GradientButton({
 
   return (
     <button
-      type={type}
+      type={type} // ✅ explicitly pass type to native button
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setHovered(true)}
@@ -177,6 +177,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       .catch(() => setCategories([]));
   }, []);
 
+  // ✅ FIX: Normalize variants from API — they use variant_id not id
   useEffect(() => {
     if (product?.data) {
       setFormData((prev) => ({
@@ -190,7 +191,28 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         transfer_price: product.data.transfer_price ?? "",
         approval_status: product.data.approval_status ?? prev.approval_status,
         productGallery: product.data.images ?? prev.productGallery,
-        variants: product.data.variants ?? prev.variants,
+
+        // ✅ Normalize: map variant_id → id, and flatten dimension_cm
+        variants: (product.data.variants ?? []).map((v) => ({
+          id: v.variant_id ?? v.id ?? Date.now().toString() + Math.random(),
+          sku: v.sku ?? "",
+          title: v.title ?? "",
+          price: v.price ?? 0,
+          compare_at_price: v.compare_at_price ?? 0,
+          inventory_quantity: v.inventory_quantity ?? 0,
+          weight_grams: v.weight_grams ?? 0,
+          option1: v.option1 ?? "",
+          option2: v.option2 ?? "",
+          option3: v.option3 ?? "",
+          is_active: v.is_active ?? true,
+          dimension_cm: v.dimension_cm ??
+            v.attributes?.dimension_cm ?? {
+              height: 0,
+              width: 0,
+              length: 0,
+            },
+          images: [],
+        })),
       }));
     }
   }, [product]);
@@ -213,6 +235,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       option3: "",
       attributes: {},
       images: [],
+      dimension_cm: { height: 0, width: 0, length: 0 },
     };
 
     setFormData((prev) => ({
@@ -305,9 +328,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         .map((opt, idx) => ({ ...opt, position: idx + 1 })),
     }));
 
-  // ✅ FIX 1: alert and onSuccess only fire on success, error is caught and shown
-  const handleSaveDraft = async (e) => {
-    e.preventDefault();
+  // ✅ Save as Draft — type="button" prevents form submit
+  const handleSaveDraft = async () => {
     const payload = {
       ...formData,
       approval_status: "draft",
@@ -326,10 +348,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     }
   };
 
-  // ✅ FIX 2: alert, reset, and navigate only fire on success, error is caught and shown
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  // ✅ Submit — type="button" prevents form submit
+  const handleSubmit = async () => {
     if (formData.variants.length === 0) {
       alert("Please add at least one variant");
       return;
@@ -424,11 +444,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         "Failed to submit product: " + (apiError || apiMessage || fallback),
       );
     } finally {
-      setSubmitting(false); // 🔥 stop loading (VERY IMPORTANT)
+      setSubmitting(false);
     }
   };
 
-  // ✅ FIX 3: isLoading check is back at the top level of the component, not inside handleSubmit
   if (isLoading) {
     return (
       <Box
@@ -507,7 +526,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
           </Typography>
         </Box>
 
-        <form style={{ width: "100%", minWidth: 0, maxWidth: "100%" }}>
+        {/* ✅ REMOVED <form> wrapper entirely — use div instead to prevent any accidental native submit */}
+        <div style={{ width: "100%", minWidth: 0, maxWidth: "100%" }}>
           <Paper
             elevation={0}
             sx={{
@@ -772,6 +792,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       </Typography>
                       <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
                         <GradientButton
+                          type="button"
                           secondary
                           size="small"
                           fullWidth
@@ -1029,10 +1050,15 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     },
                   }}
                 >
-                  <GradientButton secondary onClick={handleSaveDraft}>
+                  {/* ✅ type="button" on all buttons to prevent form submit */}
+                  <GradientButton
+                    type="button"
+                    secondary
+                    onClick={handleSaveDraft}
+                  >
                     Save as Draft
                   </GradientButton>
-                  <GradientButton onClick={() => setActiveTab(1)}>
+                  <GradientButton type="button" onClick={() => setActiveTab(1)}>
                     Continue to Variants →
                   </GradientButton>
                 </Stack>
@@ -1068,17 +1094,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                   >
                     Product Variants
                   </Typography>
-                  <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                    {/* <GradientButton
-                      fullWidth
-                      startIcon={<Plus size={15} />}
-                      onClick={() => {
-                        addVariant();
-                      }}
-                    >
-                      Add Variant
-                    </GradientButton> */}
-                  </Box>
                 </Box>
 
                 {formData.variants.length === 0 ? (
@@ -1139,6 +1154,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       }}
                     >
                       <GradientButton
+                        type="button"
                         fullWidth
                         startIcon={<Plus size={15} />}
                         onClick={addVariant}
@@ -1240,7 +1256,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               <Chip
                                 label={
                                   variant.price > 0
-                                    ? `$${variant.price.toFixed(2)}`
+                                    ? `$${Number(variant.price).toFixed(2)}`
                                     : "No price"
                                 }
                                 size="small"
@@ -1390,7 +1406,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                                 InputProps={{
                                   startAdornment: (
-                                    <InputAdornment position="start"></InputAdornment>
+                                    <InputAdornment position="start">
+                                      ₹
+                                    </InputAdornment>
                                   ),
                                 }}
                               />
@@ -1414,7 +1432,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                                 InputProps={{
                                   startAdornment: (
-                                    <InputAdornment position="start"></InputAdornment>
+                                    <InputAdornment position="start">
+                                      ₹
+                                    </InputAdornment>
                                   ),
                                 }}
                               />
@@ -1571,7 +1591,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       </Accordion>
                     ))}
 
+                    {/* ✅ Add Another Variant button */}
                     {/* <GradientButton
+                      type="button"
                       secondary
                       fullWidth
                       startIcon={<Plus size={15} />}
@@ -1594,10 +1616,19 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     },
                   }}
                 >
-                  <GradientButton secondary onClick={() => setActiveTab(0)}>
+                  {/* ✅ type="button" explicitly on all action buttons */}
+                  <GradientButton
+                    type="button"
+                    secondary
+                    onClick={() => setActiveTab(0)}
+                  >
                     ← Back to Details
                   </GradientButton>
-                  <GradientButton onClick={handleSubmit} disabled={submitting}>
+                  <GradientButton
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                  >
                     {submitting ? (
                       <span
                         style={{
@@ -1617,7 +1648,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
               </Box>
             )}
           </Paper>
-        </form>
+        </div>
       </Container>
     </Box>
   );
