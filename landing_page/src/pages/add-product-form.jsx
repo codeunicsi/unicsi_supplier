@@ -556,7 +556,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                         : "transparent",
                       border: "none",
                       borderLeft: {
-                        xs: isActive ? "3px solid #0097b2" : "3px solid transparent",
+                        xs: isActive
+                          ? "3px solid #0097b2"
+                          : "3px solid transparent",
                         sm: "none",
                       },
                       borderTop: {
@@ -846,7 +848,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 size={{ xs: 12, sm: "auto" }}
                                 sx={{
                                   display: "flex",
-                                  justifyContent: { xs: "flex-end", sm: "center" },
+                                  justifyContent: {
+                                    xs: "flex-end",
+                                    sm: "center",
+                                  },
                                   alignItems: "center",
                                 }}
                               >
@@ -968,7 +973,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                         </Typography>
                         <Typography
                           variant="caption"
-                          sx={{ color: "#999", px: 0.5, wordBreak: "break-word" }}
+                          sx={{
+                            color: "#999",
+                            px: 0.5,
+                            wordBreak: "break-word",
+                          }}
                         >
                           PNG, JPG, WEBP up to 10MB
                         </Typography>
@@ -1060,7 +1069,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     Product Variants
                   </Typography>
                   <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                    <GradientButton
+                    {/* <GradientButton
                       fullWidth
                       startIcon={<Plus size={15} />}
                       onClick={() => {
@@ -1068,7 +1077,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       }}
                     >
                       Add Variant
-                    </GradientButton>
+                    </GradientButton> */}
                   </Box>
                 </Box>
 
@@ -1274,7 +1283,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 bgcolor: variant.is_active
                                   ? "rgba(126,217,87,0.15)"
                                   : "rgba(196,40,28,0.12)",
-                                color: variant.is_active ? "#3a8a1e" : "#c62828",
+                                color: variant.is_active
+                                  ? "#3a8a1e"
+                                  : "#c62828",
                                 border: variant.is_active
                                   ? "1px solid rgba(126,217,87,0.4)"
                                   : "1px solid rgba(198,40,40,0.35)",
@@ -1379,9 +1390,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                                 InputProps={{
                                   startAdornment: (
-                                    <InputAdornment position="start">
-                                      $
-                                    </InputAdornment>
+                                    <InputAdornment position="start"></InputAdornment>
                                   ),
                                 }}
                               />
@@ -1405,9 +1414,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                                 InputProps={{
                                   startAdornment: (
-                                    <InputAdornment position="start">
-                                      $
-                                    </InputAdornment>
+                                    <InputAdornment position="start"></InputAdornment>
                                   ),
                                 }}
                               />
@@ -1564,14 +1571,14 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       </Accordion>
                     ))}
 
-                    <GradientButton
+                    {/* <GradientButton
                       secondary
                       fullWidth
                       startIcon={<Plus size={15} />}
                       onClick={addVariant}
                     >
                       Add Another Variant
-                    </GradientButton>
+                    </GradientButton> */}
                   </Stack>
                 )}
 
