@@ -3,15 +3,11 @@
 import React, { useState, useEffect } from "react";
 import {
   Box,
-  Card,
-  CardContent,
   Container,
   Grid,
   TextField,
   Typography,
   Chip,
-  FormControlLabel,
-  Checkbox,
   Paper,
   Stack,
   CircularProgress,
@@ -21,7 +17,6 @@ import {
   AccordionDetails,
   IconButton,
   InputAdornment,
-  Divider,
   FormControl,
   InputLabel,
   Select,
@@ -29,7 +24,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
-import { Plus, Trash2, Upload, ChevronDown, X } from "lucide-react";
+import { Plus, Upload, X } from "lucide-react";
 import {
   addProduct,
   updateProduct,
@@ -49,7 +44,7 @@ function GradientButton({
   size = "medium",
   startIcon,
   fullWidth = false,
-  type = "button", // ✅ always default to "button" to prevent accidental form submit
+  type = "button",
   disabled = false,
 }) {
   const [hovered, setHovered] = useState(false);
@@ -58,7 +53,7 @@ function GradientButton({
 
   return (
     <button
-      type={type} // ✅ explicitly pass type to native button
+      type={type}
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setHovered(true)}
@@ -114,7 +109,7 @@ function GradientButton({
   );
 }
 
-// ── Styled TextField wrapper ──────────────────────────────────────────────────
+// ── Styled TextField ──────────────────────────────────────────────────────────
 const fieldSx = {
   width: "100%",
   maxWidth: "100%",
@@ -140,31 +135,37 @@ const gridContainerSx = {
   "& > .MuiGrid-item": { minWidth: 0 },
 };
 
-export default function AddProductForm({ initialProduct, onSuccess }) {
+export default function AddProductForm({ onSuccess }) {
   const params = useParams();
   const productId = params.product_id;
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState(0);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     brand: "",
     category_id: "",
-    mrp: 0,
-    bulk_price: 0,
-    transfer_price: 0,
+    mrp: "",
+    bulk_price: "",
+    transfer_price: "",
     approval_status: "draft",
     lifecycle_status: "inactive",
-    productGallery: [],
     options: [],
+    // ── variants: normalized objects, each has a local `id` for React keys
+    //    and a `variant_id` (the server's UUID) for update payloads
     variants: [],
-    images: [],
+    // ── images split into two buckets:
+    existingImages: [], // { id, image_url, ... } objects from the API
+    newImageFiles: [], // File objects the user just picked
   });
+
   const [expandedVariant, setExpandedVariant] = useState(null);
   const [categories, setCategories] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // ── Fetch product (edit mode) ─────────────────────────────────────────────
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", productId],
     queryFn: () => getSingleProduct(productId),
@@ -177,70 +178,80 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       .catch(() => setCategories([]));
   }, []);
 
-  // ✅ FIX: Normalize variants from API — they use variant_id not id
+  // ── Populate form when product loads ─────────────────────────────────────
   useEffect(() => {
-    if (product?.data) {
-      setFormData((prev) => ({
-        ...prev,
-        title: product.data.title ?? prev.title,
-        description: product.data.description ?? prev.description,
-        brand: product.data.brand ?? prev.brand,
-        category_id: product.data.category_id ?? prev.category_id ?? "",
-        mrp: product.data.mrp ?? "",
-        bulk_price: product.data.bulk_price ?? "",
-        transfer_price: product.data.transfer_price ?? "",
-        approval_status: product.data.approval_status ?? prev.approval_status,
-        productGallery: product.data.images ?? prev.productGallery,
-
-        // ✅ Normalize: map variant_id → id, and flatten dimension_cm
-        variants: (product.data.variants ?? []).map((v) => ({
-          id: v.variant_id ?? v.id ?? Date.now().toString() + Math.random(),
-          sku: v.sku ?? "",
-          title: v.title ?? "",
-          price: v.price ?? 0,
-          compare_at_price: v.compare_at_price ?? 0,
-          inventory_quantity: v.inventory_quantity ?? 0,
-          weight_grams: v.weight_grams ?? 0,
-          option1: v.option1 ?? "",
-          option2: v.option2 ?? "",
-          option3: v.option3 ?? "",
-          is_active: v.is_active ?? true,
-          dimension_cm: v.dimension_cm ??
-            v.attributes?.dimension_cm ?? {
-              height: 0,
-              width: 0,
-              length: 0,
-            },
-          images: [],
-        })),
-      }));
-    }
-  }, [product]);
-
-  const handleProductChange = (field, value) =>
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-  const addVariant = () => {
-    const id = Date.now().toString();
-    const newVariant = {
-      id,
-      sku: "",
-      price: 0,
-      compare_at_price: 0,
-      inventory_quantity: 0,
-      weight_grams: 0,
-      title: "",
-      option1: "",
-      option2: "",
-      option3: "",
-      attributes: {},
-      images: [],
-      dimension_cm: { height: 0, width: 0, length: 0 },
-    };
+    if (!product?.data) return;
+    const p = product.data;
 
     setFormData((prev) => ({
       ...prev,
-      variants: [...prev.variants, newVariant],
+      title: p.title ?? "",
+      description: p.description ?? "",
+      brand: p.brand ?? "",
+      category_id: p.category_id ?? "",
+      mrp: p.mrp ?? "",
+      bulk_price: p.bulk_price ?? "",
+      transfer_price: p.transfer_price ?? "",
+      approval_status: p.approval_status ?? "draft",
+      lifecycle_status: p.lifecycle_status ?? "inactive",
+
+      // ✅ Keep existing images as-is — display thumbnails from image_url
+      existingImages: Array.isArray(p.images) ? p.images : [],
+      newImageFiles: [],
+
+      // ✅ Normalize variants:
+      //    - variant_id  = the server's UUID (sent back on update)
+      //    - id          = local React key (same value, guaranteed unique)
+      //    - flatten dimension_cm from either top-level or attributes
+      variants: (p.variants ?? []).map((v) => ({
+        id: v.variant_id ?? v.id,
+        variant_id: v.variant_id ?? v.id,
+        product_id: v.product_id,
+        sku: v.sku ?? "",
+        title: v.title ?? "",
+        price: v.price ?? 0,
+        compare_at_price: v.compare_at_price ?? 0,
+        inventory_quantity: v.inventory_quantity ?? 0,
+        weight_grams: v.weight_grams ?? 0,
+        option1: v.option1 ?? "",
+        option2: v.option2 ?? "",
+        option3: v.option3 ?? "",
+        is_active: v.is_active ?? true,
+        dimension_cm: v.dimension_cm ??
+          v.attributes?.dimension_cm ?? { height: 0, width: 0, length: 0 },
+        images: [],
+      })),
+    }));
+  }, [product]);
+
+  // ── Field helpers ─────────────────────────────────────────────────────────
+  const handleProductChange = (field, value) =>
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+  // ── Variants ──────────────────────────────────────────────────────────────
+  const addVariant = () => {
+    const id = Date.now().toString();
+    setFormData((prev) => ({
+      ...prev,
+      variants: [
+        ...prev.variants,
+        {
+          id,
+          variant_id: null, // null = new variant, backend will INSERT not UPDATE
+          sku: "",
+          title: "",
+          price: 0,
+          compare_at_price: 0,
+          inventory_quantity: 0,
+          weight_grams: 0,
+          option1: "",
+          option2: "",
+          option3: "",
+          is_active: true,
+          dimension_cm: { height: 0, width: 0, length: 0 },
+          images: [],
+        },
+      ],
     }));
     setExpandedVariant(id);
   };
@@ -253,40 +264,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       ),
     }));
 
-  const updateVariantAttribute = (id, attribute, value) =>
-    setFormData((prev) => ({
-      ...prev,
-      variants: prev.variants.map((v) =>
-        v.id === id
-          ? { ...v, attributes: { ...v.attributes, [attribute]: value } }
-          : v,
-      ),
-    }));
-
   const removeVariant = (id) =>
     setFormData((prev) => ({
       ...prev,
       variants: prev.variants.filter((v) => v.id !== id),
     }));
 
-  const handleProductImageUpload = (files) => {
-    if (files) {
-      const fileArray = Array.from(files);
-      setFormData((prev) => ({
-        ...prev,
-        productGallery: [...prev.productGallery, ...Array.from(files)],
-        images: [...prev.images, ...fileArray],
-      }));
-    }
-  };
-
-  const removeProductImage = (index) =>
-    setFormData((prev) => ({
-      ...prev,
-      productGallery: prev.productGallery.filter((_, i) => i !== index),
-      images: prev.images.filter((_, i) => i !== index),
-    }));
-
+  // ── Options ───────────────────────────────────────────────────────────────
   const addOption = () =>
     setFormData((prev) => ({
       ...prev,
@@ -328,46 +312,81 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         .map((opt, idx) => ({ ...opt, position: idx + 1 })),
     }));
 
-  // ✅ Save as Draft — type="button" prevents form submit
-  const handleSaveDraft = async () => {
-    const payload = {
-      ...formData,
-      approval_status: "draft",
-      lifecycle_status: formData.lifecycle_status || "inactive",
-      id: formData.id || Date.now().toString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      await addProduct(payload);
-      alert("Product saved as draft successfully!");
-      onSuccess?.();
-    } catch (err) {
-      console.log(err);
-      alert("Failed to save draft: " + (err?.message || "Unknown error"));
-    }
+  // ── Image helpers ─────────────────────────────────────────────────────────
+  const handleNewImageUpload = (files) => {
+    if (!files) return;
+    setFormData((prev) => ({
+      ...prev,
+      newImageFiles: [...prev.newImageFiles, ...Array.from(files)],
+    }));
   };
 
-  // ✅ Submit — type="button" prevents form submit
-  const handleSubmit = async () => {
-    if (formData.variants.length === 0) {
-      alert("Please add at least one variant");
-      return;
-    }
-    setSubmitting(true);
+  // Remove an already-uploaded image (will be excluded from keepImageIds)
+  const removeExistingImage = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      existingImages: prev.existingImages.filter((_, i) => i !== index),
+    }));
+
+  // Remove a newly picked file before upload
+  const removeNewImage = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      newImageFiles: prev.newImageFiles.filter((_, i) => i !== index),
+    }));
+
+  // ── Build multipart/form-data payload ────────────────────────────────────
+  //
+  //  Variants are sent as a JSON string matching the Postman shape.
+  //  Each variant that already exists includes its variant_id so the
+  //  backend can UPDATE it instead of INSERT a new row.
+  //
+  //  Images:
+  //    - keepImageIds  → JSON array of IDs to KEEP (backend deletes the rest)
+  //    - images        → new File objects to upload
+  //
+  const buildPayload = () => {
     const form = new FormData();
 
-    // ── Top-level fields ──
+    // Scalars
     form.append("title", formData.title);
     form.append("description", formData.description);
     form.append("brand", formData.brand);
     form.append("category_id", formData.category_id);
     form.append("approval_status", formData.approval_status);
+    form.append("lifecycle_status", formData.lifecycle_status);
     form.append("mrp", formData.mrp);
     form.append("bulk_price", formData.bulk_price);
     form.append("transfer_price", formData.transfer_price);
 
-    // ── Options & Variants as JSON strings ──
+    // Variants — mirror the Postman JSON shape exactly
+    const variantsPayload = formData.variants.map((v) => {
+      const dim = {
+        height: Number(v.dimension_cm?.height) || 0,
+        width: Number(v.dimension_cm?.width) || 0,
+        length: Number(v.dimension_cm?.length) || 0,
+      };
+      return {
+        // ✅ include variant_id only when updating an existing variant
+        ...(v.variant_id ? { variant_id: v.variant_id } : {}),
+        sku: v.sku,
+        title: v.title,
+        price: String(Number(v.price)),
+        compare_at_price: String(Number(v.compare_at_price)),
+        inventory_quantity: Number(v.inventory_quantity),
+        weight_grams: Number(v.weight_grams),
+        option1: v.option1 || null,
+        option2: v.option2 || null,
+        option3: v.option3 || null,
+        is_active: v.is_active,
+        dimension_cm: dim,
+        attributes: { dimension_cm: dim },
+        images: [],
+      };
+    });
+    form.append("variants", JSON.stringify(variantsPayload));
+
+    // Options
     form.append(
       "options",
       JSON.stringify(
@@ -379,33 +398,47 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       ),
     );
 
-    form.append(
-      "variants",
-      JSON.stringify(
-        formData.variants.map((variant) => ({
-          sku: variant.sku,
-          title: variant.title,
-          price: Number(variant.price),
-          compare_at_price: Number(variant.compare_at_price),
-          inventory_quantity: Number(variant.inventory_quantity),
-          weight_grams: Number(variant.weight_grams),
-          option1: variant.option1 || null,
-          option2: variant.option2 || null,
-          option3: variant.option3 || null,
-          images: [],
-          dimension_cm: {
-            height: Number(variant.dimension_cm?.height) || 0,
-            width: Number(variant.dimension_cm?.width) || 0,
-            length: Number(variant.dimension_cm?.length) || 0,
-          },
-        })),
-      ),
-    );
+    // ✅ Tell backend which existing images to KEEP (it deletes the rest)
+    const keepImageIds = formData.existingImages.map((img) => img.id);
+    form.append("keepImageIds", JSON.stringify(keepImageIds));
 
-    // ── Images ──
-    formData.images.forEach((file) => {
-      form.append("images", file);
-    });
+    // New files to upload
+    formData.newImageFiles.forEach((file) => form.append("images", file));
+
+    return form;
+  };
+
+  // ── Save as Draft ─────────────────────────────────────────────────────────
+  const handleSaveDraft = async () => {
+    const form = buildPayload();
+    form.set("approval_status", "draft");
+
+    try {
+      if (productId) {
+        await updateProduct(productId, form);
+      } else {
+        await addProduct(form);
+      }
+      alert("Product saved as draft successfully!");
+      onSuccess?.();
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Failed to save draft: " +
+          (err?.response?.data?.message || err?.message || "Unknown error"),
+      );
+    }
+  };
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  const handleSubmit = async () => {
+    if (formData.variants.length === 0) {
+      alert("Please add at least one variant");
+      return;
+    }
+    setSubmitting(true);
+
+    const form = buildPayload();
 
     try {
       if (productId) {
@@ -421,43 +454,38 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         description: "",
         brand: "",
         category_id: "",
-        approval_status: "draft",
-        lifecycle_status: "inactive",
-        productGallery: [],
-        options: [],
-        variants: [],
-        images: [],
         mrp: "",
         bulk_price: "",
         transfer_price: "",
+        approval_status: "draft",
+        lifecycle_status: "inactive",
+        options: [],
+        variants: [],
+        existingImages: [],
+        newImageFiles: [],
       });
 
       onSuccess?.();
       navigate("/products");
     } catch (err) {
-      console.log(err);
-      const apiError = err?.response?.data?.error;
-      const apiMessage = err?.response?.data?.message;
-      const fallback = err?.message || "Unknown error";
-
-      alert(
-        "Failed to submit product: " + (apiError || apiMessage || fallback),
-      );
+      console.error(err);
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unknown error";
+      alert("Failed to submit product: " + msg);
     } finally {
       setSubmitting(false);
     }
   };
 
+  // ── Loading state ─────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <Box
         sx={{
           minHeight: "100vh",
-          width: "100%",
-          maxWidth: "100%",
-          minWidth: 0,
-          boxSizing: "border-box",
-          px: 2,
           bgcolor: "#f4fbfc",
           display: "flex",
           alignItems: "center",
@@ -474,6 +502,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
     );
   }
 
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <Box
       sx={{
@@ -487,17 +516,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
         overflowX: "hidden",
       }}
     >
-      <Container
-        maxWidth="lg"
-        sx={{
-          px: { xs: 1.5, sm: 2, md: 3 },
-          minWidth: 0,
-          width: "100%",
-          maxWidth: "100%",
-        }}
-      >
-        {/* Page Header */}
-        <Box sx={{ mb: { xs: 2, sm: 4 }, minWidth: 0 }}>
+      <Container maxWidth="lg" sx={{ px: { xs: 1.5, sm: 2, md: 3 } }}>
+        {/* Header */}
+        <Box sx={{ mb: { xs: 2, sm: 4 } }}>
           <Typography
             variant="h4"
             component="h1"
@@ -507,18 +528,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
               color: "#000",
               letterSpacing: "-0.02em",
               fontSize: { xs: "1.5rem", sm: "2rem" },
-              wordBreak: "break-word",
             }}
           >
             {productId ? "Edit Product" : "Add New Product"}
           </Typography>
           <Typography
             variant="body2"
-            sx={{
-              color: "#555",
-              fontSize: "0.9rem",
-              wordBreak: "break-word",
-            }}
+            sx={{ color: "#555", fontSize: "0.9rem" }}
           >
             {productId
               ? "Update your product details and variants"
@@ -526,7 +542,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
           </Typography>
         </Box>
 
-        {/* ✅ REMOVED <form> wrapper entirely — use div instead to prevent any accidental native submit */}
+        {/* ✅ div — no native form submit possible */}
         <div style={{ width: "100%", minWidth: 0, maxWidth: "100%" }}>
           <Paper
             elevation={0}
@@ -534,22 +550,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
               borderRadius: "18px",
               border: "1.5px solid #e0f4f7",
               overflow: "hidden",
-              maxWidth: "100%",
-              minWidth: 0,
-              width: "100%",
               boxShadow: "0 2px 20px rgba(0,151,178,0.08)",
             }}
           >
-            {/* ── Custom Tab Bar ── */}
+            {/* Tab bar */}
             <Box
               sx={{
                 display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
                 borderBottom: "1.5px solid #e0f4f7",
                 bgcolor: "#f8fdfe",
-                minWidth: 0,
-                overflowX: { xs: "visible", sm: "auto" },
-                WebkitOverflowScrolling: "touch",
               }}
             >
               {["Product Details", "Variants"].map((label, idx) => {
@@ -565,10 +575,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       minWidth: 0,
                       py: 1.5,
                       px: { xs: 2, sm: "clamp(8px, 2.5vw, 22px)" },
-                      fontSize: {
-                        xs: "0.88rem",
-                        sm: "clamp(0.78rem, 2.8vw, 0.9rem)",
-                      },
+                      fontSize: { xs: "0.88rem", sm: "0.9rem" },
                       fontWeight: isActive ? 700 : 500,
                       color: isActive ? "#0097b2" : "#666",
                       background: isActive
@@ -593,14 +600,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       },
                       cursor: "pointer",
                       transition: "all 0.2s ease",
-                      letterSpacing: isActive ? "0.01em" : "normal",
                       boxSizing: "border-box",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: { xs: "flex-start", sm: "center" },
                       gap: 1,
-                      textAlign: { xs: "left", sm: "center" },
-                      flexWrap: "wrap",
                     }}
                   >
                     <Box
@@ -620,18 +624,19 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     >
                       {idx + 1}
                     </Box>
-                    <Box component="span" sx={{ wordBreak: "break-word" }}>
-                      {label}
-                    </Box>
+                    {label}
                   </Box>
                 );
               })}
             </Box>
 
-            {/* ── Product Details Tab ── */}
+            {/* ══════════════════════════════════════════════════════════════
+                TAB 0 — Product Details
+            ══════════════════════════════════════════════════════════════ */}
             {activeTab === 0 && (
               <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, minWidth: 0 }}>
                 <Grid container spacing={3} sx={gridContainerSx}>
+                  {/* Title */}
                   <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
@@ -646,6 +651,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
+
+                  {/* Brand + Category */}
                   <Grid size={{ xs: 12 }}>
                     <Stack
                       direction={{ xs: "column", sm: "row" }}
@@ -674,7 +681,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           ...fieldSx,
                           flex: { sm: "1 1 0" },
                           minWidth: { xs: "100%", sm: 0 },
-                          maxWidth: { xs: "100%", sm: "none" },
                         }}
                       >
                         <InputLabel id="category-label">Category</InputLabel>
@@ -685,23 +691,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           onChange={(e) =>
                             handleProductChange("category_id", e.target.value)
                           }
-                          MenuProps={{
-                            PaperProps: {
-                              sx: {
-                                maxHeight: 320,
-                                minWidth: 0,
-                                maxWidth: "min(100vw - 24px, 360px)",
-                              },
-                            },
-                            anchorOrigin: {
-                              vertical: "bottom",
-                              horizontal: "left",
-                            },
-                            transformOrigin: {
-                              vertical: "top",
-                              horizontal: "left",
-                            },
-                          }}
+                          MenuProps={{ PaperProps: { sx: { maxHeight: 320 } } }}
                         >
                           <MenuItem value="">
                             <em>None</em>
@@ -712,19 +702,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             </MenuItem>
                           ))}
                         </Select>
-                        {categories.length === 0 && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{ mt: 0.5, display: "block" }}
-                          >
-                            No categories available. Create categories in the
-                            admin panel.
-                          </Typography>
-                        )}
                       </FormControl>
                     </Stack>
                   </Grid>
+
+                  {/* Pricing */}
                   <Grid size={{ xs: 12 }}>
                     <Typography
                       variant="subtitle2"
@@ -733,7 +715,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       Pricing
                     </Typography>
                   </Grid>
-
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                       fullWidth
@@ -746,7 +727,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
-
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                       fullWidth
@@ -759,7 +739,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
-
                   <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                       fullWidth
@@ -772,16 +751,17 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
+
+                  {/* Options */}
                   <Grid size={{ xs: 12 }}>
                     <Box
                       sx={{
                         display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                        alignItems: { xs: "stretch", sm: "center" },
+                        alignItems: "center",
                         justifyContent: "space-between",
-                        gap: 1.5,
                         mb: 1,
-                        minWidth: 0,
+                        gap: 1.5,
+                        flexWrap: "wrap",
                       }}
                     >
                       <Typography
@@ -790,20 +770,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       >
                         Options
                       </Typography>
-                      <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
-                        <GradientButton
-                          type="button"
-                          secondary
-                          size="small"
-                          fullWidth
-                          startIcon={<Plus size={15} />}
-                          onClick={addOption}
-                        >
-                          Add Option
-                        </GradientButton>
-                      </Box>
+                      <GradientButton
+                        type="button"
+                        secondary
+                        size="small"
+                        startIcon={<Plus size={15} />}
+                        onClick={addOption}
+                      >
+                        Add Option
+                      </GradientButton>
                     </Box>
-
                     {formData.options.length === 0 ? (
                       <Typography sx={{ color: "#777", fontSize: "0.875rem" }}>
                         Add option groups (e.g., Color, Size) and their values.
@@ -873,7 +849,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                     xs: "flex-end",
                                     sm: "center",
                                   },
-                                  alignItems: "center",
                                 }}
                               >
                                 <IconButton
@@ -896,6 +871,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     )}
                   </Grid>
 
+                  {/* Approval Status */}
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       select
@@ -913,6 +889,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     </TextField>
                   </Grid>
 
+                  {/* Description */}
                   <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
@@ -929,7 +906,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     />
                   </Grid>
 
-                  {/* Image Upload */}
+                  {/* ── Product Gallery ── */}
                   <Grid size={{ xs: 12 }}>
                     <Typography
                       variant="subtitle2"
@@ -937,11 +914,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     >
                       Product Gallery
                     </Typography>
+
+                    {/* Upload dropzone */}
                     <input
                       type="file"
                       multiple
                       accept="image/*"
-                      onChange={(e) => handleProductImageUpload(e.target.files)}
+                      onChange={(e) => handleNewImageUpload(e.target.files)}
                       style={{ display: "none" }}
                       id="product-image-upload"
                     />
@@ -958,7 +937,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           borderRadius: "14px",
                           bgcolor: "#f8fdfe",
                           transition: "all 0.2s",
-                          minWidth: 0,
                           "&:hover": {
                             borderColor: "#0097b2",
                             bgcolor: "#edf8fb",
@@ -982,58 +960,112 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                         </Box>
                         <Typography
                           variant="body2"
-                          sx={{
-                            color: "#555",
-                            mb: 0.5,
-                            fontWeight: 500,
-                            px: 0.5,
-                            wordBreak: "break-word",
-                          }}
+                          sx={{ color: "#555", mb: 0.5, fontWeight: 500 }}
                         >
                           Drag and drop images or click to upload
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: "#999",
-                            px: 0.5,
-                            wordBreak: "break-word",
-                          }}
-                        >
+                        <Typography variant="caption" sx={{ color: "#999" }}>
                           PNG, JPG, WEBP up to 10MB
                         </Typography>
                       </Paper>
                     </label>
 
-                    {formData.productGallery.length > 0 && (
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ mt: 2, flexWrap: "wrap", gap: 1 }}
-                      >
-                        {formData.productGallery.map((img, idx) => (
-                          <Chip
-                            key={idx}
-                            label={img.name || `Image ${idx + 1}`}
-                            size="small"
-                            onDelete={() => removeProductImage(idx)}
-                            sx={{
-                              maxWidth: "100%",
-                              bgcolor: "rgba(0,151,178,0.08)",
-                              color: "#0097b2",
-                              border: "1px solid rgba(0,151,178,0.25)",
-                              fontWeight: 500,
-                              "& .MuiChip-label": {
-                                display: "block",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                whiteSpace: "nowrap",
-                              },
-                              "& .MuiChip-deleteIcon": { color: "#0097b2" },
-                            }}
-                          />
-                        ))}
-                      </Stack>
+                    {/* ✅ Existing server images — show thumbnails */}
+                    {formData.existingImages.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#888",
+                            fontWeight: 600,
+                            mb: 1,
+                            display: "block",
+                          }}
+                        >
+                          Existing Images (click × to remove)
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          sx={{ flexWrap: "wrap", gap: 1.5 }}
+                        >
+                          {formData.existingImages.map((img, idx) => (
+                            <Box
+                              key={img.id ?? idx}
+                              sx={{
+                                position: "relative",
+                                display: "inline-flex",
+                              }}
+                            >
+                              <Box
+                                component="img"
+                                src={img.image_url}
+                                alt={img.alt_text || `Image ${idx + 1}`}
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  borderRadius: "10px",
+                                  objectFit: "cover",
+                                  border: "1.5px solid #e0f4f7",
+                                }}
+                              />
+                              <IconButton
+                                size="small"
+                                onClick={() => removeExistingImage(idx)}
+                                sx={{
+                                  position: "absolute",
+                                  top: -8,
+                                  right: -8,
+                                  bgcolor: "#e53935",
+                                  color: "#fff",
+                                  width: 22,
+                                  height: 22,
+                                  "&:hover": { bgcolor: "#c62828" },
+                                }}
+                              >
+                                <X size={12} />
+                              </IconButton>
+                            </Box>
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+
+                    {/* ✅ Newly picked files (not yet uploaded) */}
+                    {formData.newImageFiles.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#888",
+                            fontWeight: 600,
+                            mb: 1,
+                            display: "block",
+                          }}
+                        >
+                          New Images (will upload on save)
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          sx={{ flexWrap: "wrap", gap: 1 }}
+                        >
+                          {formData.newImageFiles.map((file, idx) => (
+                            <Chip
+                              key={idx}
+                              label={file.name}
+                              size="small"
+                              onDelete={() => removeNewImage(idx)}
+                              sx={{
+                                maxWidth: 180,
+                                bgcolor: "rgba(0,151,178,0.08)",
+                                color: "#0097b2",
+                                border: "1px solid rgba(0,151,178,0.25)",
+                                fontWeight: 500,
+                                "& .MuiChip-deleteIcon": { color: "#0097b2" },
+                              }}
+                            />
+                          ))}
+                        </Stack>
+                      </Box>
                     )}
                   </Grid>
                 </Grid>
@@ -1044,13 +1076,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     mt: 4,
                     justifyContent: { xs: "stretch", sm: "flex-end" },
                     gap: 2,
-                    "& > button": {
-                      width: { xs: "100%", sm: "auto" },
-                      justifyContent: "center",
-                    },
                   }}
                 >
-                  {/* ✅ type="button" on all buttons to prevent form submit */}
                   <GradientButton
                     type="button"
                     secondary
@@ -1065,7 +1092,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
               </Box>
             )}
 
-            {/* ── Variants Tab ── */}
+            {/* ══════════════════════════════════════════════════════════════
+                TAB 1 — Variants
+            ══════════════════════════════════════════════════════════════ */}
             {activeTab === 1 && (
               <Box
                 sx={{
@@ -1077,23 +1106,30 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                 <Box
                   sx={{
                     display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    alignItems: { xs: "stretch", sm: "center" },
+                    alignItems: "center",
                     justifyContent: "space-between",
                     mb: 3,
                     gap: 2,
-                    minWidth: 0,
                   }}
                 >
                   <Typography
                     sx={{
                       fontWeight: 700,
                       fontSize: { xs: "1rem", sm: "1.1rem" },
-                      minWidth: 0,
                     }}
                   >
                     Product Variants
                   </Typography>
+                  {formData.variants.length > 0 && (
+                    <GradientButton
+                      type="button"
+                      size="small"
+                      startIcon={<Plus size={15} />}
+                      onClick={addVariant}
+                    >
+                      Add Variant
+                    </GradientButton>
+                  )}
                 </Box>
 
                 {formData.variants.length === 0 ? (
@@ -1105,7 +1141,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       border: "2px dashed #b8e8f0",
                       borderRadius: "14px",
                       bgcolor: "#f8fdfe",
-                      minWidth: 0,
                     }}
                   >
                     <Box
@@ -1134,25 +1169,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       No variants yet
                     </Typography>
                     <Typography
-                      sx={{
-                        color: "#777",
-                        fontSize: "0.875rem",
-                        mb: 3,
-                        wordBreak: "break-word",
-                        px: { xs: 0.5, sm: 0 },
-                      }}
+                      sx={{ color: "#777", fontSize: "0.875rem", mb: 3 }}
                     >
                       Add product variants like size, color, and stock
                     </Typography>
-                    <Box
-                      sx={{
-                        width: "100%",
-                        maxWidth: 360,
-                        mx: "auto",
-                        display: "flex",
-                        justifyContent: "center",
-                      }}
-                    >
+                    <Box sx={{ maxWidth: 360, mx: "auto" }}>
                       <GradientButton
                         type="button"
                         fullWidth
@@ -1191,7 +1212,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           sx={{
                             bgcolor: "#fafafa",
                             px: { xs: 1.5, sm: 3 },
-                            py: 2,
                             minHeight: 64,
                             flexWrap: "wrap",
                             rowGap: 1,
@@ -1226,37 +1246,22 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             {index + 1}
                           </Box>
 
-                          <Box
-                            sx={{
-                              flex: "1 1 200px",
-                              minWidth: 0,
-                              maxWidth: "100%",
-                            }}
-                          >
+                          <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
                             <Typography
                               variant="subtitle1"
-                              sx={{
-                                fontWeight: 700,
-                                color: "#000",
-                                wordBreak: "break-word",
-                              }}
+                              sx={{ fontWeight: 700, color: "#000" }}
                             >
                               {variant.sku || "Untitled variant"}
                             </Typography>
-
-                            <Box
-                              sx={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                gap: 1,
-                                mt: 0.5,
-                                alignItems: "center",
-                              }}
+                            <Stack
+                              direction="row"
+                              spacing={1}
+                              sx={{ mt: 0.5, flexWrap: "wrap", gap: 0.5 }}
                             >
                               <Chip
                                 label={
                                   variant.price > 0
-                                    ? `$${Number(variant.price).toFixed(2)}`
+                                    ? `₹${Number(variant.price).toFixed(2)}`
                                     : "No price"
                                 }
                                 size="small"
@@ -1264,11 +1269,9 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                   bgcolor: "rgba(255,209,32,0.12)",
                                   color: "#b27a00",
                                   border: "1px solid rgba(255,209,32,0.35)",
-                                  fontWeight: 500,
                                   fontSize: "0.7rem",
                                 }}
                               />
-
                               <Chip
                                 label={`Qty: ${variant.inventory_quantity || 0}`}
                                 size="small"
@@ -1276,11 +1279,10 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                   bgcolor: "rgba(30,136,229,0.12)",
                                   color: "#0d47a1",
                                   border: "1px solid rgba(30,136,229,0.35)",
-                                  fontWeight: 500,
                                   fontSize: "0.7rem",
                                 }}
                               />
-                            </Box>
+                            </Stack>
                           </Box>
 
                           <Box
@@ -1288,8 +1290,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               display: "flex",
                               alignItems: "center",
                               gap: 1,
-                              flexShrink: 0,
-                              ml: { xs: "auto", sm: 0 },
+                              ml: "auto",
                             }}
                           >
                             <Chip
@@ -1309,7 +1310,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 fontSize: "0.72rem",
                               }}
                             />
-
                             <IconButton
                               size="small"
                               onClick={(e) => {
@@ -1319,9 +1319,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               sx={{
                                 color: "#c62828",
                                 bgcolor: "rgba(198,40,40,0.12)",
-                                "&:hover": {
-                                  bgcolor: "rgba(198,40,40,0.18)",
-                                },
+                                "&:hover": { bgcolor: "rgba(198,40,40,0.18)" },
                               }}
                             >
                               <X size={14} />
@@ -1330,13 +1328,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                         </AccordionSummary>
 
                         <AccordionDetails
-                          sx={{
-                            px: { xs: 1.5, sm: 3 },
-                            pt: 2,
-                            pb: 3,
-                            minWidth: 0,
-                            overflowX: "hidden",
-                          }}
+                          sx={{ px: { xs: 1.5, sm: 3 }, pt: 2, pb: 3 }}
                         >
                           <Grid
                             container
@@ -1439,7 +1431,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 }}
                               />
                             </Grid>
-
                             <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
@@ -1476,7 +1467,6 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-
                             <Grid size={{ xs: 12, sm: 6 }}>
                               <TextField
                                 fullWidth
@@ -1529,7 +1519,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               />
                             </Grid>
 
-                            {/* ── Dimensions ── */}
+                            {/* Dimensions */}
                             <Grid size={{ xs: 12 }}>
                               <Typography
                                 variant="subtitle2"
@@ -1591,8 +1581,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       </Accordion>
                     ))}
 
-                    {/* ✅ Add Another Variant button */}
-                    {/* <GradientButton
+                    <GradientButton
                       type="button"
                       secondary
                       fullWidth
@@ -1600,7 +1589,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       onClick={addVariant}
                     >
                       Add Another Variant
-                    </GradientButton> */}
+                    </GradientButton>
                   </Stack>
                 )}
 
@@ -1610,13 +1599,8 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     mt: 4,
                     justifyContent: { xs: "stretch", sm: "flex-end" },
                     gap: 2,
-                    "& > button": {
-                      width: { xs: "100%", sm: "auto" },
-                      justifyContent: "center",
-                    },
                   }}
                 >
-                  {/* ✅ type="button" explicitly on all action buttons */}
                   <GradientButton
                     type="button"
                     secondary
