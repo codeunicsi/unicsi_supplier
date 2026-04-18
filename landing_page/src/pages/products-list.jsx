@@ -37,6 +37,7 @@ function GradientButton({
   as: As,
   to,
   href,
+  fullWidth = false,
 }) {
   const [hovered, setHovered] = useState(false);
   const pad = size === "small" ? "6px 14px" : "9px 22px";
@@ -45,8 +46,11 @@ function GradientButton({
   const baseStyle = {
     display: "inline-flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: "6px",
     padding: pad,
+    width: fullWidth ? "100%" : "auto",
+    boxSizing: "border-box",
     borderRadius: "9px",
     fontSize,
     fontWeight: 600,
@@ -113,6 +117,7 @@ function GradientButton({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       style={baseStyle}
       onMouseEnter={() => setHovered(true)}
@@ -126,17 +131,29 @@ function GradientButton({
 // ── Shared page shell ─────────────────────────────────────────────────────────
 function PageShell({ children, showAddBtn = false }) {
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f4fbfc", py: 4 }}>
-      <Container maxWidth="lg">
+    <Box
+      sx={{
+        width: "100%",
+        minWidth: 0,
+        minHeight: "100vh",
+        bgcolor: "#f4fbfc",
+        py: 4,
+        boxSizing: "border-box",
+      }}
+    >
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, minWidth: 0 }}>
         <Box
           sx={{
             mb: 4,
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            alignItems: "flex-start",
+            alignItems: { xs: "stretch", sm: "flex-start" },
+            gap: 2,
+            minWidth: 0,
           }}
         >
-          <Box>
+          <Box sx={{ minWidth: 0 }}>
             <Typography
               variant="h4"
               component="h1"
@@ -157,9 +174,20 @@ function PageShell({ children, showAddBtn = false }) {
             </Typography>
           </Box>
           {showAddBtn && (
-            <Link to="/products/add" style={{ textDecoration: "none" }}>
-              <GradientButton>+ Add New Product</GradientButton>
-            </Link>
+            <Box
+              sx={{
+                alignSelf: { xs: "stretch", sm: "flex-start" },
+                width: { xs: "100%", sm: "auto" },
+                minWidth: 0,
+              }}
+            >
+              <Link
+                to="/products/add"
+                style={{ textDecoration: "none", display: "block" }}
+              >
+                <GradientButton fullWidth>+ Add New Product</GradientButton>
+              </Link>
+            </Box>
           )}
         </Box>
         {children}
@@ -287,11 +315,14 @@ export default function ProductsList() {
         sx={{
           borderRadius: "16px",
           border: "1.5px solid #e0f4f7",
-          overflow: "hidden",
+          overflowX: "auto",
+          maxWidth: "100%",
+          minWidth: 0,
+          WebkitOverflowScrolling: "touch",
           boxShadow: "0 2px 16px rgba(0,151,178,0.08)",
         }}
       >
-        <Table>
+        <Table sx={{ minWidth: 720 }}>
           <TableHead>
             <TableRow
               sx={{
@@ -419,8 +450,8 @@ export default function ProductsList() {
                 <TableCell align="right">
                   <Stack
                     direction="row"
-                    spacing={1}
-                    sx={{ justifyContent: "flex-end" }}
+                    flexWrap="wrap"
+                    sx={{ justifyContent: "flex-end", gap: 1 }}
                   >
                     <Link
                       to={`/edit-product/${product?.product_id}`}
@@ -470,7 +501,9 @@ export default function ProductsList() {
             borderRadius: "16px",
             border: "1.5px solid #e0f4f7",
             boxShadow: "0 8px 40px rgba(0,151,178,0.15)",
-            minWidth: 360,
+            minWidth: { xs: "min(100%, 360px)", sm: 360 },
+            maxWidth: { xs: "calc(100vw - 24px)", sm: "none" },
+            mx: { xs: "auto", sm: 0 },
             overflow: "hidden",
           },
         }}

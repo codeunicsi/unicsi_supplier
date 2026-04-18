@@ -112,13 +112,12 @@ function StatBadge({ value, label, up = true }) {
 function OrdersAndGMVCard() {
   return (
     <div
+      className="relative min-h-[280px] w-full min-w-0 lg:min-h-0 lg:h-full"
       style={{
         border: "1.5px solid #e0f4f7",
         borderRadius: "16px",
         background: "#fff",
         padding: "16px",
-        width: "100%",
-        height: "100%",
         boxSizing: "border-box",
         boxShadow: "0 2px 12px rgba(0,151,178,0.07)",
         display: "flex",
@@ -139,22 +138,17 @@ function OrdersAndGMVCard() {
       </svg>
 
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 12,
-        }}
-      >
-        <span style={{ fontWeight: 700, fontSize: "0.9rem", color: "#000" }}>
+      <div className="mb-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <span
+          className="min-w-0 shrink-0 font-bold text-[#000]"
+          style={{ fontSize: "0.9rem" }}
+        >
           Orders & GMV
         </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <div
+            className="flex flex-wrap items-center gap-2 sm:gap-3"
             style={{
-              display: "flex",
-              gap: 12,
               fontSize: "0.75rem",
               fontWeight: 600,
             }}
@@ -185,6 +179,7 @@ function OrdersAndGMVCard() {
             </span>
           </div>
           <div
+            className="max-w-full truncate"
             style={{
               padding: "4px 10px",
               border: "1px solid #e0f4f7",
@@ -222,7 +217,7 @@ function OrdersAndGMVCard() {
       </div>
 
       {/* Chart */}
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div className="min-h-[200px] w-full flex-1 sm:min-h-[220px]" style={{ minHeight: 0 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={areaData}
@@ -282,12 +277,15 @@ function OrdersAndGMVCard() {
 function MarginAppliedCard() {
   return (
     <div
+      className="min-h-0 min-w-0 w-full"
       style={{
         border: "1.5px solid #e0f4f7",
         borderRadius: "16px",
         background: "#fff",
         padding: "14px",
-        height: 200,
+        minHeight: 180,
+        height: "auto",
+        flex: "1 1 160px",
         boxSizing: "border-box",
         boxShadow: "0 2px 12px rgba(0,151,178,0.07)",
         display: "flex",
@@ -338,12 +336,15 @@ function MarginAppliedCard() {
 function TotalOrdersCard() {
   return (
     <div
+      className="min-h-0 min-w-0 w-full"
       style={{
         border: "1.5px solid #e0f4f7",
         borderRadius: "16px",
         background: "#fff",
         padding: "14px",
-        height: 200,
+        minHeight: 180,
+        height: "auto",
+        flex: "1 1 160px",
         boxSizing: "border-box",
         boxShadow: "0 2px 12px rgba(0,151,178,0.07)",
         display: "flex",
@@ -404,16 +405,9 @@ function TotalOrdersCard() {
 // ── Dashboard Layout ──────────────────────────────────────────────────────────
 export default function DashboardChart() {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "2fr 1fr",
-        gap: 12,
-        height: 420,
-      }}
-    >
+    <div className="grid min-h-[320px] w-full min-w-0 auto-rows-auto grid-cols-1 gap-3 lg:h-[420px] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-3">
       <OrdersAndGMVCard />
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="flex min-h-0 min-w-0 flex-col gap-3 lg:min-h-[320px]">
         <MarginAppliedCard />
         <TotalOrdersCard />
       </div>

@@ -35,7 +35,7 @@ export default function ManageProducts() {
   });
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       <h2 className="text-lg font-semibold mb-4">Manage Products</h2>
 
       <Tabs tabItems={["Inventory", "Approved", "Purchase Order"]} />

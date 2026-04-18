@@ -73,9 +73,12 @@ function GradientButton({
         fontSize,
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
-        whiteSpace: "nowrap",
+        whiteSpace: fullWidth ? "normal" : "nowrap",
+        textAlign: fullWidth ? "center" : "left",
         transition: "all 0.2s ease",
         width: fullWidth ? "100%" : "auto",
+        maxWidth: "100%",
+        boxSizing: "border-box",
         ...(danger
           ? {
               background: hovered ? "#c62828" : "transparent",
@@ -113,9 +116,14 @@ function GradientButton({
 
 // ── Styled TextField wrapper ──────────────────────────────────────────────────
 const fieldSx = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
     background: "#fff",
+    minWidth: 0,
     "&:hover fieldset": { borderColor: "#0097b2" },
     "&.Mui-focused fieldset": {
       borderColor: "#0097b2",
@@ -123,7 +131,13 @@ const fieldSx = {
     },
   },
   "& .MuiInputLabel-root.Mui-focused": { color: "#0097b2" },
-  "& .MuiInputBase-input": { color: "#000" },
+  "& .MuiInputBase-input": { color: "#000", minWidth: 0 },
+};
+
+const gridContainerSx = {
+  minWidth: 0,
+  width: "100%",
+  "& > .MuiGrid-item": { minWidth: 0 },
 };
 
 export default function AddProductForm({ initialProduct, onSuccess }) {
@@ -420,6 +434,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
       <Box
         sx={{
           minHeight: "100vh",
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: 0,
+          boxSizing: "border-box",
+          px: 2,
           bgcolor: "#f4fbfc",
           display: "flex",
           alignItems: "center",
@@ -437,10 +456,29 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f4fbfc", py: 4 }}>
-      <Container maxWidth="lg">
+    <Box
+      sx={{
+        minHeight: "100vh",
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        bgcolor: "#f4fbfc",
+        py: { xs: 2, sm: 4 },
+        overflowX: "hidden",
+      }}
+    >
+      <Container
+        maxWidth="lg"
+        sx={{
+          px: { xs: 1.5, sm: 2, md: 3 },
+          minWidth: 0,
+          width: "100%",
+          maxWidth: "100%",
+        }}
+      >
         {/* Page Header */}
-        <Box sx={{ mb: 4 }}>
+        <Box sx={{ mb: { xs: 2, sm: 4 }, minWidth: 0 }}>
           <Typography
             variant="h4"
             component="h1"
@@ -449,13 +487,19 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
               mb: 0.5,
               color: "#000",
               letterSpacing: "-0.02em",
+              fontSize: { xs: "1.5rem", sm: "2rem" },
+              wordBreak: "break-word",
             }}
           >
             {productId ? "Edit Product" : "Add New Product"}
           </Typography>
           <Typography
             variant="body2"
-            sx={{ color: "#555", fontSize: "0.9rem" }}
+            sx={{
+              color: "#555",
+              fontSize: "0.9rem",
+              wordBreak: "break-word",
+            }}
           >
             {productId
               ? "Update your product details and variants"
@@ -463,13 +507,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
           </Typography>
         </Box>
 
-        <form>
+        <form style={{ width: "100%", minWidth: 0, maxWidth: "100%" }}>
           <Paper
             elevation={0}
             sx={{
               borderRadius: "18px",
               border: "1.5px solid #e0f4f7",
               overflow: "hidden",
+              maxWidth: "100%",
+              minWidth: 0,
+              width: "100%",
               boxShadow: "0 2px 20px rgba(0,151,178,0.08)",
             }}
           >
@@ -477,69 +524,93 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
             <Box
               sx={{
                 display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
                 borderBottom: "1.5px solid #e0f4f7",
                 bgcolor: "#f8fdfe",
+                minWidth: 0,
+                overflowX: { xs: "visible", sm: "auto" },
+                WebkitOverflowScrolling: "touch",
               }}
             >
               {["Product Details", "Variants"].map((label, idx) => {
                 const isActive = activeTab === idx;
                 return (
-                  <button
+                  <Box
                     key={label}
+                    component="button"
                     type="button"
                     onClick={() => setActiveTab(idx)}
-                    style={{
-                      flex: 1,
-                      padding: "16px 24px",
-                      fontSize: "0.9rem",
+                    sx={{
+                      flex: { sm: "1 1 0" },
+                      minWidth: 0,
+                      py: 1.5,
+                      px: { xs: 2, sm: "clamp(8px, 2.5vw, 22px)" },
+                      fontSize: {
+                        xs: "0.88rem",
+                        sm: "clamp(0.78rem, 2.8vw, 0.9rem)",
+                      },
                       fontWeight: isActive ? 700 : 500,
                       color: isActive ? "#0097b2" : "#666",
-                      background: "transparent",
+                      background: isActive
+                        ? "rgba(0,151,178,0.06)"
+                        : "transparent",
                       border: "none",
-                      borderBottom: isActive
-                        ? "3px solid #0097b2"
-                        : "3px solid transparent",
+                      borderLeft: {
+                        xs: isActive ? "3px solid #0097b2" : "3px solid transparent",
+                        sm: "none",
+                      },
+                      borderTop: {
+                        xs: idx > 0 ? "1px solid #e0f4f7" : "none",
+                        sm: "none",
+                      },
+                      borderBottom: {
+                        xs: "none",
+                        sm: isActive
+                          ? "3px solid #0097b2"
+                          : "3px solid transparent",
+                      },
                       cursor: "pointer",
                       transition: "all 0.2s ease",
                       letterSpacing: isActive ? "0.01em" : "normal",
+                      boxSizing: "border-box",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: { xs: "flex-start", sm: "center" },
+                      gap: 1,
+                      textAlign: { xs: "left", sm: "center" },
+                      flexWrap: "wrap",
                     }}
                   >
-                    <span
-                      style={{
-                        display: "flex",
+                    <Box
+                      sx={{
+                        width: 22,
+                        height: 22,
+                        borderRadius: "50%",
+                        background: isActive ? GRADIENT : "#e0e0e0",
+                        color: "#fff",
+                        fontSize: "0.72rem",
+                        fontWeight: 700,
+                        display: "inline-flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        gap: "8px",
+                        flexShrink: 0,
                       }}
                     >
-                      <span
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: "50%",
-                          background: isActive ? GRADIENT : "#e0e0e0",
-                          color: "#fff",
-                          fontSize: "0.72rem",
-                          fontWeight: 700,
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
+                      {idx + 1}
+                    </Box>
+                    <Box component="span" sx={{ wordBreak: "break-word" }}>
                       {label}
-                    </span>
-                  </button>
+                    </Box>
+                  </Box>
                 );
               })}
             </Box>
 
             {/* ── Product Details Tab ── */}
             {activeTab === 0 && (
-              <Box sx={{ p: 4 }}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
+              <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, minWidth: 0 }}>
+                <Grid container spacing={3} sx={gridContainerSx}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       label="Product Title"
@@ -553,7 +624,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Stack
                       direction={{ xs: "column", sm: "row" }}
                       spacing={3}
@@ -594,7 +665,11 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           }
                           MenuProps={{
                             PaperProps: {
-                              style: { maxHeight: 320, minWidth: 240 },
+                              sx: {
+                                maxHeight: 320,
+                                minWidth: 0,
+                                maxWidth: "min(100vw - 24px, 360px)",
+                              },
                             },
                             anchorOrigin: {
                               vertical: "bottom",
@@ -628,7 +703,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       </FormControl>
                     </Stack>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography
                       variant="subtitle2"
                       sx={{ fontWeight: 700, color: "#000", mb: 1 }}
@@ -637,7 +712,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                       fullWidth
                       label="MRP"
@@ -650,7 +725,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                       fullWidth
                       label="Bulk Price"
@@ -663,7 +738,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     />
                   </Grid>
 
-                  <Grid item xs={12} sm={4}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
                     <TextField
                       fullWidth
                       label="Transfer Price"
@@ -675,13 +750,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       sx={fieldSx}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Box
                       sx={{
                         display: "flex",
-                        alignItems: "center",
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: { xs: "stretch", sm: "center" },
                         justifyContent: "space-between",
+                        gap: 1.5,
                         mb: 1,
+                        minWidth: 0,
                       }}
                     >
                       <Typography
@@ -690,14 +768,17 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       >
                         Options
                       </Typography>
-                      <GradientButton
-                        secondary
-                        size="small"
-                        startIcon={<Plus size={15} />}
-                        onClick={addOption}
-                      >
-                        Add Option
-                      </GradientButton>
+                      <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+                        <GradientButton
+                          secondary
+                          size="small"
+                          fullWidth
+                          startIcon={<Plus size={15} />}
+                          onClick={addOption}
+                        >
+                          Add Option
+                        </GradientButton>
+                      </Box>
                     </Box>
 
                     {formData.options.length === 0 ? (
@@ -712,8 +793,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             variant="outlined"
                             sx={{ p: 2, borderRadius: "14px" }}
                           >
-                            <Grid container spacing={2} alignItems="center">
-                              <Grid item xs={12} sm={4}>
+                            <Grid
+                              container
+                              spacing={2}
+                              alignItems="center"
+                              sx={gridContainerSx}
+                            >
+                              <Grid size={{ xs: 12, sm: 4 }}>
                                 <TextField
                                   fullWidth
                                   label="Option name"
@@ -726,7 +812,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                   sx={fieldSx}
                                 />
                               </Grid>
-                              <Grid item xs={12} sm={3}>
+                              <Grid size={{ xs: 12, sm: 3 }}>
                                 <TextField
                                   fullWidth
                                   label="Position"
@@ -743,7 +829,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                   sx={fieldSx}
                                 />
                               </Grid>
-                              <Grid item xs={12} sm={4}>
+                              <Grid size={{ xs: 12, sm: 4 }}>
                                 <TextField
                                   fullWidth
                                   label="Values"
@@ -756,7 +842,14 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                   sx={fieldSx}
                                 />
                               </Grid>
-                              <Grid item xs={12} sm={1}>
+                              <Grid
+                                size={{ xs: 12, sm: "auto" }}
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: { xs: "flex-end", sm: "center" },
+                                  alignItems: "center",
+                                }}
+                              >
                                 <IconButton
                                   onClick={() => removeOption(idx)}
                                   sx={{
@@ -777,7 +870,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     )}
                   </Grid>
 
-                  <Grid item xs={12} sm={6}>
+                  <Grid size={{ xs: 12, sm: 6 }}>
                     <TextField
                       select
                       fullWidth
@@ -794,7 +887,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                     </TextField>
                   </Grid>
 
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       label="Description"
@@ -811,7 +904,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                   </Grid>
 
                   {/* Image Upload */}
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography
                       variant="subtitle2"
                       sx={{ fontWeight: 700, mb: 1.5, color: "#000" }}
@@ -833,12 +926,13 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       <Paper
                         variant="outlined"
                         sx={{
-                          p: 4,
+                          p: { xs: 2.5, sm: 4 },
                           textAlign: "center",
                           border: "2px dashed #b8e8f0",
                           borderRadius: "14px",
                           bgcolor: "#f8fdfe",
                           transition: "all 0.2s",
+                          minWidth: 0,
                           "&:hover": {
                             borderColor: "#0097b2",
                             bgcolor: "#edf8fb",
@@ -862,11 +956,20 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                         </Box>
                         <Typography
                           variant="body2"
-                          sx={{ color: "#555", mb: 0.5, fontWeight: 500 }}
+                          sx={{
+                            color: "#555",
+                            mb: 0.5,
+                            fontWeight: 500,
+                            px: 0.5,
+                            wordBreak: "break-word",
+                          }}
                         >
                           Drag and drop images or click to upload
                         </Typography>
-                        <Typography variant="caption" sx={{ color: "#999" }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "#999", px: 0.5, wordBreak: "break-word" }}
+                        >
                           PNG, JPG, WEBP up to 10MB
                         </Typography>
                       </Paper>
@@ -885,10 +988,17 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             size="small"
                             onDelete={() => removeProductImage(idx)}
                             sx={{
+                              maxWidth: "100%",
                               bgcolor: "rgba(0,151,178,0.08)",
                               color: "#0097b2",
                               border: "1px solid rgba(0,151,178,0.25)",
                               fontWeight: 500,
+                              "& .MuiChip-label": {
+                                display: "block",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              },
                               "& .MuiChip-deleteIcon": { color: "#0097b2" },
                             }}
                           />
@@ -899,9 +1009,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                 </Grid>
 
                 <Stack
-                  direction="row"
-                  spacing={2}
-                  sx={{ mt: 4, justifyContent: "flex-end" }}
+                  direction={{ xs: "column-reverse", sm: "row" }}
+                  sx={{
+                    mt: 4,
+                    justifyContent: { xs: "stretch", sm: "flex-end" },
+                    gap: 2,
+                    "& > button": {
+                      width: { xs: "100%", sm: "auto" },
+                      justifyContent: "center",
+                    },
+                  }}
                 >
                   <GradientButton secondary onClick={handleSaveDraft}>
                     Save as Draft
@@ -915,38 +1032,56 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
 
             {/* ── Variants Tab ── */}
             {activeTab === 1 && (
-              <Box sx={{ p: 4 }}>
+              <Box
+                sx={{
+                  p: { xs: 2, sm: 3, md: 4 },
+                  minWidth: 0,
+                  maxWidth: "100%",
+                }}
+              >
                 <Box
                   sx={{
                     display: "flex",
-                    alignItems: "center",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: { xs: "stretch", sm: "center" },
                     justifyContent: "space-between",
                     mb: 3,
                     gap: 2,
+                    minWidth: 0,
                   }}
                 >
-                  <Typography sx={{ fontWeight: 700, fontSize: "1.1rem" }}>
-                    Product Variants
-                  </Typography>
-                  <GradientButton
-                    startIcon={<Plus size={15} />}
-                    onClick={() => {
-                      addVariant();
+                  <Typography
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: "1rem", sm: "1.1rem" },
+                      minWidth: 0,
                     }}
                   >
-                    Add Variant
-                  </GradientButton>
+                    Product Variants
+                  </Typography>
+                  <Box sx={{ width: { xs: "100%", sm: "auto" } }}>
+                    <GradientButton
+                      fullWidth
+                      startIcon={<Plus size={15} />}
+                      onClick={() => {
+                        addVariant();
+                      }}
+                    >
+                      Add Variant
+                    </GradientButton>
+                  </Box>
                 </Box>
 
                 {formData.variants.length === 0 ? (
                   <Paper
                     variant="outlined"
                     sx={{
-                      p: 6,
+                      p: { xs: 4, sm: 6 },
                       textAlign: "center",
                       border: "2px dashed #b8e8f0",
                       borderRadius: "14px",
                       bgcolor: "#f8fdfe",
+                      minWidth: 0,
                     }}
                   >
                     <Box
@@ -975,16 +1110,33 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                       No variants yet
                     </Typography>
                     <Typography
-                      sx={{ color: "#777", fontSize: "0.875rem", mb: 3 }}
+                      sx={{
+                        color: "#777",
+                        fontSize: "0.875rem",
+                        mb: 3,
+                        wordBreak: "break-word",
+                        px: { xs: 0.5, sm: 0 },
+                      }}
                     >
                       Add product variants like size, color, and stock
                     </Typography>
-                    <GradientButton
-                      startIcon={<Plus size={15} />}
-                      onClick={addVariant}
+                    <Box
+                      sx={{
+                        width: "100%",
+                        maxWidth: 360,
+                        mx: "auto",
+                        display: "flex",
+                        justifyContent: "center",
+                      }}
                     >
-                      Add First Variant
-                    </GradientButton>
+                      <GradientButton
+                        fullWidth
+                        startIcon={<Plus size={15} />}
+                        onClick={addVariant}
+                      >
+                        Add First Variant
+                      </GradientButton>
+                    </Box>
                   </Paper>
                 ) : (
                   <Stack spacing={2}>
@@ -1013,12 +1165,22 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                           }
                           sx={{
                             bgcolor: "#fafafa",
-                            px: 3,
+                            px: { xs: 1.5, sm: 3 },
                             py: 2,
                             minHeight: 64,
+                            flexWrap: "wrap",
+                            rowGap: 1,
+                            columnGap: 1,
                             "& .MuiAccordionSummary-content": {
                               alignItems: "center",
-                              gap: 2,
+                              gap: 1.5,
+                              flexWrap: "wrap",
+                              minWidth: 0,
+                              margin: "12px 0 !important",
+                              flex: "1 1 auto",
+                            },
+                            "& .MuiAccordionSummary-expandIconWrapper": {
+                              flexShrink: 0,
                             },
                           }}
                         >
@@ -1039,11 +1201,20 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             {index + 1}
                           </Box>
 
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Box
+                            sx={{
+                              flex: "1 1 200px",
+                              minWidth: 0,
+                              maxWidth: "100%",
+                            }}
+                          >
                             <Typography
                               variant="subtitle1"
-                              sx={{ fontWeight: 700, color: "#000" }}
-                              noWrap
+                              sx={{
+                                fontWeight: 700,
+                                color: "#000",
+                                wordBreak: "break-word",
+                              }}
                             >
                               {variant.sku || "Untitled variant"}
                             </Typography>
@@ -1087,43 +1258,66 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             </Box>
                           </Box>
 
-                          <Chip
-                            label={variant.is_active ? "Active" : "Inactive"}
-                            size="small"
+                          <Box
                             sx={{
-                              bgcolor: variant.is_active
-                                ? "rgba(126,217,87,0.15)"
-                                : "rgba(196,40,28,0.12)",
-                              color: variant.is_active ? "#3a8a1e" : "#c62828",
-                              border: variant.is_active
-                                ? "1px solid rgba(126,217,87,0.4)"
-                                : "1px solid rgba(198,40,40,0.35)",
-                              fontWeight: 600,
-                              fontSize: "0.72rem",
-                            }}
-                          />
-
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeVariant(variant.id);
-                            }}
-                            sx={{
-                              color: "#c62828",
-                              bgcolor: "rgba(198,40,40,0.12)",
-                              "&:hover": {
-                                bgcolor: "rgba(198,40,40,0.18)",
-                              },
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                              flexShrink: 0,
+                              ml: { xs: "auto", sm: 0 },
                             }}
                           >
-                            <X size={14} />
-                          </IconButton>
+                            <Chip
+                              label={variant.is_active ? "Active" : "Inactive"}
+                              size="small"
+                              sx={{
+                                bgcolor: variant.is_active
+                                  ? "rgba(126,217,87,0.15)"
+                                  : "rgba(196,40,28,0.12)",
+                                color: variant.is_active ? "#3a8a1e" : "#c62828",
+                                border: variant.is_active
+                                  ? "1px solid rgba(126,217,87,0.4)"
+                                  : "1px solid rgba(198,40,40,0.35)",
+                                fontWeight: 600,
+                                fontSize: "0.72rem",
+                              }}
+                            />
+
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeVariant(variant.id);
+                              }}
+                              sx={{
+                                color: "#c62828",
+                                bgcolor: "rgba(198,40,40,0.12)",
+                                "&:hover": {
+                                  bgcolor: "rgba(198,40,40,0.18)",
+                                },
+                              }}
+                            >
+                              <X size={14} />
+                            </IconButton>
+                          </Box>
                         </AccordionSummary>
 
-                        <AccordionDetails sx={{ px: 3, pt: 2, pb: 3 }}>
-                          <Grid container spacing={2} alignItems="flex-start">
-                            <Grid item xs={12}>
+                        <AccordionDetails
+                          sx={{
+                            px: { xs: 1.5, sm: 3 },
+                            pt: 2,
+                            pb: 3,
+                            minWidth: 0,
+                            overflowX: "hidden",
+                          }}
+                        >
+                          <Grid
+                            container
+                            spacing={2}
+                            alignItems="flex-start"
+                            sx={gridContainerSx}
+                          >
+                            <Grid size={{ xs: 12 }}>
                               <Typography
                                 variant="subtitle2"
                                 sx={{ fontWeight: 700, color: "#000" }}
@@ -1132,7 +1326,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               </Typography>
                             </Grid>
 
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="SKU"
@@ -1149,7 +1343,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Title"
@@ -1166,7 +1360,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Price"
@@ -1192,7 +1386,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 }}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Compare at price"
@@ -1219,7 +1413,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               />
                             </Grid>
 
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Inventory quantity"
@@ -1237,7 +1431,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Weight (grams)"
@@ -1256,7 +1450,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                               />
                             </Grid>
 
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <TextField
                                 fullWidth
                                 label="Color"
@@ -1273,7 +1467,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={6}>
+                            <Grid size={{ xs: 12, sm: 6 }}>
                               <TextField
                                 fullWidth
                                 label="Size"
@@ -1290,7 +1484,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Material"
@@ -1309,7 +1503,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                             </Grid>
 
                             {/* ── Dimensions ── */}
-                            <Grid item xs={12}>
+                            <Grid size={{ xs: 12 }}>
                               <Typography
                                 variant="subtitle2"
                                 sx={{ fontWeight: 700, color: "#000", mt: 1 }}
@@ -1317,7 +1511,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 Dimensions (cm)
                               </Typography>
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Length"
@@ -1333,7 +1527,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Width"
@@ -1349,7 +1543,7 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                                 sx={fieldSx}
                               />
                             </Grid>
-                            <Grid item xs={12} sm={4}>
+                            <Grid size={{ xs: 12, sm: 4 }}>
                               <TextField
                                 fullWidth
                                 label="Height"
@@ -1382,9 +1576,16 @@ export default function AddProductForm({ initialProduct, onSuccess }) {
                 )}
 
                 <Stack
-                  direction="row"
-                  spacing={2}
-                  sx={{ mt: 4, justifyContent: "flex-end" }}
+                  direction={{ xs: "column-reverse", sm: "row" }}
+                  sx={{
+                    mt: 4,
+                    justifyContent: { xs: "stretch", sm: "flex-end" },
+                    gap: 2,
+                    "& > button": {
+                      width: { xs: "100%", sm: "auto" },
+                      justifyContent: "center",
+                    },
+                  }}
                 >
                   <GradientButton secondary onClick={() => setActiveTab(0)}>
                     ← Back to Details

@@ -149,10 +149,10 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/40 p-3 py-6 sm:items-center sm:p-4"
       onClick={(e) => e.target === e.currentTarget && !confirming && onClose()}
     >
-      <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      <div className="max-h-[min(90vh,calc(100dvh-2rem))] w-full max-w-lg overflow-y-auto rounded-lg bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <h2 className="text-base font-semibold text-gray-800">
@@ -256,13 +256,13 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-5 py-4 border-t bg-gray-50">
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-600 font-medium">
+        <div className="flex flex-col gap-4 border-t bg-gray-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <span className="text-xs font-medium text-gray-600">
               Use the same address for RTO?
             </span>
-            <div className="flex items-center gap-2 text-xs">
-              <label className="flex items-center gap-1 cursor-pointer">
+            <div className="flex flex-wrap items-center gap-3 text-xs">
+              <label className="flex cursor-pointer items-center gap-1.5">
                 <input
                   type="radio"
                   name="rto"
@@ -272,7 +272,7 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
                 />
                 Yes
               </label>
-              <label className="flex items-center gap-1 cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-1.5">
                 <input
                   type="radio"
                   name="rto"
@@ -286,9 +286,10 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
           </div>
 
           <button
+            type="button"
             onClick={handleConfirm}
             disabled={!selectedAddress || confirming || loading || success}
-            className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2 rounded text-sm font-semibold hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex w-full shrink-0 items-center justify-center gap-2 rounded bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:py-2"
           >
             {success ? (
               <>
@@ -588,7 +589,7 @@ export default function ManageOrder() {
   };
 
   return (
-    <div>
+    <div className="w-full min-w-0 max-w-full">
       {/* Shipment Modal */}
       {shipmentModal && (
         <CreateShipmentModal
@@ -599,16 +600,18 @@ export default function ManageOrder() {
       )}
 
       {/* Section tabs */}
-      <div className="flex gap-2 mb-6 border-b">
+      <div className="mb-6 flex min-w-0 gap-1 overflow-x-auto border-b pb-px [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-2 [&::-webkit-scrollbar]:hidden">
         <button
+          type="button"
           onClick={() => setActiveSection("orders")}
-          className={`px-4 py-2 text-sm font-semibold ${activeSection === "orders" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+          className={`shrink-0 whitespace-nowrap px-3 py-2 text-xs font-semibold sm:px-4 sm:text-sm ${activeSection === "orders" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500"}`}
         >
           Manage Orders
         </button>
         <button
+          type="button"
           onClick={() => setActiveSection("bulk")}
-          className={`px-4 py-2 text-sm font-semibold ${activeSection === "bulk" ? "text-blue-600 border-b-2 border-blue-600" : "text-gray-500"}`}
+          className={`shrink-0 whitespace-nowrap px-3 py-2 text-xs font-semibold sm:px-4 sm:text-sm ${activeSection === "bulk" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500"}`}
         >
           Manage Bulk Orders
         </button>
@@ -616,12 +619,15 @@ export default function ManageOrder() {
 
       {activeSection === "orders" ? (
         <>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Manage Orders</h2>
-            <div className="flex gap-2">
+          <div className="mb-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="shrink-0 text-base font-semibold sm:text-lg">
+              Manage Orders
+            </h2>
+            <div className="flex min-w-0 w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
               <button
+                type="button"
                 onClick={handleDownloadOrdersData}
-                className="flex items-center gap-1.5 border border-gray-300 text-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center justify-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:justify-start sm:py-1.5 sm:text-sm"
               >
                 <svg
                   className="w-4 h-4"
@@ -639,8 +645,9 @@ export default function ManageOrder() {
                 Download Orders Data
               </button>
               <button
+                type="button"
                 onClick={handleDownloadHistory}
-                className="flex items-center gap-1.5 border border-gray-300 text-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center justify-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-xs text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:justify-start sm:py-1.5 sm:text-sm"
               >
                 <svg
                   className="w-4 h-4"
@@ -660,12 +667,13 @@ export default function ManageOrder() {
             </div>
           </div>
 
-          <div className="flex gap-0 border-b mb-3 overflow-x-auto">
+          <div className="mb-3 flex min-w-0 gap-0 overflow-x-auto border-b [-ms-overflow-style:none] [scrollbar-width:thin] [&::-webkit-scrollbar]:h-1.5">
             {ORDER_TABS.map(({ label }) => (
               <button
+                type="button"
                 key={label}
                 onClick={() => setActiveOrderTab(label)}
-                className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                className={`flex shrink-0 items-center gap-1 border-b-2 px-2.5 py-2 text-xs font-medium whitespace-nowrap transition-colors sm:gap-1.5 sm:px-4 sm:text-sm ${
                   activeOrderTab === label
                     ? "border-blue-600 text-blue-600"
                     : "border-transparent text-gray-500 hover:text-gray-700"
@@ -681,13 +689,14 @@ export default function ManageOrder() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex gap-2">
+          <div className="mb-3 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-wrap gap-2">
               {["New", "Under Processing"].map((sub) => (
                 <button
+                  type="button"
                   key={sub}
                   onClick={() => setActiveSubTab(sub)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-sm font-medium transition-colors ${activeSubTab === sub ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                  className={`flex min-w-0 items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm ${activeSubTab === sub ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                 >
                   {sub}
                   <span
@@ -698,12 +707,13 @@ export default function ManageOrder() {
                 </button>
               ))}
             </div>
-            <div className="flex items-center border border-gray-300 rounded overflow-hidden text-sm">
+            <div className="flex w-full max-w-full shrink-0 items-center overflow-hidden rounded border border-gray-300 text-xs sm:w-auto sm:text-sm">
               {["Aggregated", "Order Level"].map((mode) => (
                 <button
+                  type="button"
                   key={mode}
                   onClick={() => setViewMode(mode)}
-                  className={`px-3 py-1.5 font-medium transition-colors ${viewMode === mode ? "bg-gray-900 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
+                  className={`min-w-0 flex-1 px-2 py-1.5 font-medium transition-colors sm:flex-none sm:px-3 ${viewMode === mode ? "bg-gray-900 text-white" : "bg-white text-gray-500 hover:bg-gray-50"}`}
                 >
                   {mode}
                 </button>
@@ -711,15 +721,16 @@ export default function ManageOrder() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 items-end mb-4">
-            <div className="flex flex-col gap-1">
+          <div className="mb-4 flex min-w-0 flex-col gap-4">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="flex min-w-0 w-full flex-col gap-1 sm:w-auto sm:min-w-[10rem]">
               <label className="text-xs font-medium text-gray-600">
                 SLA Status:
               </label>
               <select
                 value={slaStatus}
                 onChange={(e) => setSlaStatus(e.target.value)}
-                className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[150px]"
+                className="min-h-[2.5rem] w-full min-w-0 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 sm:min-w-[150px]"
               >
                 {SLA_STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -728,7 +739,7 @@ export default function ManageOrder() {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 w-full flex-col gap-1 sm:w-auto sm:min-w-[10rem]">
               <label className="text-xs font-medium text-gray-600">
                 SKU ID:
               </label>
@@ -737,12 +748,13 @@ export default function ManageOrder() {
                 value={skuId}
                 onChange={(e) => setSkuId(e.target.value)}
                 placeholder="Enter SKU ID"
-                className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 min-w-[160px]"
+                className="min-h-[2.5rem] w-full min-w-0 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 sm:min-w-[160px]"
               />
             </div>
             <button
+              type="button"
               onClick={handleApplyFilters}
-              className="flex items-center gap-1.5 bg-gray-800 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-900 transition-colors"
+              className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-800 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-900 sm:w-auto sm:py-2"
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -760,8 +772,9 @@ export default function ManageOrder() {
               Apply
             </button>
             <button
+              type="button"
               onClick={handleResetFilters}
-              className="flex items-center gap-1.5 border border-gray-300 text-gray-700 px-4 py-2 rounded text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="flex w-full items-center justify-center gap-1.5 rounded border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:py-2"
             >
               <svg
                 className="w-3.5 h-3.5"
@@ -778,24 +791,32 @@ export default function ManageOrder() {
               </svg>
               Reset
             </button>
-            <div className="flex-1" />
-            <div className="flex items-center gap-3 flex-wrap">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
+            </div>
+            <div className="flex min-w-0 flex-col gap-3 border-t border-gray-100 pt-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <label className="flex min-w-0 cursor-pointer select-none items-center gap-2">
                 <div
+                  role="switch"
+                  tabIndex={0}
+                  aria-checked={showHighPriority}
                   onClick={() => setShowHighPriority((p) => !p)}
-                  className={`relative w-10 h-5 rounded-full transition-colors ${showHighPriority ? "bg-pink-400" : "bg-gray-200"}`}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ")
+                      setShowHighPriority((p) => !p);
+                  }}
+                  className={`relative h-5 w-10 shrink-0 rounded-full transition-colors ${showHighPriority ? "bg-pink-400" : "bg-gray-200"}`}
                 >
                   <span
-                    className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${showHighPriority ? "translate-x-5" : "translate-x-0"}`}
+                    className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${showHighPriority ? "translate-x-5" : "translate-x-0"}`}
                   />
                 </div>
-                <span className="text-xs text-gray-600 font-medium">
+                <span className="text-xs font-medium leading-snug text-gray-600">
                   Show high priority orders
                 </span>
               </label>
               <button
+                type="button"
                 onClick={handleDownloadTable}
-                className="flex items-center gap-1.5 border border-gray-300 text-gray-700 px-3 py-2 rounded text-sm hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center justify-center gap-1.5 rounded border border-gray-300 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 sm:w-auto sm:justify-start"
               >
                 <svg
                   className="w-4 h-4"
@@ -821,17 +842,130 @@ export default function ManageOrder() {
             <p className="text-center py-10 text-red-500">{ordersError}</p>
           ) : (
             <>
-              <div className="overflow-x-auto rounded border border-gray-200">
-                <table className="w-full text-sm">
+              {/* Mobile / tablet: order cards (no horizontal table scroll) */}
+              <div className="md:hidden">
+                {filteredRows.length === 0 ? (
+                  <p className="rounded border border-gray-200 py-10 text-center text-gray-400">
+                    No rows
+                  </p>
+                ) : (
+                  <ul className="space-y-3">
+                    {filteredRows.map((row, idx) => (
+                      <li
+                        key={`${row.orderId}-${idx}`}
+                        className="min-w-0 rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            className="mt-1 shrink-0 rounded"
+                            aria-label={`Select ${row.product}`}
+                          />
+                          <div className="min-w-0 flex-1 space-y-3">
+                            <div>
+                              <p className="break-words font-semibold text-gray-900">
+                                {row.product}
+                              </p>
+                              {row.variantTitle ? (
+                                <p className="mt-0.5 break-words text-xs text-gray-500">
+                                  {row.variantTitle}
+                                </p>
+                              ) : null}
+                              <p className="mt-1 text-xs text-gray-400">
+                                {row.orderName}
+                              </p>
+                            </div>
+                            <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs sm:text-sm">
+                              <div className="min-w-0">
+                                <dt className="text-gray-400">SKU</dt>
+                                <dd className="break-all font-medium text-gray-700">
+                                  {row.sku || "—"}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-gray-400">Stock</dt>
+                                <dd className="font-medium text-gray-700">
+                                  {row.stock}
+                                </dd>
+                              </div>
+                              <div className="col-span-2">
+                                <dt className="text-gray-400">Status</dt>
+                                <dd className="break-words text-gray-600">
+                                  {row.status}
+                                </dd>
+                              </div>
+                            </dl>
+                            <div className="pt-1">
+                              {row.status === "processing" ? (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (row.labelUrl) {
+                                      window.open(row.labelUrl, "_blank");
+                                    } else {
+                                      alert("Label not available");
+                                    }
+                                  }}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-green-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-green-700 sm:w-auto sm:py-2"
+                                >
+                                  <svg
+                                    className="h-3 w-3 shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                      d="M12 5v14m7-7H5"
+                                    />
+                                  </svg>
+                                  Download Label
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setShipmentModal(row)}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black sm:w-auto sm:py-2"
+                                >
+                                  <svg
+                                    className="h-3 w-3 shrink-0"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2.5}
+                                      d="M5 13l4 4L19 7"
+                                    />
+                                  </svg>
+                                  Create Shipment
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* md+: wide table with horizontal scroll if needed */}
+              <div className="hidden min-w-0 w-full max-w-full overflow-x-auto rounded border border-gray-200 [-ms-overflow-style:auto] [scrollbar-width:thin] md:block">
+                <table className="w-full min-w-[52rem] text-sm sm:min-w-[56rem]">
                   <thead>
-                    <tr className="bg-teal-500 text-white text-xs uppercase">
-                      <th className="w-8 px-3 py-3">
+                    <tr className="bg-teal-500 text-xs uppercase text-white">
+                      <th className="w-8 px-2 py-3 sm:px-3">
                         <input type="checkbox" className="rounded" />
                       </th>
                       {ORDER_HEADERS.map((h) => (
                         <th
                           key={h}
-                          className="px-3 py-3 text-left font-semibold whitespace-nowrap"
+                          className="whitespace-nowrap px-2 py-3 text-left font-semibold sm:px-3"
                         >
                           {h}
                         </th>
@@ -843,7 +977,7 @@ export default function ManageOrder() {
                       <tr>
                         <td
                           colSpan={ORDER_HEADERS.length + 1}
-                          className="text-center py-10 text-gray-400"
+                          className="py-10 text-center text-gray-400"
                         >
                           No rows
                         </td>
@@ -854,40 +988,47 @@ export default function ManageOrder() {
                           key={`${row.orderId}-${idx}`}
                           className="border-t border-gray-100 hover:bg-gray-50"
                         >
-                          <td className="px-3 py-3">
+                          <td className="px-2 py-3 sm:px-3">
                             <input type="checkbox" className="rounded" />
                           </td>
-                          <td className="px-3 py-3">
-                            <div className="font-medium text-gray-800">
+                          <td className="max-w-[14rem] px-2 py-3 sm:max-w-xs sm:px-3">
+                            <div className="break-words font-medium text-gray-800">
                               {row.product}
                             </div>
                             <div className="text-xs text-gray-400">
                               {row.variantTitle}
                             </div>
                           </td>
-                          <td className="px-3 py-3 text-gray-600">{row.sku}</td>
-                          <td className="px-3 py-3 text-gray-600">
+                          <td className="px-2 py-3 text-gray-600 sm:px-3">
+                            {row.sku}
+                          </td>
+                          <td className="px-2 py-3 text-gray-600 sm:px-3">
                             {row.stock}
                           </td>
-                          <td className="px-3 py-3 text-gray-400">
+                          <td className="px-2 py-3 text-gray-400 sm:px-3">
                             {row.status}
                           </td>
-                          <td className="px-3 py-3 text-gray-400">—</td>
-                          <td className="px-3 py-3 text-gray-400">—</td>
-                          <td className="px-3 py-3">
+                          <td className="px-2 py-3 text-gray-400 sm:px-3">
+                            —
+                          </td>
+                          <td className="px-2 py-3 text-gray-400 sm:px-3">
+                            —
+                          </td>
+                          <td className="px-2 py-3 sm:px-3">
                             {row.status === "processing" ? (
                               <button
+                                type="button"
                                 onClick={() => {
                                   if (row.labelUrl) {
-                                    window.open(row.labelUrl, "_blank"); // open PDF
+                                    window.open(row.labelUrl, "_blank");
                                   } else {
                                     alert("Label not available");
                                   }
                                 }}
-                                className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-green-700 transition-colors whitespace-nowrap"
+                                className="flex items-center gap-1.5 whitespace-nowrap rounded bg-green-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700 sm:px-3"
                               >
                                 <svg
-                                  className="w-3 h-3"
+                                  className="h-3 w-3"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -903,11 +1044,12 @@ export default function ManageOrder() {
                               </button>
                             ) : (
                               <button
+                                type="button"
                                 onClick={() => setShipmentModal(row)}
-                                className="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1.5 rounded text-xs font-semibold hover:bg-black transition-colors whitespace-nowrap"
+                                className="flex items-center gap-1.5 whitespace-nowrap rounded bg-gray-900 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black sm:px-3"
                               >
                                 <svg
-                                  className="w-3 h-3"
+                                  className="h-3 w-3"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -935,7 +1077,9 @@ export default function ManageOrder() {
         </>
       ) : (
         <>
-          <h2 className="text-lg font-semibold mb-4">Manage Bulk Orders</h2>
+          <h2 className="mb-4 text-base font-semibold sm:text-lg">
+            Manage Bulk Orders
+          </h2>
           {bulkLoading ? (
             <p className="text-center py-6 text-gray-500">Loading...</p>
           ) : bulkError ? (
@@ -953,11 +1097,11 @@ export default function ManageOrder() {
                     key={orderId}
                     className="mb-4 border border-gray-300 rounded-lg overflow-hidden"
                   >
-                    <div className="bg-gray-100 px-4 py-2 flex justify-between">
-                      <span className="text-sm font-semibold">
+                    <div className="flex flex-col gap-1 bg-gray-100 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+                      <span className="min-w-0 break-all text-sm font-semibold">
                         Order #{orderId}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="shrink-0 text-xs text-gray-500">
                         {order.status}
                       </span>
                     </div>
@@ -997,12 +1141,12 @@ export default function ManageOrder() {
                           </div>
                         </div>
                       )}
-                      <div className="flex gap-3 flex-wrap items-end">
-                        <div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+                        <div className="w-full min-w-0 sm:w-auto">
                           <button
                             type="button"
                             onClick={() => fileRefs.current[orderId]?.click()}
-                            className="flex items-center gap-1.5 border border-dashed border-blue-400 text-blue-600 px-3 py-2 rounded text-xs hover:bg-blue-50 transition-colors"
+                            className="flex w-full items-center justify-center gap-1.5 rounded border border-dashed border-blue-400 px-3 py-2 text-xs text-blue-600 transition-colors hover:bg-blue-50 sm:w-auto sm:justify-start"
                           >
                             <svg
                               className="w-3.5 h-3.5"
@@ -1040,12 +1184,13 @@ export default function ManageOrder() {
                             handleNumberChange(orderId, e.target.value)
                           }
                           placeholder="Bilti number"
-                          className="border px-3 py-2 text-xs rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          className="min-h-[2.5rem] w-full min-w-0 rounded border border-gray-300 px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400 sm:max-w-xs sm:flex-1"
                         />
                         <button
+                          type="button"
                           onClick={() => handleUpload(orderId)}
                           disabled={state.uploading}
-                          className="bg-blue-600 text-white px-4 py-2 text-xs rounded hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                          className="w-full rounded bg-blue-600 px-4 py-2.5 text-xs text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:py-2"
                         >
                           {state.uploading ? (
                             <span className="flex items-center gap-1.5">

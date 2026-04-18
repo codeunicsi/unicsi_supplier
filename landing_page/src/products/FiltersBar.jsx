@@ -8,35 +8,37 @@ const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 function DateFilter() {
   return (
     <div
+      className="w-full min-w-0 sm:max-w-[min(100%,440px)] sm:flex-shrink-0"
       style={{
         border: "1.5px solid #d0eef3",
         borderRadius: "10px",
         overflow: "hidden",
         background: "#f0fafc",
+        boxSizing: "border-box",
       }}
     >
-      <DateRangePicker onChange={(range) => console.log(range)} />
+      <DateRangePicker
+        className="flex-wrap sm:flex-nowrap"
+        onChange={(range) => console.log(range)}
+      />
     </div>
   );
 }
 
 function DropdownFilter({ options, value }) {
   return (
-    <div style={{ position: "relative" }}>
+    <div className="relative w-full min-w-0 sm:w-auto sm:max-w-[min(100%,280px)]">
       <Dropdown
         options={options}
         value={value}
         onChange={(val) => console.log(val)}
+        className="cursor-pointer font-medium text-[#1a1a1a] outline-none"
         style={{
           border: "1.5px solid #d0eef3",
           borderRadius: "10px",
           padding: "7px 14px",
           background: "#f0fafc",
-          color: "#1a1a1a",
           fontSize: "0.875rem",
-          fontWeight: 500,
-          cursor: "pointer",
-          outline: "none",
           appearance: "none",
         }}
       />
@@ -47,7 +49,8 @@ function DropdownFilter({ options, value }) {
 function SearchBox() {
   return (
     <div
-      style={{ position: "relative", display: "flex", alignItems: "center" }}
+      className="relative flex min-w-0 w-full max-w-full items-center sm:max-w-[min(100%,320px)] sm:flex-shrink-0"
+      style={{ boxSizing: "border-box" }}
     >
       {/* Search icon */}
       <svg
@@ -67,6 +70,7 @@ function SearchBox() {
       <input
         type="text"
         placeholder="Search..."
+        className="min-w-0 w-full max-w-full"
         style={{
           paddingLeft: "34px",
           paddingRight: "14px",
@@ -78,7 +82,7 @@ function SearchBox() {
           fontSize: "0.875rem",
           color: "#1a1a1a",
           outline: "none",
-          width: "200px",
+          width: "100%",
           transition: "border-color 0.2s, box-shadow 0.2s",
         }}
         onFocus={(e) => {
@@ -94,11 +98,18 @@ function SearchBox() {
   );
 }
 
-function GradientButton({ children, onClick, secondary = false }) {
+function GradientButton({ children, onClick, secondary = false, stretch = false }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      className={
+        stretch ? "w-full min-w-0 max-w-full box-border sm:w-auto sm:max-w-none" : ""
+      }
       style={{
+        ...(stretch
+          ? { whiteSpace: "normal", lineHeight: 1.35 }
+          : { whiteSpace: "nowrap" }),
         padding: "8px 18px",
         borderRadius: "10px",
         border: secondary ? "1.5px solid #0097b2" : "none",
@@ -107,7 +118,7 @@ function GradientButton({ children, onClick, secondary = false }) {
         fontSize: "0.875rem",
         fontWeight: 600,
         cursor: "pointer",
-        whiteSpace: "nowrap",
+        textAlign: "center",
         boxShadow: secondary ? "none" : "0 2px 10px rgba(0,151,178,0.2)",
         transition: "all 0.2s ease",
       }}
@@ -139,41 +150,27 @@ function GradientButton({ children, onClick, secondary = false }) {
 
 function ActionButtons() {
   return (
-    <>
-      <GradientButton>Show Pending Orders</GradientButton>
-      <GradientButton secondary>Clear All Filters</GradientButton>
-    </>
+    <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
+      <GradientButton stretch>Show Pending Orders</GradientButton>
+      <GradientButton stretch secondary>
+        Clear All Filters
+      </GradientButton>
+    </div>
   );
 }
 
 export default function FiltersBar({ type }) {
   return (
     <div
+      className="mb-4 flex w-full min-w-0 max-w-full flex-col gap-3 rounded-[14px] border-[1.5px] border-[#e0f4f7] bg-white p-3 shadow-[0_2px_12px_rgba(0,151,178,0.07)] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:p-[14px_18px]"
       style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "12px",
-        background: "#ffffff",
-        padding: "14px 18px",
-        borderRadius: "14px",
-        border: "1.5px solid #e0f4f7",
-        boxShadow: "0 2px 12px rgba(0,151,178,0.07)",
-        marginBottom: "16px",
-        flexWrap: "wrap",
+        boxSizing: "border-box",
       }}
     >
       {type === "manage-product" && (
         <>
           <DateFilter />
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-              alignItems: "center",
-            }}
-          >
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
             <DropdownFilter
               options={["NDR Date", "Today", "Last 7 Days"]}
               value="NDR Date"
@@ -195,14 +192,7 @@ export default function FiltersBar({ type }) {
       ].includes(type) && (
         <>
           <DateFilter />
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              flexWrap: "wrap",
-              alignItems: "center",
-            }}
-          >
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
             <DropdownFilter
               options={["NDR Date", "Today", "Last 7 Days"]}
               value="NDR Date"

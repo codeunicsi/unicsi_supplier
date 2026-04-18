@@ -161,20 +161,22 @@ function NavItem({ item, isActive, open = true }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({
+  mobileDrawerOpen = false,
+  setMobileDrawerOpen = () => {},
+}) {
   const [open, setOpen] = useState(true);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [isProfileCompleted, setIsProfileCompleted] = useState(null);
   const { pathname } = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+    setMobileDrawerOpen(false);
+  }, [pathname, setMobileDrawerOpen]);
 
   const toggleDrawer = () => {
-    if (isMobile) setMobileOpen((v) => !v);
+    if (isMobile) setMobileDrawerOpen((v) => !v);
     else setOpen((v) => !v);
   };
 
@@ -268,80 +270,73 @@ export default function Sidebar() {
     </Box>
   );
 
-  return (
-    <>
-      {isMobile ? (
-        <Box sx={{ display: "flex", alignItems: "center" }}>
+  /* Mobile: only the drawer (no in-layout burger — trigger lives in TopBar). */
+  if (isMobile) {
+    return (
+      <Drawer
+        anchor="left"
+        open={mobileDrawerOpen}
+        onClose={() => setMobileDrawerOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: 280,
+            maxWidth: "min(280px, 100vw)",
+            bgcolor: "#ffffff",
+            border: "none",
+            boxSizing: "border-box",
+          },
+        }}
+      >
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottom: "1.5px solid #e0f4f7",
+          }}
+        >
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ width: 40, height: 40, objectFit: "contain" }}
+          />
           <IconButton
-            onClick={toggleDrawer}
-            sx={{ p: 2, color: "#0097b2", "&:hover": { color: "#7ed957" } }}
-          >
-            <MenuIcon />
-          </IconButton>
-
-          <Drawer
-            anchor="left"
-            open={mobileOpen}
-            onClose={() => setMobileOpen(false)}
+            onClick={() => setMobileDrawerOpen(false)}
+            size="small"
             sx={{
-              "& .MuiDrawer-paper": {
-                width: 280,
-                bgcolor: "#ffffff",
-                border: "none",
+              color: "#0097b2",
+              border: "1.5px solid #0097b2",
+              borderRadius: "10px",
+              "&:hover": {
+                background: GRADIENT,
+                color: "#fff",
+                borderColor: "transparent",
               },
             }}
           >
-            <Box
-              sx={{
-                p: 2,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                borderBottom: "1.5px solid #e0f4f7",
-              }}
-            >
-              <img
-                src={logo}
-                alt="Logo"
-                style={{ width: 40, height: 40, objectFit: "contain" }}
-              />
-              <IconButton
-                onClick={() => setMobileOpen(false)}
-                size="small"
-                sx={{
-                  color: "#0097b2",
-                  border: "1.5px solid #0097b2",
-                  borderRadius: "10px",
-                  "&:hover": {
-                    background: GRADIENT,
-                    color: "#fff",
-                    borderColor: "transparent",
-                  },
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <List sx={{ px: 1, pt: 1 }}>
-              {items.map((item, idx) => (
-                <NavItem
-                  key={idx}
-                  item={item}
-                  isActive={
-                    !!pathname &&
-                    (pathname === item.path ||
-                      pathname.startsWith(item.path + "/"))
-                  }
-                  open={true}
-                />
-              ))}
-            </List>
-            <Box sx={{ height: 4, background: GRADIENT }} />
-          </Drawer>
+            <CloseIcon />
+          </IconButton>
         </Box>
-      ) : (
-        sidebarContent(true)
-      )}
-    </>
-  );
+        <List sx={{ px: 1, pt: 1 }}>
+          {items.map((item, idx) => (
+            <NavItem
+              key={idx}
+              item={item}
+              isActive={
+                !!pathname &&
+                (pathname === item.path ||
+                  pathname.startsWith(item.path + "/"))
+              }
+              open={true}
+            />
+          ))}
+        </List>
+        <Box sx={{ height: 4, background: GRADIENT }} />
+      </Drawer>
+    );
+  }
+
+  return sidebarContent(true);
 }

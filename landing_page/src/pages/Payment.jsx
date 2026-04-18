@@ -80,7 +80,10 @@ function StyledDataGrid({
       elevation={0}
       sx={{
         width: "100%",
-        overflow: "hidden",
+        maxWidth: "100%",
+        minWidth: 0,
+        overflowX: "auto",
+        WebkitOverflowScrolling: "touch",
         borderRadius: "14px",
         border: "1.5px solid #e0f4f7",
         boxShadow: "0 2px 12px rgba(0,151,178,0.07)",
@@ -97,6 +100,7 @@ function StyledDataGrid({
         getEstimatedRowHeight={() => 72}
         sx={{
           ...dataGridSx,
+          minWidth: 720,
           "& .MuiDataGrid-cell": {
             ...dataGridSx["& .MuiDataGrid-cell"],
             alignItems: "center",
@@ -139,7 +143,10 @@ function StyledSelect({
   minWidth = 160,
 }) {
   return (
-    <FormControl size="small" sx={{ minWidth }}>
+    <FormControl
+      size="small"
+      sx={{ minWidth: { xs: "100%", sm: minWidth }, maxWidth: "100%" }}
+    >
       <Select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -187,6 +194,7 @@ function IconBtn({ children, onClick, title, outline = false }) {
   const [h, setH] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       title={title}
       onMouseEnter={() => setH(true)}
@@ -223,6 +231,7 @@ function NavBtn({ arrow, disabled, onClick }) {
   const [h, setH] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setH(true)}
@@ -512,8 +521,10 @@ function DateRangePicker({ value, onChange }) {
             borderRadius: "14px",
             border: "1.5px solid #e0f4f7",
             boxShadow: "0 8px 32px rgba(0,151,178,0.15)",
-            overflow: "hidden",
-            minWidth: 520,
+            overflow: "auto",
+            maxWidth: "min(520px, calc(100vw - 24px))",
+            minWidth: 0,
+            width: "max-content",
           }}
         >
           {/* Quick chips */}
@@ -570,40 +581,50 @@ function DateRangePicker({ value, onChange }) {
           </Box>
 
           {/* Calendars */}
-          <Box sx={{ display: "flex", gap: 0, p: 2, pb: 1.5 }}>
-            {/* Left nav */}
+          <Box sx={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-start",
-                pt: 0.5,
-                mr: 1,
+                gap: 0,
+                p: 2,
+                pb: 1.5,
+                minWidth: 520,
               }}
             >
-              <NavBtn arrow="‹" onClick={prevMonth} />
-            </Box>
-            {renderMonth(leftMonth)}
-            <Box
-              sx={{
-                width: "1px",
-                background: "#e8f6f9",
-                mx: 2,
-                alignSelf: "stretch",
-              }}
-            />
-            {renderMonth(rightMonth)}
-            {/* Right nav */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-start",
-                pt: 0.5,
-                ml: 1,
-              }}
-            >
-              <NavBtn arrow="›" onClick={nextMonth} />
+              {/* Left nav */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  pt: 0.5,
+                  mr: 1,
+                }}
+              >
+                <NavBtn arrow="‹" onClick={prevMonth} />
+              </Box>
+              {renderMonth(leftMonth)}
+              <Box
+                sx={{
+                  width: "1px",
+                  background: "#e8f6f9",
+                  mx: 2,
+                  alignSelf: "stretch",
+                }}
+              />
+              {renderMonth(rightMonth)}
+              {/* Right nav */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  pt: 0.5,
+                  ml: 1,
+                }}
+              >
+                <NavBtn arrow="›" onClick={nextMonth} />
+              </Box>
             </Box>
           </Box>
 
@@ -748,6 +769,7 @@ function ActionBtn({ active, label }) {
   const [h, setH] = useState(false);
   return (
     <button
+      type="button"
       disabled={!active}
       onMouseEnter={() => setH(true)}
       onMouseLeave={() => setH(false)}
@@ -781,7 +803,9 @@ function SearchBar({ searchField, setSearchField, searchVal, setSearchVal }) {
         display: "flex",
         alignItems: "center",
         mb: 2.5,
-        maxWidth: 460,
+        width: "100%",
+        maxWidth: { xs: "100%", sm: 460 },
+        minWidth: 0,
         border: "1.5px solid #d0eef3",
         borderRadius: "9px",
         background: "#fff",
@@ -837,6 +861,7 @@ function SearchBar({ searchField, setSearchField, searchVal, setSearchVal }) {
 
       {/* Search button */}
       <button
+        type="button"
         style={{
           padding: "0 14px",
           alignSelf: "stretch",
@@ -885,11 +910,11 @@ function FiltersRow({
         flexWrap: "wrap",
       }}
     >
-      <Box>
+      <Box sx={{ width: { xs: "100%", sm: "auto" }, minWidth: 0 }}>
         <FieldLabel>Date:</FieldLabel>
         <DateRangePicker value={dateFilter} onChange={setDateFilter} />
       </Box>
-      <Box>
+      <Box sx={{ width: { xs: "100%", sm: "auto" }, minWidth: 0 }}>
         <FieldLabel>Shipping Partner:</FieldLabel>
         <StyledSelect
           value={partnerFilter}
@@ -898,7 +923,15 @@ function FiltersRow({
           placeholder="-- Select Option --"
         />
       </Box>
-      <Box sx={{ mt: 2.5, display: "flex", gap: 1 }}>
+      <Box
+        sx={{
+          mt: 2.5,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 1,
+          width: { xs: "100%", md: "auto" },
+        }}
+      >
         <IconBtn>
           <span>✓</span> Apply
         </IconBtn>
@@ -1253,6 +1286,10 @@ export default function PaymentsPage() {
   return (
     <Box
       sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
         minHeight: "100vh",
         bgcolor: "#f4fbfc",
         py: 4,
@@ -1263,11 +1300,13 @@ export default function PaymentsPage() {
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", md: "row" },
           justifyContent: "space-between",
-          alignItems: "flex-start",
+          alignItems: { xs: "stretch", md: "flex-start" },
           mb: 3,
           flexWrap: "wrap",
           gap: 2,
+          minWidth: 0,
         }}
       >
         <Typography
@@ -1276,11 +1315,23 @@ export default function PaymentsPage() {
             fontWeight: 800,
             color: "#000",
             letterSpacing: "-0.02em",
+            minWidth: 0,
           }}
         >
           Payments
         </Typography>
-        <Stack direction="row" spacing={1.5}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          sx={{
+            width: { xs: "100%", md: "auto" },
+            minWidth: 0,
+            gap: 1.5,
+            "& > button": {
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: "center",
+            },
+          }}
+        >
           <IconBtn outline>
             <DownloadSVG color="#0097b2" /> Download GST Report
           </IconBtn>
@@ -1291,14 +1342,22 @@ export default function PaymentsPage() {
       </Box>
 
       {/* Tabs */}
-      <Box sx={{ mb: 3 }}>
-        <Box sx={{ display: "flex", borderBottom: "2px solid #e0f4f7" }}>
+      <Box sx={{ mb: 3, width: "100%", minWidth: 0, overflowX: "auto" }}>
+        <Box
+          sx={{
+            display: "flex",
+            borderBottom: "2px solid #e0f4f7",
+            minWidth: "min-content",
+          }}
+        >
           {["Past Payments", "Upcoming Payments"].map((tab, i) => (
             <button
+              type="button"
               key={tab}
               onClick={() => setActiveTab(i)}
               style={{
-                padding: "10px 20px",
+                flex: "1 1 auto",
+                padding: "10px 16px",
                 border: "none",
                 background: "transparent",
                 fontSize: "0.9rem",
@@ -1312,6 +1371,7 @@ export default function PaymentsPage() {
                     ? "2.5px solid #0097b2"
                     : "2.5px solid transparent",
                 marginBottom: "-2px",
+                whiteSpace: "nowrap",
               }}
             >
               {tab}

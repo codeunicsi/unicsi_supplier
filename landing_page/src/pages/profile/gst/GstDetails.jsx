@@ -14,9 +14,15 @@ const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
 // ── Shared field sx ───────────────────────────────────────────────────────────
 const fieldSx = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
     background: "#fff",
+    maxWidth: "100%",
+    minWidth: 0,
     "&:hover fieldset": { borderColor: "#0097b2" },
     "&.Mui-focused fieldset": {
       borderColor: "#0097b2",
@@ -28,7 +34,12 @@ const fieldSx = {
     },
   },
   "& .MuiInputLabel-root.Mui-focused": { color: "#0097b2" },
-  "& .MuiInputBase-input": { color: "#000" },
+  "& .MuiInputBase-root": { maxWidth: "100%" },
+  "& .MuiInputBase-input": {
+    color: "#000",
+    minWidth: 0,
+    boxSizing: "border-box",
+  },
   "& .MuiInputBase-input.Mui-disabled": {
     color: "#555",
     WebkitTextFillColor: "#555",
@@ -46,12 +57,18 @@ function GradientButton({
   const [hovered, setHovered] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className={
+        fullWidth ? "w-full min-w-0 max-w-full sm:w-auto sm:max-w-none" : ""
+      }
       style={{
-        width: fullWidth ? "100%" : "auto",
+        ...(fullWidth
+          ? { whiteSpace: "normal", lineHeight: 1.35, textAlign: "center" }
+          : { whiteSpace: "nowrap" }),
         padding: "10px 28px",
         borderRadius: "10px",
         fontSize: "0.875rem",
@@ -90,7 +107,16 @@ function GradientButton({
 // ── Section label ─────────────────────────────────────────────────────────────
 function SectionLabel({ icon, children }) {
   return (
-    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "flex-start",
+        gap: 1,
+        mb: 1.5,
+        minWidth: 0,
+      }}
+    >
       <Box
         sx={{
           width: 24,
@@ -112,6 +138,10 @@ function SectionLabel({ icon, children }) {
           color: "#000",
           textTransform: "uppercase",
           letterSpacing: "0.05em",
+          minWidth: 0,
+          flex: "1 1 200px",
+          wordBreak: "break-word",
+          lineHeight: 1.35,
         }}
       >
         {children}
@@ -222,10 +252,11 @@ function FileInput({ name, label, file, onChange, disabled }) {
                   fontSize: "0.78rem",
                   fontWeight: 700,
                   color: "#2e7d1e",
-                  whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  maxWidth: "180px",
+                  whiteSpace: "nowrap",
+                  minWidth: 0,
+                  maxWidth: "100%",
                 }}
               >
                 {fileName}
@@ -263,6 +294,7 @@ function FieldLabel({ children }) {
         mb: 0.7,
         textTransform: "uppercase",
         letterSpacing: "0.04em",
+        wordBreak: "break-word",
       }}
     >
       {children}
@@ -350,25 +382,31 @@ export default function GstDetails() {
   const isVerified = formData.gstStatus;
 
   return (
-    <Box>
+    <Box sx={{ width: "100%", minWidth: 0, maxWidth: "100%", boxSizing: "border-box" }}>
       {/* ── Card shell ── */}
       <Box
         sx={{
+          width: "100%",
+          maxWidth: "100%",
+          minWidth: 0,
           borderRadius: "16px",
           border: "1.5px solid #e0f4f7",
           overflow: "hidden",
           boxShadow: "0 2px 16px rgba(0,151,178,0.07)",
           background: "#fff",
+          boxSizing: "border-box",
         }}
       >
         {/* Header */}
         <Box
           sx={{
-            px: 3,
-            py: 2.5,
+            px: { xs: 2, sm: 3 },
+            py: { xs: 2, sm: 2.5 },
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
             gap: 1.5,
+            minWidth: 0,
             background:
               "linear-gradient(135deg, rgba(0,151,178,0.06) 0%, rgba(126,217,87,0.06) 100%)",
             borderBottom: "1.5px solid #e0f4f7",
@@ -403,18 +441,26 @@ export default function GstDetails() {
               <line x1="9" y1="17" x2="15" y2="17" />
             </svg>
           </Box>
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: "1 1 200px", minWidth: 0 }}>
             <Box
               sx={{
-                fontSize: "1rem",
+                fontSize: { xs: "0.95rem", sm: "1rem" },
                 fontWeight: 700,
                 color: "#000",
                 lineHeight: 1.3,
+                wordBreak: "break-word",
               }}
             >
               GST Details
             </Box>
-            <Box sx={{ fontSize: "0.8rem", color: "#666", mt: 0.2 }}>
+            <Box
+              sx={{
+                fontSize: "0.8rem",
+                color: "#666",
+                mt: 0.2,
+                wordBreak: "break-word",
+              }}
+            >
               Tax registration and identity documents
             </Box>
           </Box>
@@ -423,7 +469,9 @@ export default function GstDetails() {
           {isVerified ? (
             <Box
               sx={{
-                ml: "auto",
+                ml: { xs: 0, sm: "auto" },
+                width: { xs: "100%", sm: "auto" },
+                justifyContent: { xs: "center", sm: "flex-start" },
                 background: "rgba(126,217,87,0.12)",
                 border: "1px solid rgba(126,217,87,0.4)",
                 color: "#2e7d1e",
@@ -451,7 +499,9 @@ export default function GstDetails() {
           ) : (
             <Box
               sx={{
-                ml: "auto",
+                ml: { xs: 0, sm: "auto" },
+                width: { xs: "100%", sm: "auto" },
+                justifyContent: { xs: "center", sm: "flex-start" },
                 background: "rgba(255,160,0,0.1)",
                 border: "1px solid rgba(255,160,0,0.35)",
                 color: "#e65100",
@@ -480,7 +530,7 @@ export default function GstDetails() {
         </Box>
 
         {/* Body */}
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, minWidth: 0 }}>
           {/* ── GST Name ── */}
           <SectionLabel
             icon={
@@ -502,7 +552,15 @@ export default function GstDetails() {
             Name (As per GST Certificate)
           </SectionLabel>
 
-          <Grid container spacing={2.5} sx={{ mb: 0 }}>
+          <Grid
+            container
+            spacing={2.5}
+            sx={{
+              mb: 0,
+              minWidth: 0,
+              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+            }}
+          >
             <Grid item xs={12} sm={8}>
               <FieldLabel>GST Name</FieldLabel>
               <TextField
@@ -540,7 +598,15 @@ export default function GstDetails() {
             GST Information
           </SectionLabel>
 
-          <Grid container spacing={2.5} alignItems="flex-end">
+          <Grid
+            container
+            spacing={2.5}
+            alignItems="flex-end"
+            sx={{
+              minWidth: 0,
+              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+            }}
+          >
             <Grid item xs={12} sm={6}>
               <FieldLabel>GST ID</FieldLabel>
               <TextField
@@ -587,7 +653,14 @@ export default function GstDetails() {
             PAN Card Information
           </SectionLabel>
 
-          <Grid container spacing={2.5}>
+          <Grid
+            container
+            spacing={2.5}
+            sx={{
+              minWidth: 0,
+              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+            }}
+          >
             <Grid item xs={12} sm={6}>
               <FieldLabel>PAN Card Number</FieldLabel>
               <TextField
@@ -665,7 +738,14 @@ export default function GstDetails() {
             Aadhaar Card Information
           </SectionLabel>
 
-          <Grid container spacing={2.5}>
+          <Grid
+            container
+            spacing={2.5}
+            sx={{
+              minWidth: 0,
+              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+            }}
+          >
             <Grid item xs={12} sm={6}>
               <FieldLabel>Aadhaar Card Number</FieldLabel>
               <TextField
@@ -718,7 +798,17 @@ export default function GstDetails() {
           </Grid>
 
           {/* ── Submit ── */}
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: { xs: "stretch", sm: "flex-end" },
+              alignItems: { xs: "stretch", sm: "center" },
+              gap: 2,
+              mt: 4,
+              minWidth: 0,
+            }}
+          >
             {isVerified ? (
               <Box
                 sx={{
@@ -730,6 +820,8 @@ export default function GstDetails() {
                   borderRadius: "10px",
                   px: 2.5,
                   py: 1.2,
+                  minWidth: 0,
+                  wordBreak: "break-word",
                 }}
               >
                 <svg
@@ -755,7 +847,7 @@ export default function GstDetails() {
                 </Box>
               </Box>
             ) : (
-              <GradientButton onClick={handleSubmit}>
+              <GradientButton fullWidth onClick={handleSubmit}>
                 Submit GST Details
               </GradientButton>
             )}

@@ -13,9 +13,15 @@ const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 const MODES = { EMPTY: "EMPTY", EDIT: "EDIT", VIEW: "VIEW" };
 
 const fieldSx = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
     background: "#fff",
+    maxWidth: "100%",
+    minWidth: 0,
     "&:hover fieldset": { borderColor: "#0097b2" },
     "&.Mui-focused fieldset": {
       borderColor: "#0097b2",
@@ -24,7 +30,8 @@ const fieldSx = {
     "&.Mui-error fieldset": { borderColor: "#e53935" },
   },
   "& .MuiInputLabel-root.Mui-focused": { color: "#0097b2" },
-  "& .MuiInputBase-input": { color: "#000" },
+  "& .MuiInputBase-root": { maxWidth: "100%" },
+  "& .MuiInputBase-input": { color: "#000", minWidth: 0, boxSizing: "border-box" },
 };
 
 function GradientButton({
@@ -37,12 +44,18 @@ function GradientButton({
   const [hovered, setHovered] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className={
+        fullWidth ? "w-full min-w-0 max-w-full sm:w-auto sm:max-w-none" : ""
+      }
       style={{
-        width: fullWidth ? "100%" : "auto",
+        ...(fullWidth
+          ? { whiteSpace: "normal", lineHeight: 1.35, textAlign: "center" }
+          : { whiteSpace: "nowrap" }),
         padding: "10px 22px",
         borderRadius: "10px",
         fontSize: "0.875rem",
@@ -83,19 +96,25 @@ function CardShell({ icon, title, subtitle, badge, children }) {
     <Paper
       elevation={0}
       sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
         borderRadius: "16px",
         border: "1.5px solid #e0f4f7",
         overflow: "hidden",
         boxShadow: "0 2px 16px rgba(0,151,178,0.07)",
+        boxSizing: "border-box",
       }}
     >
       <Box
         sx={{
-          px: 3,
-          py: 2.5,
+          px: { xs: 2, sm: 3 },
+          py: { xs: 2, sm: 2.5 },
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "center",
           gap: 1.5,
+          minWidth: 0,
           background:
             "linear-gradient(135deg, rgba(0,151,178,0.06) 0%, rgba(126,217,87,0.06) 100%)",
           borderBottom: "1.5px solid #e0f4f7",
@@ -116,24 +135,32 @@ function CardShell({ icon, title, subtitle, badge, children }) {
         >
           {icon}
         </Box>
-        <Box sx={{ flex: 1 }}>
+        <Box sx={{ flex: "1 1 180px", minWidth: 0 }}>
           <Box
             sx={{
-              fontSize: "1rem",
+              fontSize: { xs: "0.95rem", sm: "1rem" },
               fontWeight: 700,
               color: "#000",
               lineHeight: 1.3,
+              wordBreak: "break-word",
             }}
           >
             {title}
           </Box>
-          <Box sx={{ fontSize: "0.8rem", color: "#666", mt: 0.2 }}>
+          <Box
+            sx={{
+              fontSize: "0.8rem",
+              color: "#666",
+              mt: 0.2,
+              wordBreak: "break-word",
+            }}
+          >
             {subtitle}
           </Box>
         </Box>
         {badge}
       </Box>
-      <Box sx={{ p: 3 }}>{children}</Box>
+      <Box sx={{ p: { xs: 2, sm: 2.5, md: 3 }, minWidth: 0 }}>{children}</Box>
     </Paper>
   );
 }
@@ -153,7 +180,15 @@ function DetailField({ label, value }) {
       >
         {label}
       </Box>
-      <Box sx={{ fontSize: "0.95rem", fontWeight: 600, color: "#000" }}>
+      <Box
+        sx={{
+          fontSize: "0.95rem",
+          fontWeight: 600,
+          color: "#000",
+          wordBreak: "break-word",
+          overflowWrap: "anywhere",
+        }}
+      >
         {value || "—"}
       </Box>
     </Box>
@@ -268,20 +303,26 @@ export default function BankDetails() {
         <Paper
           elevation={0}
           sx={{
+            width: "100%",
+            maxWidth: "100%",
+            minWidth: 0,
             borderRadius: "16px",
             border: "1.5px solid #e0f4f7",
             overflow: "hidden",
             boxShadow: "0 2px 16px rgba(0,151,178,0.07)",
+            boxSizing: "border-box",
           }}
         >
           {/* Shimmer header — mirrors CardShell exactly */}
           <Box
             sx={{
-              px: 3,
-              py: 2.5,
+              px: { xs: 2, sm: 3 },
+              py: { xs: 2, sm: 2.5 },
               display: "flex",
+              flexWrap: "wrap",
               alignItems: "center",
               gap: 1.5,
+              minWidth: 0,
               background:
                 "linear-gradient(135deg, rgba(0,151,178,0.06) 0%, rgba(126,217,87,0.06) 100%)",
               borderBottom: "1.5px solid #e0f4f7",
@@ -297,7 +338,13 @@ export default function BankDetails() {
               }}
             />
             <Box
-              sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}
+              sx={{
+                flex: "1 1 160px",
+                minWidth: 0,
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+              }}
             >
               <Shimmer width={140} height={13} />
               <Shimmer width={210} height={11} />
@@ -332,14 +379,22 @@ export default function BankDetails() {
           {/* Shimmer fields */}
           <Box
             sx={{
-              px: 3,
+              px: { xs: 2, sm: 3 },
               pb: 4,
               display: "flex",
               flexDirection: "column",
               gap: 2.5,
+              minWidth: 0,
             }}
           >
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 2,
+                minWidth: 0,
+              }}
+            >
               {[180, 160].map((w, i) => (
                 <Box
                   key={i}
@@ -355,7 +410,14 @@ export default function BankDetails() {
                 </Box>
               ))}
             </Box>
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 2,
+                minWidth: 0,
+              }}
+            >
               {[150, 90].map((w, i) => (
                 <Box
                   key={i}
@@ -371,9 +433,18 @@ export default function BankDetails() {
                 </Box>
               ))}
             </Box>
-            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
-              <Shimmer width="50%" height={42} radius={10} />
-              <Shimmer width="50%" height={42} radius={10} />
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 2,
+                mt: 1,
+                minWidth: 0,
+                "& > *": { flex: "1 1 140px", minWidth: 0 },
+              }}
+            >
+              <Shimmer width="100%" height={42} radius={10} />
+              <Shimmer width="100%" height={42} radius={10} />
             </Box>
           </Box>
         </Paper>
@@ -384,17 +455,21 @@ export default function BankDetails() {
   // ── EMPTY ───────────────────────────────────────────────────────────────────
   if (mode === MODES.EMPTY) {
     return (
-      <Paper
-        elevation={0}
-        sx={{
-          p: 5,
-          borderRadius: "16px",
-          border: "2px dashed #b8e8f0",
-          background: "#f8fdfe",
-          textAlign: "center",
-          maxWidth: 460,
-        }}
-      >
+        <Paper
+          elevation={0}
+          sx={{
+            p: { xs: 3, sm: 5 },
+            borderRadius: "16px",
+            border: "2px dashed #b8e8f0",
+            background: "#f8fdfe",
+            textAlign: "center",
+            width: "100%",
+            maxWidth: "min(100%, 460px)",
+            minWidth: 0,
+            mx: "auto",
+            boxSizing: "border-box",
+          }}
+        >
         <Box
           sx={{
             width: 60,
@@ -421,9 +496,11 @@ export default function BankDetails() {
         >
           Add your bank account to receive margins, refunds and settlements.
         </Box>
-        <GradientButton onClick={() => setMode(MODES.EDIT)}>
-          + Add Bank Details
-        </GradientButton>
+        <Box sx={{ width: "100%", maxWidth: 320, mx: "auto" }}>
+          <GradientButton fullWidth onClick={() => setMode(MODES.EDIT)}>
+            + Add Bank Details
+          </GradientButton>
+        </Box>
       </Paper>
     );
   }
@@ -438,7 +515,9 @@ export default function BankDetails() {
         badge={
           <Box
             sx={{
-              ml: "auto",
+              ml: { xs: 0, sm: "auto" },
+              width: { xs: "100%", sm: "auto" },
+              justifyContent: { xs: "center", sm: "flex-start" },
               background: "rgba(126,217,87,0.12)",
               border: "1px solid rgba(126,217,87,0.4)",
               color: "#2e7d1e",
@@ -450,6 +529,7 @@ export default function BankDetails() {
               display: "flex",
               alignItems: "center",
               gap: 0.5,
+              flexShrink: 0,
             }}
           >
             <span
@@ -468,8 +548,10 @@ export default function BankDetails() {
         <Box
           sx={{
             display: "flex",
+            flexWrap: "wrap",
             alignItems: "center",
             gap: 1.5,
+            minWidth: 0,
             background: "rgba(126,217,87,0.1)",
             border: "1.5px solid rgba(126,217,87,0.35)",
             borderRadius: "10px",
@@ -503,7 +585,7 @@ export default function BankDetails() {
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
           </Box>
-          <Box>
+          <Box sx={{ minWidth: 0, flex: "1 1 200px" }}>
             <Box sx={{ fontSize: "0.8rem", fontWeight: 700, color: "#2e7d1e" }}>
               Bank details are securely stored
             </Box>
@@ -513,7 +595,14 @@ export default function BankDetails() {
           </Box>
         </Box>
 
-        <Grid container spacing={2}>
+        <Grid
+          container
+          spacing={2}
+          sx={{
+            minWidth: 0,
+            "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+          }}
+        >
           <Grid item xs={12} sm={6}>
             <DetailField
               label="Account Holder Name"
@@ -533,8 +622,15 @@ export default function BankDetails() {
 
         <Divider sx={{ my: 2, borderColor: "#e0f4f7" }} />
 
-        <Stack direction="row" spacing={1.5} justifyContent="flex-end">
-          <GradientButton secondary onClick={() => setMode(MODES.EDIT)}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          sx={{
+            gap: 1.5,
+            alignItems: { xs: "stretch", sm: "center" },
+            justifyContent: "flex-end",
+          }}
+        >
+          <GradientButton fullWidth secondary onClick={() => setMode(MODES.EDIT)}>
             ✏️ Edit Bank Details
           </GradientButton>
         </Stack>
@@ -543,7 +639,8 @@ export default function BankDetails() {
             mt: 1.5,
             fontSize: "0.75rem",
             color: "#888",
-            textAlign: "right",
+            textAlign: { xs: "center", sm: "right" },
+            wordBreak: "break-word",
           }}
         >
           OTP will be sent to your registered mobile number for verification.
@@ -562,8 +659,10 @@ export default function BankDetails() {
       <Box
         sx={{
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "flex-start",
           gap: 1.5,
+          minWidth: 0,
           background: "rgba(0,151,178,0.07)",
           border: "1.5px solid rgba(0,151,178,0.25)",
           borderRadius: "10px",
@@ -587,13 +686,29 @@ export default function BankDetails() {
           <line x1="12" y1="8" x2="12" y2="12" />
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
-        <Box sx={{ fontSize: "0.82rem", color: "#0097b2", lineHeight: 1.5 }}>
+        <Box
+          sx={{
+            fontSize: "0.82rem",
+            color: "#0097b2",
+            lineHeight: 1.5,
+            minWidth: 0,
+            flex: "1 1 200px",
+            wordBreak: "break-word",
+          }}
+        >
           Please ensure the bank details are correct. These will be used for all
           payouts.
         </Box>
       </Box>
 
-      <Grid container spacing={2.5}>
+      <Grid
+        container
+        spacing={2.5}
+        sx={{
+          minWidth: 0,
+          "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+        }}
+      >
         {[
           {
             label: "Account Holder Name",
@@ -731,7 +846,15 @@ export default function BankDetails() {
         </Grid>
       </Grid>
 
-      <Stack direction="row" spacing={1.5} sx={{ mt: 4 }}>
+      <Stack
+        direction={{ xs: "column-reverse", sm: "row" }}
+        sx={{
+          mt: 4,
+          gap: 1.5,
+          alignItems: { xs: "stretch", sm: "center" },
+          justifyContent: { xs: "stretch", sm: "flex-end" },
+        }}
+      >
         <GradientButton
           secondary
           fullWidth

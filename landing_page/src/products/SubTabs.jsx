@@ -5,7 +5,7 @@ export default function SubTabs({ tabItems }) {
 
   return (
     <div
-      className="flex justify-start gap-1 mb-6 p-1 w-fit"
+      className="mb-6 flex min-w-0 w-full max-w-full flex-wrap justify-stretch gap-1 p-1 sm:w-fit sm:flex-nowrap sm:justify-start"
       style={{
         background: "#f0fafc",
         borderRadius: "14px",
@@ -16,11 +16,12 @@ export default function SubTabs({ tabItems }) {
         const isActive = active === tab;
         return (
           <button
+            type="button"
             key={tab}
             onClick={() => setActive(tab)}
+            className="min-h-[40px] min-w-0 flex-1 px-3 py-2 sm:flex-none sm:px-5"
             style={{
               position: "relative",
-              padding: "8px 20px",
               fontSize: "0.875rem",
               fontWeight: isActive ? 700 : 500,
               borderRadius: "10px",
