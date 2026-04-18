@@ -4,6 +4,7 @@
 import notificationIcon from "../../assets/icons/ic_notifications.svg";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useAuth } from "../../auth/AuthContext";
 
 const menuItems = [
@@ -35,13 +36,12 @@ function usePageName() {
   return match ? match.name : "Dashboard";
 }
 
-export default function TopBar() {
-  const { isAuthenticated, logout } = useAuth();
+export default function TopBar({ onMobileMenuClick }) {
   const pageName = usePageName();
 
   return (
     <header
-      className="flex items-center justify-between bg-white pl-6 pr-6 py-0 my-4 mb-10 h-[72px]"
+      className="my-2 mb-4 box-border flex min-h-[56px] w-full min-w-0 max-w-full items-center justify-between gap-2 bg-white py-2 pl-3 pr-3 sm:my-4 sm:mb-10 sm:h-[72px] sm:py-0 sm:pl-6 sm:pr-6"
       style={{
         borderRadius: "16px",
         border: "1px solid #e0f4f7",
@@ -49,36 +49,59 @@ export default function TopBar() {
           "0 2px 12px 0 rgba(0,151,178,0.08), 0 1px 3px 0 rgba(0,0,0,0.04)",
       }}
     >
-      {/* Left: Dynamic Breadcrumb */}
-      <div className="flex items-center gap-2">
-        <span
-          className="text-[13px] font-medium tracking-wide"
-          style={{ color: "#0097b2", letterSpacing: "0.04em" }}
-        >
-          Dashboard
-        </span>
-        <svg width="12" height="12" viewBox="0 0 13 12" fill="none">
-          <path
-            d="M4.9375 9.91195L8.15841 6.69104C8.5388 6.31065 8.5388 5.68821 8.15841 5.30783L4.9375 2.08691"
-            stroke="#0097b2"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-        <span
-          className="text-[16px] font-semibold"
-          style={{ color: "#000000", letterSpacing: "-0.01em" }}
-        >
-          {pageName}
-        </span>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-2">
+        {typeof onMobileMenuClick === "function" ? (
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={onMobileMenuClick}
+            className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-[#0097b2] transition-colors hover:bg-[#f0fafc] max-[899px]:flex"
+            style={{ borderColor: "#b8e8f0" }}
+          >
+            <MenuIcon sx={{ fontSize: 22 }} />
+          </button>
+        ) : null}
+
+        {/* Breadcrumb — truncates on narrow screens */}
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden sm:gap-2">
+          <span
+            className="shrink-0 text-[11px] font-medium tracking-wide sm:text-[13px]"
+            style={{ color: "#0097b2", letterSpacing: "0.04em" }}
+          >
+            Dashboard
+          </span>
+          <svg
+            className="shrink-0"
+            width="12"
+            height="12"
+            viewBox="0 0 13 12"
+            fill="none"
+            aria-hidden
+          >
+            <path
+              d="M4.9375 9.91195L8.15841 6.69104C8.5388 6.31065 8.5388 5.68821 8.15841 5.30783L4.9375 2.08691"
+              stroke="#0097b2"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span
+            className="min-w-0 truncate text-[14px] font-semibold sm:text-[16px]"
+            style={{ color: "#000000", letterSpacing: "-0.01em" }}
+            title={pageName}
+          >
+            {pageName}
+          </span>
+        </div>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
         {/* Notification Bell */}
         <button
-          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-150"
+          type="button"
+          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-150 sm:h-9 sm:w-9"
           style={{
             background: "#f0fafc",
             border: "1px solid #b8e8f0",
@@ -104,7 +127,10 @@ export default function TopBar() {
           />
         </button>
 
-        <div className="h-8 w-px mx-1" style={{ background: "#d0eef3" }} />
+        <div
+          className="mx-0.5 hidden h-8 w-px shrink-0 sm:mx-1 sm:block"
+          style={{ background: "#d0eef3" }}
+        />
 
         <ProfileDropDown />
       </div>
@@ -116,9 +142,9 @@ function ProfileDropDown() {
   const { logout } = useAuth();
 
   return (
-    <Menu as="div" className="relative inline-block">
+    <Menu as="div" className="relative inline-block shrink-0">
       <MenuButton
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all duration-200 outline-none"
+        className="flex items-center gap-1 rounded-xl px-1.5 py-1 transition-all duration-200 outline-none sm:gap-2 sm:px-3 sm:py-1.5"
         style={{
           background: GRADIENT,
           border: "1px solid transparent",
@@ -156,12 +182,15 @@ function ProfileDropDown() {
             opacity="0.9"
           />
         </svg>
-        <ChevronDownIcon className="w-4 h-4" style={{ color: "#ffffff" }} />
+        <ChevronDownIcon
+          className="hidden h-4 w-4 sm:block"
+          style={{ color: "#ffffff" }}
+        />
       </MenuButton>
 
       <MenuItems
         transition
-        className="absolute right-0 z-10 mt-2 w-44 origin-top-right rounded-xl py-1 outline-none transition data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
+        className="absolute right-0 z-[1200] mt-2 w-44 max-w-[min(100vw-1.5rem,11rem)] origin-top-right rounded-xl py-1 outline-none transition data-closed:scale-95 data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in sm:max-w-none"
         style={{
           background: "#fff",
           border: "1px solid #d0eef3",

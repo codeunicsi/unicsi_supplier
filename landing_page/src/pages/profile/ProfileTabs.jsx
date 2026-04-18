@@ -7,7 +7,6 @@ import BankDetails from "./bank/BankDetails";
 import GstDetails from "./gst/GstDetails";
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
-const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
 const TABS = [
   {
@@ -74,7 +73,20 @@ const TABS = [
 function TabPanel({ children, value, index }) {
   return (
     <div role="tabpanel" hidden={value !== index}>
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+      {value === index && (
+        <Box
+          sx={{
+            pt: { xs: 2, sm: 2.5, md: 3 },
+            px: { xs: 1.5, sm: 2, md: 2.5 },
+            pb: { xs: 2, sm: 2.5 },
+            minWidth: 0,
+            maxWidth: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          {children}
+        </Box>
+      )}
     </div>
   );
 }
@@ -86,73 +98,101 @@ export default function ProfileTabs() {
     <Paper
       elevation={0}
       sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
         borderRadius: "18px",
         border: "1.5px solid #e0f4f7",
         overflow: "hidden",
         boxShadow: "0 2px 20px rgba(0,151,178,0.08)",
+        boxSizing: "border-box",
       }}
     >
-      {/* ── Custom Tab Bar ── */}
       <Box
         sx={{
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           borderBottom: "1.5px solid #e0f4f7",
           bgcolor: "#f8fdfe",
-          overflowX: "auto",
+          minWidth: 0,
+          width: "100%",
         }}
       >
         {TABS.map((tab, idx) => {
           const isActive = value === idx;
           return (
-            <button
+            <Box
               key={tab.label}
+              component="button"
+              type="button"
+              role="tab"
+              aria-selected={isActive}
               onClick={() => setValue(idx)}
-              style={{
-                flex: 1,
-                minWidth: 140,
+              sx={{
+                flex: { xs: "none", sm: "1 1 0" },
+                width: { xs: "100%", sm: "auto" },
+                minWidth: 0,
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                padding: "16px 20px",
-                fontSize: "0.9rem",
+                justifyContent: { xs: "flex-start", sm: "center" },
+                gap: 1,
+                py: { xs: 1.5, sm: 2 },
+                px: { xs: 2, sm: 1.5, md: 2 },
+                fontSize: { xs: "0.85rem", sm: "0.875rem" },
                 fontWeight: isActive ? 700 : 500,
+                fontFamily: "inherit",
                 color: isActive ? "#0097b2" : "#666",
-                background: "transparent",
+                bgcolor: {
+                  xs: isActive ? "rgba(0,151,178,0.08)" : "transparent",
+                  sm: "transparent",
+                },
                 border: "none",
-                borderBottom: isActive
-                  ? "3px solid #0097b2"
-                  : "3px solid transparent",
+                borderBottom: {
+                  xs: "1px solid #e8f6f9",
+                  sm: isActive
+                    ? "3px solid #0097b2"
+                    : "3px solid transparent",
+                },
+                borderLeft: {
+                  xs: isActive ? "3px solid #0097b2" : "3px solid transparent",
+                  sm: "none",
+                },
                 cursor: "pointer",
-                transition: "all 0.2s ease",
-                whiteSpace: "nowrap",
+                transition: "color 0.2s, background 0.2s, border-color 0.2s",
+                textAlign: "left",
                 position: "relative",
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive) e.currentTarget.style.color = "#0097b2";
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.color = "#666";
+                flexWrap: "nowrap",
+                boxSizing: "border-box",
+                "&:hover": { color: "#0097b2", bgcolor: "rgba(0,151,178,0.04)" },
               }}
             >
-              {/* Icon with gradient when active */}
-              <span
-                style={{
+              <Box
+                component="span"
+                sx={{
                   display: "flex",
                   alignItems: "center",
                   color: isActive ? "#0097b2" : "#999",
-                  transition: "color 0.2s",
+                  flexShrink: 0,
                 }}
               >
                 {tab.icon}
-              </span>
-
-              {tab.label}
-
-              {/* Active gradient underline dot */}
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  minWidth: 0,
+                  textAlign: { xs: "left", sm: "center" },
+                  wordBreak: "break-word",
+                  lineHeight: 1.3,
+                }}
+              >
+                {tab.label}
+              </Box>
               {isActive && (
-                <span
-                  style={{
+                <Box
+                  component="span"
+                  sx={{
+                    display: { xs: "none", sm: "block" },
                     position: "absolute",
                     bottom: -2,
                     left: "50%",
@@ -164,12 +204,11 @@ export default function ProfileTabs() {
                   }}
                 />
               )}
-            </button>
+            </Box>
           );
         })}
       </Box>
 
-      {/* ── Tab Panels ── */}
       <TabPanel value={value} index={0}>
         <PersonalDetails />
       </TabPanel>

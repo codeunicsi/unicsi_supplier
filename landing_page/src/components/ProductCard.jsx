@@ -41,6 +41,7 @@ export default function ProductCard({ product }) {
     side,
   }) => (
     <button
+      type="button"
       onClick={(e) => {
         e.stopPropagation();
         onClick();
@@ -112,7 +113,10 @@ export default function ProductCard({ product }) {
         setRightArrowHovered(false);
       }}
       style={{
-        width: "220px",
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
         borderRadius: "16px",
         border: hovered ? "1.5px solid #0097b2" : "1.5px solid #e0f4f7",
         background: "#fff",
@@ -121,8 +125,8 @@ export default function ProductCard({ product }) {
           : "0 2px 12px rgba(0,151,178,0.08)",
         overflow: "hidden",
         transform: hovered
-          ? "translateY(-4px) scale(1.01)"
-          : "translateY(0) scale(1)",
+          ? "translateY(-2px)"
+          : "translateY(0)",
         transition: "all 0.22s ease",
         cursor: "default",
         position: "relative",
@@ -133,7 +137,9 @@ export default function ProductCard({ product }) {
         style={{
           position: "relative",
           width: "100%",
-          height: "190px",
+          aspectRatio: "4 / 3",
+          maxHeight: "220px",
+          minHeight: "140px",
           overflow: "hidden",
         }}
       >
@@ -320,7 +326,10 @@ export default function ProductCard({ product }) {
               WebkitTextFillColor: "transparent",
             }}
           >
-            ₹ {product.price.toLocaleString("en-IN")}
+            ₹{" "}
+            {(Number.isFinite(product.price) ? product.price : 0).toLocaleString(
+              "en-IN",
+            )}
           </span>
         </div>
 
@@ -331,9 +340,12 @@ export default function ProductCard({ product }) {
             fontWeight: 600,
             color: "#111",
             margin: "0 0 10px",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            wordBreak: "break-word",
+            lineHeight: 1.35,
           }}
         >
           {product.title}
@@ -349,6 +361,7 @@ export default function ProductCard({ product }) {
           }}
         >
           <button
+            type="button"
             onMouseEnter={() => setBtnHovered(true)}
             onMouseLeave={() => setBtnHovered(false)}
             style={{

@@ -87,6 +87,7 @@ function GradientButton({
 
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       onMouseEnter={() => setHovered(true)}
@@ -520,8 +521,18 @@ export default function SupplierSettings() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f4fbfc", py: 4 }}>
-      <Container maxWidth="lg">
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
+        minHeight: "100vh",
+        bgcolor: "#f4fbfc",
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 }, minWidth: 0 }}>
         {/* ── Save success toast ── */}
         {saveSuccess && (
           <Box
@@ -570,7 +581,16 @@ export default function SupplierSettings() {
         )}
 
         {/* ── Page Header ── */}
-        <Box sx={{ mb: 4, display: "flex", alignItems: "flex-start", gap: 2 }}>
+        <Box
+          sx={{
+            mb: 4,
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 2,
+            flexWrap: "wrap",
+            minWidth: 0,
+          }}
+        >
           <Box
             sx={{
               width: 48,
@@ -621,8 +641,11 @@ export default function SupplierSettings() {
                 <Box
                   sx={{
                     display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
                     justifyContent: "space-between",
-                    alignItems: "center",
+                    alignItems: { xs: "stretch", sm: "center" },
+                    gap: 2,
+                    minWidth: 0,
                   }}
                 >
                   <Box
@@ -645,9 +668,15 @@ export default function SupplierSettings() {
                       {pickupAddresses.length}
                     </Box>
                   </Box>
-                  <GradientButton secondary onClick={handleAddAddress}>
-                    + Add New Address
-                  </GradientButton>
+                  <Box sx={{ width: { xs: "100%", sm: "auto" }, flexShrink: 0 }}>
+                    <GradientButton
+                      secondary
+                      fullWidth
+                      onClick={handleAddAddress}
+                    >
+                      + Add New Address
+                    </GradientButton>
+                  </Box>
                 </Box>
 
                 {pickupAddresses.length === 0 ? (
@@ -739,10 +768,11 @@ export default function SupplierSettings() {
                                 mb: 1.5,
                               }}
                             >
-                              <Box sx={{ flex: 1 }}>
+                              <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Box
                                   sx={{
                                     display: "flex",
+                                    flexWrap: "wrap",
                                     gap: 1,
                                     alignItems: "center",
                                     mb: 0.5,
@@ -817,7 +847,11 @@ export default function SupplierSettings() {
                                   </Box>
                                 )}
                                 <Box
-                                  sx={{ fontSize: "0.85rem", color: "#333" }}
+                                  sx={{
+                                    fontSize: "0.85rem",
+                                    color: "#333",
+                                    wordBreak: "break-word",
+                                  }}
                                 >
                                   {address.street}, {address.city},{" "}
                                   {address.state} {address.zipCode},{" "}

@@ -188,7 +188,9 @@ export default function ProductTable({
         elevation={0}
         sx={{
           width: "100%",
-          overflow: "hidden",
+          minWidth: 0,
+          maxWidth: "100%",
+          overflow: "auto",
           borderRadius: "16px",
           border: "1.5px solid #e0f4f7",
           boxShadow: "0 2px 16px rgba(0,151,178,0.08)",
@@ -202,6 +204,7 @@ export default function ProductTable({
           disableRowSelectionOnClick
           autoHeight
           sx={{
+            minWidth: 0,
             border: 0,
             fontFamily: "inherit",
             fontSize: "0.875rem",
@@ -294,7 +297,9 @@ export default function ProductTable({
             borderRadius: "16px",
             border: "1.5px solid #e0f4f7",
             boxShadow: "0 8px 40px rgba(0,151,178,0.15)",
-            minWidth: 360,
+            minWidth: { xs: "min(100%, 360px)", sm: 360 },
+            maxWidth: "calc(100vw - 24px)",
+            margin: { xs: "8px", sm: 0 },
             overflow: "hidden",
           },
         }}

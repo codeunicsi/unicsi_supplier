@@ -150,7 +150,17 @@ function FeeRow({ range, amount, emphasis }) {
 
 export default function Penalties() {
   return (
-    <Box sx={{ maxWidth: 1040, mx: "auto", pb: 5, px: { xs: 0, sm: 0.5 } }}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 1040,
+        minWidth: 0,
+        mx: "auto",
+        pb: 5,
+        px: { xs: 2, sm: 2, md: 0 },
+        boxSizing: "border-box",
+      }}
+    >
       {/* Hero */}
       <Box
         sx={{

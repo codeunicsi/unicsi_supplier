@@ -76,6 +76,7 @@ function DownloadButton({ onClick }: { onClick: () => void }) {
 
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -129,6 +130,7 @@ function NavArrow({
   const [hovered, setHovered] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -168,6 +170,7 @@ function PageButton({
   const [hovered, setHovered] = useState(false);
   return (
     <button
+      type="button"
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -213,8 +216,12 @@ export default function ReportsTable() {
     <div
       style={{
         minHeight: "100vh",
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
+        boxSizing: "border-box",
         background: "#f4fbfc",
-        padding: "28px 32px",
+        padding: "clamp(16px, 4vw, 28px) clamp(16px, 4vw, 32px)",
       }}
     >
       {/* ── Header ── */}
@@ -285,10 +292,19 @@ export default function ReportsTable() {
           background: "#fff",
           borderRadius: 16,
           border: "1.5px solid #e0f4f7",
-          overflow: "hidden",
           boxShadow: "0 2px 16px rgba(0,151,178,0.08)",
+          maxWidth: "100%",
+          minWidth: 0,
         }}
       >
+        <div
+          style={{
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            width: "100%",
+            maxWidth: "100%",
+          }}
+        >
         {/* Header row */}
         <div
           style={{
@@ -297,6 +313,7 @@ export default function ReportsTable() {
             background: GRADIENT,
             padding: "14px 24px",
             gap: 16,
+            minWidth: 640,
           }}
         >
           {["Report Name", "Requested On", "Status", "Actions"].map((h) => (
@@ -340,6 +357,7 @@ export default function ReportsTable() {
                   padding: "18px 24px",
                   gap: 16,
                   alignItems: "center",
+                  minWidth: 640,
                   background: isEven ? "#fff" : "#f8fdfe",
                   borderBottom:
                     idx < paginated.length - 1 ? "1px solid #e8f6f9" : "none",
@@ -379,6 +397,7 @@ export default function ReportsTable() {
             );
           })
         )}
+        </div>
       </div>
 
       {/* ── Bottom Pagination ── */}

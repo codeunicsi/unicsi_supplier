@@ -20,9 +20,15 @@ const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
 const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
 const fieldSx = {
+  width: "100%",
+  maxWidth: "100%",
+  minWidth: 0,
+  boxSizing: "border-box",
   "& .MuiOutlinedInput-root": {
     borderRadius: "10px",
     background: "#fff",
+    maxWidth: "100%",
+    minWidth: 0,
     "&:hover fieldset": { borderColor: "#0097b2" },
     "&.Mui-focused fieldset": {
       borderColor: "#0097b2",
@@ -34,7 +40,12 @@ const fieldSx = {
     },
   },
   "& .MuiInputLabel-root.Mui-focused": { color: "#0097b2" },
-  "& .MuiInputBase-input": { color: "#000" },
+  "& .MuiInputBase-root": { maxWidth: "100%" },
+  "& .MuiInputBase-input": {
+    color: "#000",
+    minWidth: 0,
+    boxSizing: "border-box",
+  },
   "& .MuiInputBase-input.Mui-disabled": {
     color: "#555",
     WebkitTextFillColor: "#555",
@@ -46,6 +57,7 @@ function GradientButton({
   onClick,
   secondary = false,
   type = "button",
+  fullWidth = false,
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -54,7 +66,13 @@ function GradientButton({
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className={
+        fullWidth ? "w-full min-w-0 max-w-full sm:w-auto sm:max-w-none" : ""
+      }
       style={{
+        ...(fullWidth
+          ? { whiteSpace: "normal", lineHeight: 1.35, textAlign: "center" }
+          : { whiteSpace: "nowrap" }),
         padding: "9px 22px",
         borderRadius: "10px",
         fontSize: "0.875rem",
@@ -128,20 +146,26 @@ export default function PersonalDetails() {
     <Card
       elevation={0}
       sx={{
+        width: "100%",
+        maxWidth: "100%",
+        minWidth: 0,
         borderRadius: "16px",
         border: "1.5px solid #e0f4f7",
         boxShadow: "0 2px 16px rgba(0,151,178,0.07)",
         overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
       {/* ── Card Header ── */}
       <Box
         sx={{
-          px: 3,
-          py: 2.5,
+          px: { xs: 2, sm: 3 },
+          py: { xs: 2, sm: 2.5 },
           display: "flex",
+          flexWrap: "wrap",
           alignItems: "center",
           gap: 1.5,
+          minWidth: 0,
           background:
             "linear-gradient(135deg, rgba(0,151,178,0.06) 0%, rgba(126,217,87,0.06) 100%)",
           borderBottom: "1.5px solid #e0f4f7",
@@ -175,18 +199,26 @@ export default function PersonalDetails() {
             <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
           </svg>
         </Box>
-        <Box>
+        <Box sx={{ flex: "1 1 160px", minWidth: 0 }}>
           <Box
             sx={{
-              fontSize: "1rem",
+              fontSize: { xs: "0.95rem", sm: "1rem" },
               fontWeight: 700,
               color: "#000",
               lineHeight: 1.3,
+              wordBreak: "break-word",
             }}
           >
             Personal Details
           </Box>
-          <Box sx={{ fontSize: "0.8rem", color: "#666", mt: 0.2 }}>
+          <Box
+            sx={{
+              fontSize: "0.8rem",
+              color: "#666",
+              mt: 0.2,
+              wordBreak: "break-word",
+            }}
+          >
             Manage your store information
           </Box>
         </Box>
@@ -195,7 +227,8 @@ export default function PersonalDetails() {
         {editMode && (
           <Box
             sx={{
-              ml: "auto",
+              ml: { xs: 0, sm: "auto" },
+              width: { xs: "100%", sm: "auto" },
               background: "rgba(0,151,178,0.1)",
               border: "1px solid rgba(0,151,178,0.3)",
               color: "#0097b2",
@@ -206,6 +239,7 @@ export default function PersonalDetails() {
               fontWeight: 700,
               display: "flex",
               alignItems: "center",
+              justifyContent: "center",
               gap: 0.5,
             }}
           >
@@ -223,8 +257,22 @@ export default function PersonalDetails() {
         )}
       </Box>
 
-      <CardContent sx={{ p: 3 }}>
-        <Grid container spacing={2.5}>
+      <CardContent
+        sx={{
+          p: { xs: 2, sm: 2.5, md: 3 },
+          minWidth: 0,
+          "&:last-child": { pb: { xs: 2, sm: 3 } },
+        }}
+      >
+        <Grid
+          container
+          spacing={2.5}
+          sx={{
+            minWidth: 0,
+            width: "100%",
+            "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
+          }}
+        >
           {/* Supplier ID — always disabled */}
           <Grid item xs={12} sm={6} md={4}>
             <Box
@@ -343,6 +391,8 @@ export default function PersonalDetails() {
                 px: 2,
                 py: 1.2,
                 width: "100%",
+                minWidth: 0,
+                boxSizing: "border-box",
               }}
             >
               {/* Check icon */}
@@ -371,17 +421,24 @@ export default function PersonalDetails() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </Box>
-              <Box>
+              <Box sx={{ minWidth: 0 }}>
                 <Box
                   sx={{
                     fontSize: "0.78rem",
                     fontWeight: 700,
                     color: "#2e7d1e",
+                    wordBreak: "break-word",
                   }}
                 >
                   Email Verified
                 </Box>
-                <Box sx={{ fontSize: "0.7rem", color: "#4a8a3a" }}>
+                <Box
+                  sx={{
+                    fontSize: "0.7rem",
+                    color: "#4a8a3a",
+                    wordBreak: "break-word",
+                  }}
+                >
                   Your email is confirmed
                 </Box>
               </Box>
@@ -390,17 +447,30 @@ export default function PersonalDetails() {
         </Grid>
 
         {/* ── Action Buttons ── */}
-        <Stack direction="row" spacing={1.5} justifyContent="flex-end" mt={4}>
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          sx={{
+            mt: 4,
+            gap: 1.5,
+            alignItems: { xs: "stretch", sm: "center" },
+            justifyContent: { xs: "stretch", sm: "flex-end" },
+            flexWrap: "wrap",
+          }}
+        >
           {!editMode ? (
-            <GradientButton secondary onClick={() => setEditMode(true)}>
+            <GradientButton fullWidth secondary onClick={() => setEditMode(true)}>
               Edit Details
             </GradientButton>
           ) : (
             <>
-              <GradientButton secondary onClick={() => setEditMode(false)}>
+              <GradientButton
+                fullWidth
+                secondary
+                onClick={() => setEditMode(false)}
+              >
                 Cancel
               </GradientButton>
-              <GradientButton onClick={handleSubmit}>
+              <GradientButton fullWidth onClick={handleSubmit}>
                 Save Changes
               </GradientButton>
             </>
