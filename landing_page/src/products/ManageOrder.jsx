@@ -377,10 +377,10 @@ export default function ManageOrder() {
 
   const STATUS_MAP = {
     All: [],
-    "Pending Supplier": ["pending_supplier"],
-    Confirmed: ["confirmed"],
-    Processing: ["processing"],
-    Shipped: ["shipped"],
+    "Pending": ["pending_supplier"],
+    "To Be Dispatched": ["confirmed"],
+    // Processing: ["processing"],
+    // Shipped: ["shipped"],
     "In Transit": ["in_transit"],
     Delivered: ["delivered"],
     Cancelled: ["cancelled"],

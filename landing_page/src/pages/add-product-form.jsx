@@ -1120,7 +1120,7 @@ export default function AddProductForm({ onSuccess }) {
                   >
                     Product Variants
                   </Typography>
-                  {formData.variants.length > 0 && (
+                  {/* {formData.variants.length > 0 && (
                     <GradientButton
                       type="button"
                       size="small"
@@ -1129,7 +1129,7 @@ export default function AddProductForm({ onSuccess }) {
                     >
                       Add Variant
                     </GradientButton>
-                  )}
+                  )} */}
                 </Box>
 
                 {formData.variants.length === 0 ? (
@@ -1581,7 +1581,7 @@ export default function AddProductForm({ onSuccess }) {
                       </Accordion>
                     ))}
 
-                    <GradientButton
+                    {/* <GradientButton
                       type="button"
                       secondary
                       fullWidth
@@ -1589,7 +1589,7 @@ export default function AddProductForm({ onSuccess }) {
                       onClick={addVariant}
                     >
                       Add Another Variant
-                    </GradientButton>
+                    </GradientButton> */}
                   </Stack>
                 )}
 
