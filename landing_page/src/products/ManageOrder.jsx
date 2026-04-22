@@ -378,14 +378,12 @@ export default function ManageOrder() {
 
   const STATUS_MAP = {
     All: [],
-    "Pending": ["pending_supplier"],
-    "To Be Dispatched": ["confirmed"],
-    "Processing": ["processing"],
-    "Shipped": ["shipped"],
-    "In Transit": ["in_transit"],
-    Delivered: ["delivered"],
-    Cancelled: ["cancelled"],
-    Refunded: ["refunded"],
+    "Pending": ["Pending"],
+    "Dispatched": ["Dispatched"],
+    "In Transit": ["In_Transit"],
+    "Delivered": ["Delivered"],
+    "Cancelled": ["Cancelled"],
+    "Refunded": ["Refunded"],
   };
 
   const ORDER_TABS = Object.keys(STATUS_MAP).map((label) => ({ label }));
@@ -913,60 +911,47 @@ export default function ManageOrder() {
                               </div>
                             </dl>
                             <div className="flex flex-wrap gap-2 pt-1">
-                              {row.status === "confirmed" && (
+                              {row.status === "Pending" && (
                                 <button
                                   type="button"
-                                  onClick={() => setShipmentModal(row)}
-                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black sm:w-auto sm:py-2"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Dispatched")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-50 sm:w-auto sm:py-2"
                                 >
-                                  Create Shipment
+                                  {updatingOrders[row.orderId] ? "Updating..." : "Mark Dispatched"}
                                 </button>
                               )}
-                              {row.status === "processing" && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateStatus(row.orderId, "shipped")}
-                                    disabled={updatingOrders[row.orderId]}
-                                    className="flex w-full items-center justify-center gap-1.5 rounded bg-blue-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:w-auto sm:py-2"
-                                  >
-                                    {updatingOrders[row.orderId] ? "Updating..." : "Mark Shipped"}
-                                  </button>
-                                  {row.labelUrl && (
-                                    <button
-                                      type="button"
-                                      onClick={() => window.open(row.labelUrl, "_blank")}
-                                      className="flex w-full items-center justify-center gap-1.5 rounded bg-green-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-green-700 sm:w-auto sm:py-2"
-                                    >
-                                      Download Label
-                                    </button>
-                                  )}
-                                </>
-                              )}
-                              {row.status === "shipped" && (
+                              {row.status === "Dispatched" && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "in_transit")}
+                                  onClick={() => handleUpdateStatus(row.orderId, "In_Transit")}
                                   disabled={updatingOrders[row.orderId]}
                                   className="flex w-full items-center justify-center gap-1.5 rounded bg-indigo-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 sm:w-auto sm:py-2"
                                 >
                                   {updatingOrders[row.orderId] ? "Updating..." : "Mark In Transit"}
                                 </button>
                               )}
-                              {row.status === "in_transit" && (
+                              {row.status === "In_Transit" && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "delivered")}
+                                  onClick={() => handleUpdateStatus(row.orderId, "Delivered")}
                                   disabled={updatingOrders[row.orderId]}
                                   className="flex w-full items-center justify-center gap-1.5 rounded bg-emerald-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 sm:w-auto sm:py-2"
                                 >
                                   {updatingOrders[row.orderId] ? "Updating..." : "Mark Delivered"}
                                 </button>
                               )}
-                              {row.status === "pending_supplier" && (
-                                <span className="text-xs text-gray-400 italic">Awaiting dropshipper confirmation</span>
+                              {!["Delivered", "Cancelled", "Refunded"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Cancelled")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-red-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 sm:w-auto sm:py-2"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Cancel"}
+                                </button>
                               )}
-                              {(row.status === "delivered" || row.status === "cancelled" || row.status === "refunded") && (
+                              {(row.status === "Delivered" || row.status === "Cancelled" || row.status === "Refunded") && (
                                 <span className="text-xs text-gray-400 capitalize">{row.status}</span>
                               )}
                             </div>
@@ -1040,60 +1025,47 @@ export default function ManageOrder() {
                           </td>
                           <td className="px-2 py-3 sm:px-3">
                             <div className="flex flex-wrap gap-1.5">
-                              {row.status === "confirmed" && (
+                              {row.status === "Pending" && (
                                 <button
                                   type="button"
-                                  onClick={() => setShipmentModal(row)}
-                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-gray-900 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black sm:px-3"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Dispatched")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-gray-900 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-50 sm:px-3"
                                 >
-                                  Create Shipment
+                                  {updatingOrders[row.orderId] ? "..." : "Dispatch"}
                                 </button>
                               )}
-                              {row.status === "processing" && (
-                                <>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleUpdateStatus(row.orderId, "shipped")}
-                                    disabled={updatingOrders[row.orderId]}
-                                    className="flex items-center gap-1.5 whitespace-nowrap rounded bg-blue-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 disabled:opacity-50 sm:px-3"
-                                  >
-                                    {updatingOrders[row.orderId] ? "..." : "Mark Shipped"}
-                                  </button>
-                                  {row.labelUrl && (
-                                    <button
-                                      type="button"
-                                      onClick={() => window.open(row.labelUrl, "_blank")}
-                                      className="flex items-center gap-1.5 whitespace-nowrap rounded bg-green-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700 sm:px-3"
-                                    >
-                                      Download Label
-                                    </button>
-                                  )}
-                                </>
-                              )}
-                              {row.status === "shipped" && (
+                              {row.status === "Dispatched" && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "in_transit")}
+                                  onClick={() => handleUpdateStatus(row.orderId, "In_Transit")}
                                   disabled={updatingOrders[row.orderId]}
                                   className="flex items-center gap-1.5 whitespace-nowrap rounded bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 sm:px-3"
                                 >
                                   {updatingOrders[row.orderId] ? "..." : "In Transit"}
                                 </button>
                               )}
-                              {row.status === "in_transit" && (
+                              {row.status === "In_Transit" && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "delivered")}
+                                  onClick={() => handleUpdateStatus(row.orderId, "Delivered")}
                                   disabled={updatingOrders[row.orderId]}
                                   className="flex items-center gap-1.5 whitespace-nowrap rounded bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 sm:px-3"
                                 >
                                   {updatingOrders[row.orderId] ? "..." : "Delivered"}
                                 </button>
                               )}
-                              {row.status === "pending_supplier" && (
-                                <span className="text-xs text-gray-400">Waiting</span>
+                              {!["Delivered", "Cancelled", "Refunded"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Cancelled")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 sm:px-3"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Cancel"}
+                                </button>
                               )}
-                              {(row.status === "delivered" || row.status === "cancelled" || row.status === "refunded") && (
+                              {(row.status === "Delivered" || row.status === "Cancelled" || row.status === "Refunded") && (
                                 <span className="text-xs text-gray-400 capitalize">{row.status}</span>
                               )}
                             </div>
