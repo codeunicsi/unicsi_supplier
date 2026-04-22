@@ -19,6 +19,8 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -280,6 +282,12 @@ export default function SupplierSettings() {
     gstNumber: "",
   });
 
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
   const fetchPickupAddresses = async () => {
     try {
       const res = await fetchAllAddresses();
@@ -358,13 +366,17 @@ export default function SupplierSettings() {
       !newAddress.street ||
       !newAddress.city
     ) {
-      alert(
+      showToast(
         "Please fill in all required fields: Full Name, Email, Phone, Street Address, and City",
+        "error",
       );
       return;
     }
     if (!supplierId) {
-      alert("Supplier profile not loaded yet. Please wait and try again.");
+      showToast(
+        "Supplier profile not loaded yet. Please wait and try again.",
+        "error",
+      );
       return;
     }
 
@@ -403,7 +415,7 @@ export default function SupplierSettings() {
       handleCloseDialog();
     } catch (error) {
       console.error("Error saving address:", error);
-      alert("Failed to save address. Please try again.");
+      showToast("Failed to save address. Please try again.", "error");
     } finally {
       setSavingAddress(false);
     }
@@ -421,6 +433,15 @@ export default function SupplierSettings() {
   const showSaveSuccess = () => {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const showToast = (message, severity = "info") => {
+    setToast({ open: true, message, severity });
+  };
+
+  const handleCloseToast = (reason) => {
+    if (reason === "clickaway") return;
+    setToast({ ...toast, open: false });
   };
 
   const handleAddAddress = () => {
@@ -466,7 +487,7 @@ export default function SupplierSettings() {
       showSaveSuccess();
     } catch (error) {
       console.error("Error deleting address:", error);
-      alert("Failed to delete address. Please try again.");
+      showToast("Failed to delete address. Please try again.", "error");
     } finally {
       setDeletingAddress(false);
     }
@@ -490,8 +511,9 @@ export default function SupplierSettings() {
         (a) => a.id !== id && a.isEnabled,
       );
       if (alreadyEnabled) {
-        alert(
+        showToast(
           `Only one address can be active at a time.\nPlease disable "${alreadyEnabled.fullName}" before enabling this address.`,
+          "warning",
         );
         return;
       }
@@ -506,7 +528,10 @@ export default function SupplierSettings() {
       showSaveSuccess();
     } catch (error) {
       console.error("Failed to toggle warehouse status:", error);
-      alert("Failed to update address status. Please try again.");
+      showToast(
+        "Failed to update address status. Please try again.",
+        error.message,
+      );
     } finally {
       setTogglingId(null);
     }
@@ -668,7 +693,9 @@ export default function SupplierSettings() {
                       {pickupAddresses.length}
                     </Box>
                   </Box>
-                  <Box sx={{ width: { xs: "100%", sm: "auto" }, flexShrink: 0 }}>
+                  <Box
+                    sx={{ width: { xs: "100%", sm: "auto" }, flexShrink: 0 }}
+                  >
                     <GradientButton
                       secondary
                       fullWidth
@@ -1251,6 +1278,21 @@ export default function SupplierSettings() {
           </DialogActions>
         </Dialog>
       </Container>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={6000}
+        onClose={handleCloseToast}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleCloseToast}
+          severity={toast.severity}
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
