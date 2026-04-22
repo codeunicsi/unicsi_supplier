@@ -25,6 +25,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useNavigate } from "react-router-dom";
 import { Plus, Upload, X } from "lucide-react";
+import { toast } from "react-toastify";
 import {
   addProduct,
   updateProduct,
@@ -159,6 +160,8 @@ export default function AddProductForm({ onSuccess }) {
     // ── images split into two buckets:
     existingImages: [], // { id, image_url, ... } objects from the API
     newImageFiles: [], // File objects the user just picked
+    existingVideos: [], // { id, video_url, ... } objects from the API
+    newVideoFiles: [], // Video files the user just picked
   });
 
   const [expandedVariant, setExpandedVariant] = useState(null);
@@ -198,6 +201,8 @@ export default function AddProductForm({ onSuccess }) {
       // ✅ Keep existing images as-is — display thumbnails from image_url
       existingImages: Array.isArray(p.images) ? p.images : [],
       newImageFiles: [],
+      existingVideos: Array.isArray(p.videos) ? p.videos : [],
+      newVideoFiles: [],
 
       // ✅ Normalize variants:
       //    - variant_id  = the server's UUID (sent back on update)
@@ -321,6 +326,14 @@ export default function AddProductForm({ onSuccess }) {
     }));
   };
 
+  const handleNewVideoUpload = (files) => {
+    if (!files) return;
+    setFormData((prev) => ({
+      ...prev,
+      newVideoFiles: [...prev.newVideoFiles, ...Array.from(files)],
+    }));
+  };
+
   // Remove an already-uploaded image (will be excluded from keepImageIds)
   const removeExistingImage = (index) =>
     setFormData((prev) => ({
@@ -333,6 +346,18 @@ export default function AddProductForm({ onSuccess }) {
     setFormData((prev) => ({
       ...prev,
       newImageFiles: prev.newImageFiles.filter((_, i) => i !== index),
+    }));
+
+  const removeExistingVideo = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      existingVideos: prev.existingVideos.filter((_, i) => i !== index),
+    }));
+
+  const removeNewVideo = (index) =>
+    setFormData((prev) => ({
+      ...prev,
+      newVideoFiles: prev.newVideoFiles.filter((_, i) => i !== index),
     }));
 
   // ── Build multipart/form-data payload ────────────────────────────────────
@@ -402,8 +427,12 @@ export default function AddProductForm({ onSuccess }) {
     const keepImageIds = formData.existingImages.map((img) => img.id);
     form.append("keepImageIds", JSON.stringify(keepImageIds));
 
+    const keepVideoIds = formData.existingVideos.map((video) => video.id);
+    form.append("keepVideoIds", JSON.stringify(keepVideoIds));
+
     // New files to upload
     formData.newImageFiles.forEach((file) => form.append("images", file));
+    formData.newVideoFiles.forEach((file) => form.append("videos", file));
 
     return form;
   };
@@ -419,11 +448,11 @@ export default function AddProductForm({ onSuccess }) {
       } else {
         await addProduct(form);
       }
-      alert("Product saved as draft successfully!");
+      toast.success("Product saved as draft successfully!");
       onSuccess?.();
     } catch (err) {
       console.error(err);
-      alert(
+      toast.error(
         "Failed to save draft: " +
           (err?.response?.data?.message || err?.message || "Unknown error"),
       );
@@ -433,7 +462,7 @@ export default function AddProductForm({ onSuccess }) {
   // ── Submit ────────────────────────────────────────────────────────────────
   const handleSubmit = async () => {
     if (formData.variants.length === 0) {
-      alert("Please add at least one variant");
+      toast.warn("Please add at least one variant");
       return;
     }
     setSubmitting(true);
@@ -447,7 +476,7 @@ export default function AddProductForm({ onSuccess }) {
         await addProduct(form);
       }
 
-      alert("Product submitted successfully!");
+      toast.success("Product submitted successfully!");
 
       setFormData({
         title: "",
@@ -463,6 +492,8 @@ export default function AddProductForm({ onSuccess }) {
         variants: [],
         existingImages: [],
         newImageFiles: [],
+        existingVideos: [],
+        newVideoFiles: [],
       });
 
       onSuccess?.();
@@ -474,7 +505,7 @@ export default function AddProductForm({ onSuccess }) {
         err?.response?.data?.message ||
         err?.message ||
         "Unknown error";
-      alert("Failed to submit product: " + msg);
+      toast.error("Failed to submit product: " + msg);
     } finally {
       setSubmitting(false);
     }
@@ -1068,6 +1099,165 @@ export default function AddProductForm({ onSuccess }) {
                       </Box>
                     )}
                   </Grid>
+
+                  <Grid size={{ xs: 12 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 700, mb: 1.5, color: "#000" }}
+                    >
+                      Video Gallery
+                    </Typography>
+
+                    <input
+                      type="file"
+                      multiple
+                      accept="video/*"
+                      onChange={(e) => handleNewVideoUpload(e.target.files)}
+                      style={{ display: "none" }}
+                      id="product-video-upload"
+                    />
+                    <label
+                      htmlFor="product-video-upload"
+                      style={{ display: "block", cursor: "pointer" }}
+                    >
+                      <Paper
+                        variant="outlined"
+                        sx={{
+                          p: { xs: 2.5, sm: 4 },
+                          textAlign: "center",
+                          border: "2px dashed #b8e8f0",
+                          borderRadius: "14px",
+                          bgcolor: "#f8fdfe",
+                          transition: "all 0.2s",
+                          "&:hover": {
+                            borderColor: "#0097b2",
+                            bgcolor: "#edf8fb",
+                          },
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: "12px",
+                            background: GRADIENT,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            mx: "auto",
+                            mb: 1.5,
+                          }}
+                        >
+                          <Upload size={22} color="#fff" />
+                        </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#555", mb: 0.5, fontWeight: 500 }}
+                        >
+                          Drag and drop videos or click to upload
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: "#999" }}>
+                          MP4, MOV, WEBM up to 50MB
+                        </Typography>
+                      </Paper>
+                    </label>
+
+                    {formData.existingVideos.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#888",
+                            fontWeight: 600,
+                            mb: 1,
+                            display: "block",
+                          }}
+                        >
+                          Existing Videos (click × to remove)
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          sx={{ flexWrap: "wrap", gap: 1.5 }}
+                        >
+                          {formData.existingVideos.map((video, idx) => (
+                            <Box
+                              key={video.id ?? idx}
+                              sx={{
+                                position: "relative",
+                                display: "inline-flex",
+                              }}
+                            >
+                              <Box
+                                component="video"
+                                src={video.video_url || video.url}
+                                sx={{
+                                  width: 120,
+                                  height: 80,
+                                  borderRadius: "10px",
+                                  objectFit: "cover",
+                                  border: "1.5px solid #e0f4f7",
+                                  bgcolor: "#000",
+                                }}
+                              />
+                              <IconButton
+                                size="small"
+                                onClick={() => removeExistingVideo(idx)}
+                                sx={{
+                                  position: "absolute",
+                                  top: -8,
+                                  right: -8,
+                                  bgcolor: "#e53935",
+                                  color: "#fff",
+                                  width: 22,
+                                  height: 22,
+                                  "&:hover": { bgcolor: "#c62828" },
+                                }}
+                              >
+                                <X size={12} />
+                              </IconButton>
+                            </Box>
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+
+                    {formData.newVideoFiles.length > 0 && (
+                      <Box sx={{ mt: 2 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: "#888",
+                            fontWeight: 600,
+                            mb: 1,
+                            display: "block",
+                          }}
+                        >
+                          New Videos (will upload on save)
+                        </Typography>
+                        <Stack
+                          direction="row"
+                          sx={{ flexWrap: "wrap", gap: 1 }}
+                        >
+                          {formData.newVideoFiles.map((file, idx) => (
+                            <Chip
+                              key={idx}
+                              label={file.name}
+                              size="small"
+                              onDelete={() => removeNewVideo(idx)}
+                              sx={{
+                                maxWidth: 200,
+                                bgcolor: "rgba(0,151,178,0.08)",
+                                color: "#0097b2",
+                                border: "1px solid rgba(0,151,178,0.25)",
+                                fontWeight: 500,
+                                "& .MuiChip-deleteIcon": { color: "#0097b2" },
+                              }}
+                            />
+                          ))}
+                        </Stack>
+                      </Box>
+                    )}
+                  </Grid>
                 </Grid>
 
                 <Stack
@@ -1120,7 +1310,7 @@ export default function AddProductForm({ onSuccess }) {
                   >
                     Product Variants
                   </Typography>
-                  {/* {formData.variants.length > 0 && (
+                  {formData.variants.length > 0 && (
                     <GradientButton
                       type="button"
                       size="small"
@@ -1129,7 +1319,7 @@ export default function AddProductForm({ onSuccess }) {
                     >
                       Add Variant
                     </GradientButton>
-                  )} */}
+                  )}
                 </Box>
 
                 {formData.variants.length === 0 ? (
@@ -1581,7 +1771,7 @@ export default function AddProductForm({ onSuccess }) {
                       </Accordion>
                     ))}
 
-                    {/* <GradientButton
+                    <GradientButton
                       type="button"
                       secondary
                       fullWidth
@@ -1589,7 +1779,7 @@ export default function AddProductForm({ onSuccess }) {
                       onClick={addVariant}
                     >
                       Add Another Variant
-                    </GradientButton> */}
+                    </GradientButton>
                   </Stack>
                 )}
 

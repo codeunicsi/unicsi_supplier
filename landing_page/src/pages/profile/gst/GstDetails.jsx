@@ -151,7 +151,7 @@ function SectionLabel({ icon, children }) {
 }
 
 // ── File upload input ─────────────────────────────────────────────────────────
-function FileInput({ name, label, file, onChange, disabled }) {
+function FileInput({ name, label, file, onChange, disabled, error }) {
   const isUrl = typeof file === "string" && file.length > 0;
   const fileName = file?.name || (isUrl ? "Uploaded file" : null);
 
@@ -180,9 +180,13 @@ function FileInput({ name, label, file, onChange, disabled }) {
         <Box
           sx={{
             border: "2px dashed",
-            borderColor: disabled ? "#e0f4f7" : "#b8e8f0",
+            borderColor: error
+              ? "#d32f2f"
+              : disabled
+                ? "#e0f4f7"
+                : "#b8e8f0",
             borderRadius: "10px",
-            background: disabled ? "#f4fbfc" : "#f8fdfe",
+            background: error ? "#fff5f5" : disabled ? "#f4fbfc" : "#f8fdfe",
             px: 2,
             height: "40px",
             display: "flex",
@@ -274,6 +278,11 @@ function FileInput({ name, label, file, onChange, disabled }) {
         onChange={onChange}
         disabled={disabled}
       />
+      {error ? (
+        <Box sx={{ mt: 0.6, fontSize: "0.75rem", color: "#d32f2f" }}>
+          {error}
+        </Box>
+      ) : null}
     </Box>
   );
 }
@@ -317,20 +326,95 @@ export default function GstDetails() {
     adharCardBackImage: "",
     gstStatus: false,
   });
+  const [errors, setErrors] = useState({});
+
+  const GST_REGEX =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/;
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+  const AADHAAR_REGEX = /^[0-9]{12}$/;
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: files ? files[0] : value }));
+    const nextValue = files
+      ? files[0]
+      : name === "gstNumber" || name === "panCardNumber"
+        ? value.toUpperCase()
+        : name === "adharCardNumber"
+          ? value.replace(/\D/g, "").slice(0, 12)
+          : value;
+
+    setFormData((prev) => ({ ...prev, [name]: nextValue }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const validateForm = () => {
+    const nextErrors = {};
+    const gstName = formData.gstName.trim();
+    const gstNumber = formData.gstNumber.trim().toUpperCase();
+    const panCardNumber = formData.panCardNumber.trim().toUpperCase();
+    const adharCardNumber = formData.adharCardNumber.replace(/\D/g, "");
+
+    if (!gstName) {
+      nextErrors.gstName = "GST name is required";
+    }
+    if (!gstNumber) {
+      nextErrors.gstNumber = "GST number is required";
+    } else if (!GST_REGEX.test(gstNumber)) {
+      nextErrors.gstNumber = "Enter a valid 15-character GST number";
+    }
+    if (!panCardNumber) {
+      nextErrors.panCardNumber = "PAN card number is required";
+    } else if (!PAN_REGEX.test(panCardNumber)) {
+      nextErrors.panCardNumber = "Enter a valid PAN card number";
+    }
+    if (!adharCardNumber) {
+      nextErrors.adharCardNumber = "Aadhaar card number is required";
+    } else if (!AADHAAR_REGEX.test(adharCardNumber)) {
+      nextErrors.adharCardNumber = "Aadhaar number must be 12 digits";
+    }
+
+    if (!formData.gstCertificate) {
+      nextErrors.gstCertificate = "GST certificate is required";
+    }
+    if (!formData.panCardFrontImage) {
+      nextErrors.panCardFrontImage = "PAN front image is required";
+    }
+    if (!formData.panCardBackImage) {
+      nextErrors.panCardBackImage = "PAN back image is required";
+    }
+    if (!formData.adharCardFrontImage) {
+      nextErrors.adharCardFrontImage = "Aadhaar front image is required";
+    }
+    if (!formData.adharCardBackImage) {
+      nextErrors.adharCardBackImage = "Aadhaar back image is required";
+    }
+
+    setErrors(nextErrors);
+    return nextErrors;
   };
 
   const handleSubmit = () => {
     const submitGstDetails = async () => {
       try {
+        const validationErrors = validateForm();
+        if (Object.keys(validationErrors).length > 0) {
+          toast.error(
+            Object.values(validationErrors)[0] || "Please correct the form errors",
+          );
+          return;
+        }
+
         const payload = new FormData();
-        payload.append("gstName", formData.gstName);
-        payload.append("gstNumber", formData.gstNumber);
-        payload.append("panCardNumber", formData.panCardNumber);
-        payload.append("adharCardNumber", formData.adharCardNumber);
+        payload.append("gstName", formData.gstName.trim());
+        payload.append("gstNumber", formData.gstNumber.trim().toUpperCase());
+        payload.append(
+          "panCardNumber",
+          formData.panCardNumber.trim().toUpperCase(),
+        );
+        payload.append(
+          "adharCardNumber",
+          formData.adharCardNumber.replace(/\D/g, ""),
+        );
         payload.append("gstCertificate", formData.gstCertificate);
         payload.append("panCardFrontImage", formData.panCardFrontImage);
         payload.append("panCardBackImage", formData.panCardBackImage);
@@ -350,10 +434,14 @@ export default function GstDetails() {
         );
         if (res.status === 200) {
           toast.success("GST Details Updated Successfully");
+          setErrors({});
           setFormData((prev) => ({ ...prev, gstStatus: true }));
         }
       } catch (err) {
         console.log(err);
+        toast.error(
+          err?.response?.data?.message || "Failed to update GST details",
+        );
       }
     };
     submitGstDetails();
@@ -570,6 +658,8 @@ export default function GstDetails() {
                 onChange={handleChange}
                 size="small"
                 disabled={isVerified}
+                error={Boolean(errors.gstName)}
+                helperText={errors.gstName}
                 sx={fieldSx}
               />
             </Grid>
@@ -616,6 +706,8 @@ export default function GstDetails() {
                 onChange={handleChange}
                 size="small"
                 disabled={isVerified}
+                error={Boolean(errors.gstNumber)}
+                helperText={errors.gstNumber}
                 sx={fieldSx}
               />
             </Grid>
@@ -626,6 +718,7 @@ export default function GstDetails() {
                 file={formData.gstCertificate}
                 onChange={handleChange}
                 disabled={isVerified}
+                error={errors.gstCertificate}
               />
             </Grid>
           </Grid>
@@ -670,6 +763,8 @@ export default function GstDetails() {
                 onChange={handleChange}
                 size="small"
                 disabled={isVerified}
+                error={Boolean(errors.panCardNumber)}
+                helperText={errors.panCardNumber}
                 sx={fieldSx}
               />
             </Grid>
@@ -690,6 +785,7 @@ export default function GstDetails() {
                 file={formData.panCardFrontImage}
                 onChange={handleChange}
                 disabled={isVerified}
+                error={errors.panCardFrontImage}
               />
             </Grid>
             <Grid
@@ -708,6 +804,7 @@ export default function GstDetails() {
                 file={formData.panCardBackImage}
                 onChange={handleChange}
                 disabled={isVerified}
+                error={errors.panCardBackImage}
               />
             </Grid>
           </Grid>
@@ -755,6 +852,8 @@ export default function GstDetails() {
                 onChange={handleChange}
                 size="small"
                 disabled={isVerified}
+                error={Boolean(errors.adharCardNumber)}
+                helperText={errors.adharCardNumber}
                 sx={fieldSx}
               />
             </Grid>
@@ -775,6 +874,7 @@ export default function GstDetails() {
                 file={formData.adharCardFrontImage}
                 onChange={handleChange}
                 disabled={isVerified}
+                error={errors.adharCardFrontImage}
               />
             </Grid>
             <Grid
@@ -793,6 +893,7 @@ export default function GstDetails() {
                 file={formData.adharCardBackImage}
                 onChange={handleChange}
                 disabled={isVerified}
+                error={errors.adharCardBackImage}
               />
             </Grid>
           </Grid>
