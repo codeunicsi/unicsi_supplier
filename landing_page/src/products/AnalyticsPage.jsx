@@ -1,15 +1,64 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { shopifyOrders } from "../services/prodile/profile.service";
 
-// ─── Mock Data ───────────────────────────────────────────────────────────────
+// ─── Status → Tab Mapping ─────────────────────────────────────────────────────
 
-const overviewProducts = [
-  { id: 1, img: "📦", name: "Latest anti slip to hold Mobile Holder device", sku: "car mount holder", total: 3, delivered: 0, rto: 0, returns: 0, rtoP: 0, returnP: 0 },
-  { id: 2, img: "🔌", name: "Ultrasonic Pest Repeller Machine for Mosquito Rats Cockroach Home Plug in Electric Pest Repellent Pest Control Reject Aid (Red)", sku: "Pest Repeller", total: 4, delivered: 1, rto: 2, returns: 0, rtoP: 50, returnP: 0 },
-  { id: 3, img: "🚗", name: "Rearview Mirror Car Camera", sku: "Rearview Mirror", total: 6, delivered: 2, rto: 4, returns: 0, rtoP: 66, returnP: 0 },
-  { id: 4, img: "👓", name: "Reading Glasses (Buy 1 Get 1 Free)", sku: "Dual-Use Reading Glasses", total: 120, delivered: 20, rto: 95, returns: 5, rtoP: 79, returnP: 4 },
-  { id: 5, img: "👶", name: "Baby Shaping Head Support Pillow (Limited Stock)", sku: "Baby Shaping Head Support Pillow", total: 30, delivered: 5, rto: 24, returns: 1, rtoP: 80, returnP: 3 },
-];
+const STATUS_TAB_MAP = {
+  pending_supplier: "Arriving Today",
+  pending: "Arriving Today",
+  shipped: "In Transit",
+  in_transit: "In Transit",
+  out_for_delivery: "In Transit",
+  delivered: "Delivered",
+  completed: "Delivered",
+};
+
+function getTabForOrder(order) {
+  const key = order.status?.toLowerCase().replace(/\s+/g, "_") ?? "";
+  return STATUS_TAB_MAP[key] ?? "Arriving Today";
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+// ─── Status Badge ─────────────────────────────────────────────────────────────
+
+function StatusBadge({ status }) {
+  const map = {
+    pending_supplier: {
+      cls: "bg-yellow-100 text-yellow-700",
+      label: "Pending Supplier",
+    },
+    pending: { cls: "bg-yellow-100 text-yellow-700", label: "Pending" },
+    shipped: { cls: "bg-blue-100 text-blue-700", label: "Shipped" },
+    in_transit: { cls: "bg-blue-100 text-blue-700", label: "In Transit" },
+    out_for_delivery: {
+      cls: "bg-green-100 text-green-700",
+      label: "Out for Delivery",
+    },
+    delivered: { cls: "bg-green-100 text-green-600", label: "Delivered" },
+    completed: { cls: "bg-green-100 text-green-600", label: "Completed" },
+  };
+  const key = status?.toLowerCase().replace(/\s+/g, "_") ?? "";
+  const cfg = map[key] ?? { cls: "bg-gray-100 text-gray-500", label: status };
+  return (
+    <span
+      className={`inline-block px-3 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${cfg.cls}`}
+    >
+      {cfg.label}
+    </span>
+  );
+}
+
+// ─── Mini Chart (Overview) ────────────────────────────────────────────────────
 
 const weeklyData = [
   { week: "23 Feb–01 Mar", rto: 79 },
@@ -20,175 +69,179 @@ const weeklyData = [
   { week: "30 Mar–05 Apr", rto: 72 },
 ];
 
-const inTransitData = [
-  { img: "👓", name: "Reading Glasses (Buy 1 Get 1 Free)", variant: "Free Size", sku: "Dual-Use Reading Glasses", stock: 0, partners: [{ name: "XpressBees", qty: 1 }, { name: "Ekart", qty: 2 }] },
-  { img: "👓", name: "Reading Glasses (Buy 1 Get 1 Free)", variant: "Free Size", sku: "FDDAILYGLASSESPOWER-+2.50", stock: 0, partners: [{ name: "Shadowfax", qty: 3 }, { name: "Delhivery", qty: 27 }, { name: "Ekart", qty: 38 }, { name: "Ekart", qty: 1 }] },
-  { img: "👶", name: "Baby Shaping Head Support Pillow (Limited Stock🔥🔥)", variant: "Free Size", sku: "Baby Shaping Head Support Pillow - Assorted Colour", stock: 0, partners: [{ name: "Ekart", qty: 1 }] },
-  { img: "👶", name: "OrthoBaby™ Baby Shaping Head Support Pillow", variant: "Free Size", sku: "Baby Shaping Head Support Pillow - Assorted Colour", stock: 0, partners: [{ name: "Delhivery", qty: 7 }, { name: "Ekart", qty: 1 }] },
-  { img: "❄️", name: "Portable Mini Air Cooler (3-in-1 Fan, Cooler & Humidifier)", variant: "Free Size", sku: "Fan Air Cooler fan USB Electric Fan", stock: 0, partners: [{ name: "Ekart", qty: 1 }] },
-  { img: "👶", name: "RelaxrCloud™ – Baby Head Shaping & Protection Pillow", variant: "Free Size", sku: "Baby Shaping Head Support Pillow - Assorted Colour", stock: 0, partners: [{ name: "Delhivery", qty: 20 }] },
-];
-
-const deliveredData = [
-  { img: "👓", name: "Power Anti-blue Progressive Far And Near Dual-Use Reading +2.5 Glasses", variant: "Free Size", sku: "FDDAILYGLASSESPOWER-+1.00", stock: 0, partners: [{ name: "Ekart", qty: 4 }] },
-  { img: "👓", name: "Reading Glasses (Buy 1 Get 1 Free)", variant: "Free Size", sku: "Dual-Use Reading Glasses", stock: 0, partners: [{ name: "Ekart", qty: 21 }, { name: "Shadowfax", qty: 3 }] },
-  { img: "🧸", name: "Kidology Plush Toy Pillow", variant: "Free Size", sku: "Kidology Plush Toy Pillow", stock: 0, partners: [{ name: "Ekart", qty: 2 }] },
-  { img: "🥣", name: "3-in-1 Multipurpose Kitchen Bowl™ | premium Stainless Steel Cutter + Grater + Drain Basket", variant: "Free Size", sku: "3 in 1 Multifunctional", stock: 0, partners: [{ name: "Ekart", qty: 15 }, { name: "Ekart Select", qty: 1 }] },
-  { img: "👓", name: "Power Anti-blue Progressive Far And Near Dual-Use Reading +2.5 Glasses", variant: "Free Size", sku: "Dual-Use Reading Glasses", stock: 0, partners: [{ name: "Ekart", qty: 1 }] },
-  { img: "🚗", name: "Car Logo Perfume Pendant – Hanging Air Freshener Diffuser for Rearview Mirror & Dashboard", variant: "Free Size", sku: "Car Logo Perfume Pendant Hanging", stock: 0, partners: [{ name: "XpressBees", qty: 1 }] },
-];
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function PartnerBadge({ name }) {
-  const colors = {
-    Ekart: "#e8f0fe",
-    "Ekart Select": "#d2e3fc",
-    XpressBees: "#fef3e2",
-    Shadowfax: "#e6f4ea",
-    Delhivery: "#fce8e6",
-  };
-  const textColors = {
-    Ekart: "#1a73e8",
-    "Ekart Select": "#0d47a1",
-    XpressBees: "#e37400",
-    Shadowfax: "#137333",
-    Delhivery: "#c5221f",
-  };
-  const bg = colors[name] || "#f1f3f4";
-  const color = textColors[name] || "#3c4043";
-  return (
-    <span style={{ background: bg, color, padding: "2px 10px", borderRadius: 20, fontSize: 12, fontWeight: 600, display: "inline-block", whiteSpace: "nowrap" }}>
-      {name}
-    </span>
-  );
-}
-
 function MiniChart({ data }) {
-  const max = 100;
-  const w = 420, h = 120, padX = 10, padY = 10;
-  const xs = data.map((_, i) => padX + (i / (data.length - 1)) * (w - 2 * padX));
-  const ys = data.map(d => h - padY - (d.rto / max) * (h - 2 * padY));
+  const max = 100,
+    w = 420,
+    h = 120,
+    padX = 10,
+    padY = 10;
+  const xs = data.map(
+    (_, i) => padX + (i / (data.length - 1)) * (w - 2 * padX),
+  );
+  const ys = data.map((d) => h - padY - (d.rto / max) * (h - 2 * padY));
   const polyline = xs.map((x, i) => `${x},${ys[i]}`).join(" ");
-  const area = `${xs[0]},${h - padY} ` + xs.map((x, i) => `${x},${ys[i]}`).join(" ") + ` ${xs[xs.length - 1]},${h - padY}`;
+  const area =
+    `${xs[0]},${h - padY} ` +
+    xs.map((x, i) => `${x},${ys[i]}`).join(" ") +
+    ` ${xs[xs.length - 1]},${h - padY}`;
   return (
-    <svg viewBox={`0 0 ${w} ${h}`} width="100%" style={{ overflow: "visible" }}>
+    <svg viewBox={`0 0 ${w} ${h}`} width="100%" className="overflow-visible">
       <defs>
         <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#f5a623" stopOpacity="0.35" />
           <stop offset="100%" stopColor="#f5a623" stopOpacity="0.03" />
         </linearGradient>
       </defs>
-      {[0, 20, 40, 60, 80, 100].map(v => {
+      {[0, 20, 40, 60, 80, 100].map((v) => {
         const y = h - padY - (v / max) * (h - 2 * padY);
-        return <line key={v} x1={padX} x2={w - padX} y1={y} y2={y} stroke="#f0f0f0" strokeWidth="1" />;
+        return (
+          <line
+            key={v}
+            x1={padX}
+            x2={w - padX}
+            y1={y}
+            y2={y}
+            stroke="#f0f0f0"
+            strokeWidth="1"
+          />
+        );
       })}
       <polygon points={area} fill="url(#chartGrad)" />
-      <polyline points={polyline} fill="none" stroke="#f5a623" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline
+        points={polyline}
+        fill="none"
+        stroke="#f5a623"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
       {xs.map((x, i) => (
-        <circle key={i} cx={x} cy={ys[i]} r="3.5" fill="#f5a623" stroke="#fff" strokeWidth="1.5" />
+        <circle
+          key={i}
+          cx={x}
+          cy={ys[i]}
+          r="3.5"
+          fill="#f5a623"
+          stroke="#fff"
+          strokeWidth="1.5"
+        />
       ))}
     </svg>
   );
 }
 
-function RtoBadge({ value }) {
-  const color = value === 0 ? "#34a853" : value < 30 ? "#fbbc04" : "#ea4335";
-  return <span style={{ color, fontWeight: 700 }}>{value}%</span>;
-}
+// ─── Overview Tab ─────────────────────────────────────────────────────────────
 
-// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function OverviewTab({ orders }) {
+  const total = orders.length;
+  const delivered = orders.filter((o) =>
+    ["delivered", "completed"].includes(o.status),
+  ).length;
+  const pending = orders.filter((o) => o.status.includes("pending")).length;
 
-function OverviewTab() {
-  const [filter, setFilter] = useState("Last Month");
+  const kpis = [
+    { label: "Total Orders", value: total, color: "text-blue-600" },
+    { label: "Delivered", value: delivered, color: "text-green-600" },
+    { label: "Pending", value: pending, color: "text-yellow-500" },
+  ];
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-      {/* Filter */}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <select value={filter} onChange={e => setFilter(e.target.value)}
-          style={{ border: "1px solid #dadce0", borderRadius: 8, padding: "6px 14px", fontSize: 13, color: "#3c4043", background: "#fff", cursor: "pointer", outline: "none" }}>
-          <option>Last Month</option>
-          <option>Last Week</option>
-          <option>Last 3 Months</option>
-        </select>
-      </div>
-
-      {/* KPI Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr", gap: 16 }}>
-        <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, padding: "20px 24px" }}>
-          <div style={{ fontSize: 12, color: "#5f6368", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>RTO %</div>
-          <div style={{ fontSize: 36, fontWeight: 800, color: "#ea4335" }}>77.7%</div>
-        </div>
-        <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, padding: "20px 24px" }}>
-          <div style={{ fontSize: 12, color: "#5f6368", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>Return %</div>
-          <div style={{ fontSize: 36, fontWeight: 800, color: "#34a853" }}>0.7%</div>
-        </div>
-        <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, padding: "20px 24px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <div style={{ fontSize: 12, color: "#5f6368", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>RTO Weekly Trend</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <span style={{ background: "#1a1a2e", color: "#fff", borderRadius: 20, padding: "3px 12px", fontSize: 12, fontWeight: 600 }}>RTO</span>
-              <span style={{ background: "#f1f3f4", color: "#5f6368", borderRadius: 20, padding: "3px 12px", fontSize: 12, fontWeight: 600 }}>Returns</span>
-            </div>
+    <div className="flex flex-col gap-6">
+      {/* KPI + Chart row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {kpis.map((k) => (
+          <div
+            key={k.label}
+            className="bg-white border border-gray-200 rounded-xl p-5"
+          >
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              {k.label}
+            </p>
+            <p className={`text-4xl font-extrabold ${k.color}`}>{k.value}</p>
+          </div>
+        ))}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 col-span-1 md:col-span-1">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              RTO Weekly Trend
+            </p>
+            <span className="bg-gray-900 text-white rounded-full px-3 py-0.5 text-xs font-semibold">
+              RTO
+            </span>
           </div>
           <MiniChart data={weeklyData} />
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <div className="flex justify-between mt-1">
             {weeklyData.map((d, i) => (
-              <span key={i} style={{ fontSize: 9, color: "#9aa0a6", textAlign: "center", maxWidth: 60 }}>{d.week}</span>
+              <span
+                key={i}
+                className="text-[9px] text-gray-400 text-center max-w-[60px]"
+              >
+                {d.week}
+              </span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Dispatch breakdown */}
-      <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, padding: "20px 24px" }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#202124", marginBottom: 16 }}>RTO % by Dispatch Time</div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0 }}>
-          {[
-            { label: "Same Day (D0)", pct: "78%", color: "#fbbc04", orders: 351 },
-            { label: "Next Day (D1)", pct: "77.7%", color: "#f5a623", orders: 1849 },
-            { label: "SLA Breached", pct: "77.3%", color: "#ea4335", orders: 249 },
-          ].map((item, i) => (
-            <div key={i} style={{ padding: "0 24px 0 0", borderRight: i < 2 ? "1px solid #f1f3f4" : "none", paddingLeft: i > 0 ? 24 : 0 }}>
-              <div style={{ fontSize: 12, color: "#5f6368", marginBottom: 6 }}>{item.label}</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: item.color }}>{item.pct}</div>
-              <div style={{ fontSize: 12, color: "#80868b", marginTop: 4 }}>Orders: <strong style={{ color: "#202124" }}>{item.orders.toLocaleString()}</strong></div>
-            </div>
-          ))}
+      {/* Summary table */}
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-gray-100">
+          <span className="text-sm font-bold text-gray-800">
+            All Orders Summary
+          </span>
         </div>
-      </div>
-
-      {/* Product Table */}
-      <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, overflow: "hidden" }}>
-        <div style={{ padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #f1f3f4" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#202124" }}>Product Performance</span>
-          <span style={{ fontSize: 12, color: "#80868b" }}>Showing 1–50 of 300</span>
-        </div>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
             <thead>
-              <tr style={{ background: "#f8f9fa" }}>
-                {["Product Details", "SKU ID", "Total Orders", "Delivered Orders", "RTO Orders", "Return Orders", "RTO %", "Return %"].map(h => (
-                  <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontWeight: 600, color: "#5f6368", fontSize: 12, whiteSpace: "nowrap" }}>{h}</th>
-                ))}
+              <tr className="bg-gray-50">
+                {["Order", "Customer", "Items", "Total", "Status", "Date"].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="px-4 py-3 text-left text-xs font-semibold text-gray-400 whitespace-nowrap"
+                    >
+                      {h}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
-              {overviewProducts.map((p, i) => (
-                <tr key={p.id} style={{ borderTop: "1px solid #f1f3f4", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-                  <td style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 24 }}>{p.img}</span>
-                    <span style={{ color: "#202124", fontWeight: 500, maxWidth: 220 }}>{p.name}</span>
+              {orders.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-10 text-center text-gray-400">
+                    No orders yet.
                   </td>
-                  <td style={{ padding: "12px 16px", color: "#5f6368" }}>{p.sku}</td>
-                  <td style={{ padding: "12px 16px", fontWeight: 600 }}>{p.total}</td>
-                  <td style={{ padding: "12px 16px" }}>{p.delivered}</td>
-                  <td style={{ padding: "12px 16px" }}>{p.rto}</td>
-                  <td style={{ padding: "12px 16px" }}>{p.returns}</td>
-                  <td style={{ padding: "12px 16px" }}><RtoBadge value={p.rtoP} /></td>
-                  <td style={{ padding: "12px 16px" }}><RtoBadge value={p.returnP} /></td>
                 </tr>
-              ))}
+              ) : (
+                orders.map((o, i) => (
+                  <tr
+                    key={o.order_id}
+                    className={`border-t border-gray-100 hover:bg-blue-50 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                  >
+                    <td className="px-4 py-3 font-bold text-blue-600">
+                      {o.shopify_order_name}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {o.customer_first_name} {o.customer_last_name}
+                    </td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">
+                      {o.items_json
+                        .map((it) => `${it.title} ×${it.quantity}`)
+                        .join(", ")}
+                    </td>
+                    <td className="px-4 py-3 font-semibold text-gray-800">
+                      ₹{parseFloat(o.total_price).toLocaleString("en-IN")}
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={o.status} />
+                    </td>
+                    <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
+                      {formatDate(o.createdAt)}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -197,157 +250,235 @@ function OverviewTab() {
   );
 }
 
-function ProductTable({ data, emptyMsg = "No data found" }) {
-  const [view, setView] = useState("Aggregated");
-  const [partner, setPartner] = useState("");
-  const [sku, setSku] = useState("");
+// ─── Order Table (In Transit / Arriving Today / Delivered) ────────────────────
 
-  const filtered = data.filter(d =>
-    (partner === "" || d.partners.some(p => p.name === partner)) &&
-    (sku === "" || d.sku.toLowerCase().includes(sku.toLowerCase()))
-  );
+function OrderTable({ orders, emptyMsg = "No orders found" }) {
+  const [search, setSearch] = useState("");
 
-  const partners = [...new Set(data.flatMap(d => d.partners.map(p => p.name)))];
+  const filtered = orders.filter((o) => {
+    const q = search.toLowerCase();
+    return (
+      !q ||
+      o.shopify_order_name.toLowerCase().includes(q) ||
+      o.customer_first_name.toLowerCase().includes(q) ||
+      o.customer_last_name.toLowerCase().includes(q) ||
+      o.customer_email.toLowerCase().includes(q) ||
+      o.items_json.some(
+        (it) =>
+          it.sku.toLowerCase().includes(q) ||
+          it.title.toLowerCase().includes(q),
+      )
+    );
+  });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Controls */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+    <div className="flex flex-col gap-4">
+      {/* Toolbar */}
+      <div className="flex flex-wrap justify-between items-end gap-3">
+        <div className="flex flex-wrap gap-3 items-end">
           <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: "#5f6368", display: "block", marginBottom: 4 }}>Shipping Partner:</label>
-            <select value={partner} onChange={e => setPartner(e.target.value)}
-              style={{ border: "1px solid #dadce0", borderRadius: 8, padding: "7px 14px", fontSize: 13, color: "#3c4043", minWidth: 160, outline: "none", background: "#fff" }}>
-              <option value="">-- Select Option --</option>
-              {partners.map(p => <option key={p}>{p}</option>)}
-            </select>
+            <label className="block text-xs font-semibold text-gray-400 mb-1">
+              Search Orders
+            </label>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Order #, customer, SKU…"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm min-w-[220px] outline-none focus:border-blue-400 transition-colors"
+            />
           </div>
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 600, color: "#5f6368", display: "block", marginBottom: 4 }}>SKU ID:</label>
-            <input value={sku} onChange={e => setSku(e.target.value)} placeholder="Enter SKU ID"
-              style={{ border: "1px solid #dadce0", borderRadius: 8, padding: "7px 14px", fontSize: 13, color: "#3c4043", minWidth: 180, outline: "none" }} />
-          </div>
-          <div style={{ paddingTop: 18, display: "flex", gap: 8 }}>
-            <button onClick={() => { setPartner(""); setSku(""); }}
-              style={{ border: "1px solid #dadce0", background: "#fff", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#3c4043", display: "flex", alignItems: "center", gap: 6 }}>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSearch("")}
+              className="border border-gray-200 bg-white rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+            >
               ↺ Reset
             </button>
-            <button style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "7px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-              ✓ Apply
-            </button>
-            <button style={{ border: "1px solid #dadce0", background: "#fff", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#3c4043", display: "flex", alignItems: "center", gap: 6 }}>
+            <button className="border border-gray-200 bg-white rounded-lg px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">
               ↓ Excel
             </button>
           </div>
         </div>
-        <div style={{ display: "flex", background: "#f1f3f4", borderRadius: 20, padding: 3, gap: 2 }}>
-          {["Aggregated", "Order Level"].map(v => (
-            <button key={v} onClick={() => setView(v)}
-              style={{ background: view === v ? "#1a1a2e" : "transparent", color: view === v ? "#fff" : "#5f6368", border: "none", borderRadius: 17, padding: "5px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }}>
-              {v}
-            </button>
-          ))}
-        </div>
+        <span className="text-xs text-gray-400">
+          {filtered.length} of {orders.length} orders
+        </span>
       </div>
 
       {/* Table */}
-      <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ background: "#f8f9fa" }}>
-              {["Product Details", "Variant", "SKU ID", "Qty In Stock", "Shipping Partner", "Qty In RTO/Return"].map(h => (
-                <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "#5f6368", fontSize: 12, whiteSpace: "nowrap" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.length === 0 ? (
-              <tr><td colSpan={6} style={{ padding: "40px 16px", textAlign: "center", color: "#80868b", fontSize: 14 }}>{emptyMsg}</td></tr>
-            ) : (
-              filtered.map((item, i) => (
-                item.partners.map((partner, j) => (
-                  <tr key={`${i}-${j}`} style={{ borderTop: "1px solid #f1f3f4", background: i % 2 === 0 ? "#fff" : "#fafafa" }}>
-                    {j === 0 && (
-                      <>
-                        <td rowSpan={item.partners.length} style={{ padding: "14px 16px", verticalAlign: "middle" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                            <div style={{ width: 44, height: 44, borderRadius: 10, background: "#f1f3f4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.img}</div>
-                            <span style={{ color: "#202124", fontWeight: 500, maxWidth: 220, lineHeight: 1.4 }}>{item.name}</span>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                {[
+                  "Order",
+                  "Customer",
+                  "Items",
+                  "Shipping Address",
+                  "Tracking",
+                  "Total",
+                  "Status",
+                  "Date",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold text-gray-400 whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <span className="text-4xl">📭</span>
+                      <p className="text-sm font-semibold text-gray-600">
+                        {emptyMsg}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((order, i) => (
+                  <tr
+                    key={order.order_id}
+                    className={`border-t border-gray-100 hover:bg-blue-50 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                  >
+                    {/* Order */}
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <p className="font-bold text-blue-600">
+                        {order.shopify_order_name}
+                      </p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">
+                        #{order.shopify_order_id}
+                      </p>
+                    </td>
+
+                    {/* Customer */}
+                    <td className="px-4 py-4">
+                      <p className="font-semibold text-gray-800">
+                        {order.customer_first_name} {order.customer_last_name}
+                      </p>
+                      {order.customer_email && (
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          {order.customer_email}
+                        </p>
+                      )}
+                      {order.customer_phone && (
+                        <p className="text-[11px] text-gray-400">
+                          {order.customer_phone}
+                        </p>
+                      )}
+                    </td>
+
+                    {/* Items */}
+                    <td className="px-4 py-4 max-w-[220px]">
+                      {order.items_json.map((item, idx) => (
+                        <div
+                          key={idx}
+                          className={
+                            idx < order.items_json.length - 1 ? "mb-2" : ""
+                          }
+                        >
+                          <p className="font-medium text-gray-800 leading-snug">
+                            {item.title}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                            <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                              {item.sku}
+                            </span>
+                            {item.variantTitle && (
+                              <span className="text-[11px] text-gray-400">
+                                {item.variantTitle}
+                              </span>
+                            )}
+                            <span className="text-[11px] text-gray-500">
+                              × {item.quantity}
+                            </span>
                           </div>
-                        </td>
-                        <td rowSpan={item.partners.length} style={{ padding: "14px 16px", color: "#5f6368", verticalAlign: "middle" }}>{item.variant}</td>
-                        <td rowSpan={item.partners.length} style={{ padding: "14px 16px", color: "#1a73e8", fontWeight: 500, verticalAlign: "middle" }}>{item.sku}</td>
-                        <td rowSpan={item.partners.length} style={{ padding: "14px 16px", verticalAlign: "middle", textAlign: "center" }}>
-                          <span style={{ background: "#fce8e6", color: "#c5221f", borderRadius: 6, padding: "2px 10px", fontSize: 12, fontWeight: 700 }}>{item.stock}</span>
-                        </td>
-                      </>
-                    )}
-                    <td style={{ padding: "8px 16px", verticalAlign: "middle" }}><PartnerBadge name={partner.name} /></td>
-                    <td style={{ padding: "8px 16px", verticalAlign: "middle", fontWeight: 700, color: "#202124" }}>{partner.qty}</td>
+                          <p className="text-[11px] text-green-600 font-semibold mt-0.5">
+                            ₹{parseFloat(item.price).toLocaleString("en-IN")}
+                          </p>
+                        </div>
+                      ))}
+                    </td>
+
+                    {/* Shipping Address */}
+                    <td className="px-4 py-4 text-xs text-gray-500 max-w-[180px]">
+                      <p>{order.shipping_address.address1}</p>
+                      {order.shipping_address.address2 && (
+                        <p>{order.shipping_address.address2}</p>
+                      )}
+                      <p>
+                        {order.shipping_address.city},{" "}
+                        {order.shipping_address.province}
+                      </p>
+                      <p>
+                        {order.shipping_address.country} —{" "}
+                        {order.shipping_address.zip}
+                      </p>
+                    </td>
+
+                    {/* Tracking */}
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      {order.tracking_number ? (
+                        <div>
+                          <p className="font-semibold text-gray-800 text-xs">
+                            {order.tracking_number}
+                          </p>
+                          {order.tracking_carrier && (
+                            <p className="text-[11px] text-gray-400">
+                              {order.tracking_carrier}
+                            </p>
+                          )}
+                          {order.tracking_url && (
+                            <a
+                              href={order.tracking_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-[11px] text-blue-500 hover:underline"
+                            >
+                              Track →
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-gray-300 text-xs">—</span>
+                      )}
+                    </td>
+
+                    {/* Total */}
+                    <td className="px-4 py-4 font-bold text-gray-800 whitespace-nowrap">
+                      ₹{parseFloat(order.total_price).toLocaleString("en-IN")}
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-4 py-4">
+                      <StatusBadge status={order.status} />
+                      {order.dropshipper_order_status &&
+                        order.dropshipper_order_status.toLowerCase() !==
+                          order.status.toLowerCase() && (
+                          <div className="mt-1">
+                            <StatusBadge
+                              status={order.dropshipper_order_status}
+                            />
+                          </div>
+                        )}
+                    </td>
+
+                    {/* Date */}
+                    <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">
+                      {formatDate(order.createdAt)}
+                    </td>
                   </tr>
                 ))
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function ArrivingTodayTab() {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Controls */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-          {[{ label: "Delivered Date:", placeholder: "-- Select Option --", type: "select" }, { label: "Shipping Partner:", placeholder: "-- Select Option --", type: "select" }, { label: "SKU ID:", placeholder: "Enter SKU ID", type: "input" }].map((f, i) => (
-            <div key={i}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#5f6368", display: "block", marginBottom: 4 }}>{f.label}</label>
-              {f.type === "select" ? (
-                <select style={{ border: "1px solid #dadce0", borderRadius: 8, padding: "7px 14px", fontSize: 13, color: "#9aa0a6", minWidth: 160, outline: "none", background: "#fff" }}>
-                  <option>{f.placeholder}</option>
-                </select>
-              ) : (
-                <input placeholder={f.placeholder} style={{ border: "1px solid #dadce0", borderRadius: 8, padding: "7px 14px", fontSize: 13, minWidth: 180, outline: "none" }} />
               )}
-            </div>
-          ))}
-          <div style={{ paddingTop: 18, display: "flex", gap: 8 }}>
-            <button style={{ border: "1px solid #dadce0", background: "#fff", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#3c4043" }}>↺ Reset</button>
-            <button style={{ background: "#1a1a2e", color: "#fff", border: "none", borderRadius: 8, padding: "7px 20px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>✓ Apply</button>
-            <button style={{ border: "1px solid #dadce0", background: "#fff", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontSize: 13, fontWeight: 500, color: "#3c4043" }}>↓ Excel</button>
-          </div>
+            </tbody>
+          </table>
         </div>
-        <div style={{ display: "flex", background: "#f1f3f4", borderRadius: 20, padding: 3, gap: 2 }}>
-          {["Aggregated", "Order Level"].map((v, i) => (
-            <button key={v} style={{ background: i === 0 ? "#1a1a2e" : "transparent", color: i === 0 ? "#fff" : "#5f6368", border: "none", borderRadius: 17, padding: "5px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{v}</button>
-          ))}
-        </div>
-      </div>
-
-      {/* Empty state */}
-      <div style={{ background: "#fff", border: "1px solid #e8eaed", borderRadius: 12, overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-          <thead>
-            <tr style={{ background: "#f8f9fa" }}>
-              {["Product Details", "Variant", "SKU ID", "Qty In Stock", "Shipping Partner", "Qty In RTO/Return"].map(h => (
-                <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "#5f6368", fontSize: 12, whiteSpace: "nowrap" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colSpan={6} style={{ padding: "60px 16px", textAlign: "center" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-                  <div style={{ fontSize: 40 }}>📭</div>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: "#3c4043" }}>No data found</div>
-                  <div style={{ fontSize: 13, color: "#80868b" }}>No RTO/returns arriving today for the selected filters.</div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     </div>
   );
@@ -359,55 +490,119 @@ const TABS = ["Overview", "In Transit", "Arriving Today", "Delivered"];
 
 export default function ManageRTO() {
   const [activeTab, setActiveTab] = useState("Overview");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await shopifyOrders();
+        if (Array.isArray(res.data?.data)) {
+          setOrders(res?.data?.data);
+        } else {
+          setError("Unexpected response from server.");
+        }
+      } catch (err) {
+        setError(err?.message ?? "Failed to load orders.");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const inTransit = orders.filter((o) => getTabForOrder(o) === "In Transit");
+  const arrivingToday = orders.filter(
+    (o) => getTabForOrder(o) === "Arriving Today",
+  );
+  const delivered = orders.filter((o) => getTabForOrder(o) === "Delivered");
 
   const tabBadges = {
-    "In Transit": { count: 12, color: "#1a73e8" },
-    "Arriving Today": { count: 0, color: "#ea4335" },
-    "Delivered": { count: 8, color: "#34a853" },
+    "In Transit": { count: inTransit.length, color: "bg-blue-500" },
+    "Arriving Today": { count: arrivingToday.length, color: "bg-yellow-400" },
+    Delivered: { count: delivered.length, color: "bg-green-500" },
   };
 
   return (
-    <div style={{ fontFamily: "'DM Sans', 'Segoe UI', sans-serif", background: "#f8f9fa", minHeight: "100vh", padding: "28px 32px", color: "#202124" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
-        * { box-sizing: border-box; }
-        button, select, input { font-family: inherit; }
-        tr:hover { background: #f0f7ff !important; transition: background 0.15s; }
-      `}</style>
-
+    <div className="font-sans bg-gray-50 min-h-screen px-8 py-7 text-gray-800">
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, #1a1a2e, #16213e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📦</div>
-        <h1 style={{ fontSize: 24, fontWeight: 800, margin: 0, letterSpacing: "-0.5px" }}>Manage RTO / Returns</h1>
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center text-xl">
+          📦
+        </div>
+        <h1 className="text-2xl font-extrabold tracking-tight m-0">
+          Manage RTO / Returns
+        </h1>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 0, borderBottom: "2px solid #e8eaed", marginBottom: 24 }}>
-        {TABS.map(tab => {
-          const badge = tabBadges[tab];
-          const active = tab === activeTab;
-          return (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              style={{
-                background: "none", border: "none", borderBottom: active ? "2px solid #1a1a2e" : "2px solid transparent",
-                marginBottom: -2, padding: "10px 20px", cursor: "pointer", fontWeight: active ? 700 : 500,
-                fontSize: 14, color: active ? "#1a1a2e" : "#5f6368", display: "flex", alignItems: "center", gap: 8,
-                transition: "all 0.2s"
-              }}>
-              {tab}
-              {badge && badge.count > 0 && (
-                <span style={{ background: badge.color, color: "#fff", borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: 700 }}>{badge.count}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Loading */}
+      {loading && (
+        <div className="text-center py-16 text-gray-400 text-sm">
+          ⏳ Loading orders…
+        </div>
+      )}
 
-      {/* Tab Content */}
-      {activeTab === "Overview" && <OverviewTab />}
-      {activeTab === "In Transit" && <ProductTable data={inTransitData} />}
-      {activeTab === "Arriving Today" && <ArrivingTodayTab />}
-      {activeTab === "Delivered" && <ProductTable data={deliveredData} />}
+      {/* Error */}
+      {!loading && error && (
+        <div className="bg-red-50 text-red-600 rounded-xl px-5 py-4 text-sm font-semibold mb-5">
+          ⚠️ {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          {/* Tabs */}
+          <div className="flex border-b-2 border-gray-200 mb-6 gap-0">
+            {TABS.map((tab) => {
+              const badge = tabBadges[tab];
+              const active = tab === activeTab;
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`
+                    flex items-center gap-2 px-5 py-2.5 text-sm font-medium cursor-pointer border-b-2 -mb-0.5
+                    transition-all duration-150 bg-transparent border-x-0 border-t-0
+                    ${
+                      active
+                        ? "border-b-gray-900 text-gray-900 font-bold"
+                        : "border-b-transparent text-gray-400 hover:text-gray-600"
+                    }
+                  `}
+                >
+                  {tab}
+                  {badge && badge.count > 0 && (
+                    <span
+                      className={`${badge.color} text-white rounded-full px-2 py-0.5 text-[11px] font-bold`}
+                    >
+                      {badge.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === "Overview" && <OverviewTab orders={orders} />}
+          {activeTab === "In Transit" && (
+            <OrderTable orders={inTransit} emptyMsg="No in-transit orders." />
+          )}
+          {activeTab === "Arriving Today" && (
+            <OrderTable
+              orders={arrivingToday}
+              emptyMsg="No pending orders today."
+            />
+          )}
+          {activeTab === "Delivered" && (
+            <OrderTable
+              orders={delivered}
+              emptyMsg="No delivered orders yet."
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }
