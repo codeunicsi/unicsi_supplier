@@ -58,55 +58,74 @@ function StatusBadge({ status }) {
   );
 }
 
-// ─── Mini Chart (Overview) ────────────────────────────────────────────────────
+// ─── RTO Weekly Chart ─────────────────────────────────────────────────────────
 
 const weeklyData = [
-  { week: "23 Feb–01 Mar", rto: 79 },
-  { week: "02–08 Mar", rto: 80 },
-  { week: "09–15 Mar", rto: 78 },
-  { week: "16–22 Mar", rto: 79 },
-  { week: "23–29 Mar", rto: 77 },
-  { week: "30 Mar–05 Apr", rto: 72 },
+  { week: "23 Feb", rto: 79, returns: 0.6 },
+  { week: "01 Mar", rto: 80, returns: 0.7 },
+  { week: "08 Mar", rto: 78, returns: 0.8 },
+  { week: "15 Mar", rto: 79, returns: 0.6 },
+  { week: "22 Mar", rto: 77, returns: 0.7 },
+  { week: "29 Mar", rto: 76, returns: 0.5 },
+  { week: "05 Apr", rto: 72, returns: 0.7 },
 ];
 
-function MiniChart({ data }) {
-  const max = 100,
-    w = 420,
-    h = 120,
-    padX = 10,
-    padY = 10;
-  const xs = data.map(
-    (_, i) => padX + (i / (data.length - 1)) * (w - 2 * padX),
-  );
-  const ys = data.map((d) => h - padY - (d.rto / max) * (h - 2 * padY));
+function RTOChart({ data, mode }) {
+  const values = data.map((d) => (mode === "RTO" ? d.rto : d.returns));
+  const max = mode === "RTO" ? 100 : Math.max(...values) * 1.4;
+  const w = 460,
+    h = 140,
+    padX = 36,
+    padY = 14;
+  const innerW = w - 2 * padX;
+  const innerH = h - 2 * padY;
+  const xs = data.map((_, i) => padX + (i / (data.length - 1)) * innerW);
+  const ys = values.map((v) => h - padY - (v / max) * innerH);
   const polyline = xs.map((x, i) => `${x},${ys[i]}`).join(" ");
   const area =
     `${xs[0]},${h - padY} ` +
     xs.map((x, i) => `${x},${ys[i]}`).join(" ") +
     ` ${xs[xs.length - 1]},${h - padY}`;
+
+  const yTicks =
+    mode === "RTO" ? [0, 20, 40, 60, 80, 100] : [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width="100%" className="overflow-visible">
       <defs>
-        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#f5a623" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#f5a623" stopOpacity="0.03" />
+        <linearGradient id="chartGrad2" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f5a623" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#f5a623" stopOpacity="0.02" />
         </linearGradient>
       </defs>
-      {[0, 20, 40, 60, 80, 100].map((v) => {
-        const y = h - padY - (v / max) * (h - 2 * padY);
+      {/* Y gridlines + labels */}
+      {yTicks.map((v) => {
+        const y = h - padY - (v / max) * innerH;
         return (
-          <line
-            key={v}
-            x1={padX}
-            x2={w - padX}
-            y1={y}
-            y2={y}
-            stroke="#f0f0f0"
-            strokeWidth="1"
-          />
+          <g key={v}>
+            <line
+              x1={padX}
+              x2={w - padX}
+              y1={y}
+              y2={y}
+              stroke="#eeeeee"
+              strokeWidth="1"
+            />
+            <text
+              x={padX - 4}
+              y={y + 3.5}
+              fontSize="8"
+              textAnchor="end"
+              fill="#bbb"
+            >
+              {v}
+            </text>
+          </g>
         );
       })}
-      <polygon points={area} fill="url(#chartGrad)" />
+      {/* Area fill */}
+      <polygon points={area} fill="url(#chartGrad2)" />
+      {/* Line */}
       <polyline
         points={polyline}
         fill="none"
@@ -115,6 +134,7 @@ function MiniChart({ data }) {
         strokeLinejoin="round"
         strokeLinecap="round"
       />
+      {/* Dots */}
       {xs.map((x, i) => (
         <circle
           key={i}
@@ -126,6 +146,19 @@ function MiniChart({ data }) {
           strokeWidth="1.5"
         />
       ))}
+      {/* X labels */}
+      {data.map((d, i) => (
+        <text
+          key={i}
+          x={xs[i]}
+          y={h + 2}
+          fontSize="8"
+          textAnchor="middle"
+          fill="#bbb"
+        >
+          {d.week}
+        </text>
+      ))}
     </svg>
   );
 }
@@ -133,114 +166,312 @@ function MiniChart({ data }) {
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
 function OverviewTab({ orders }) {
-  const total = orders.length;
-  const delivered = orders.filter((o) =>
-    ["delivered", "completed"].includes(o.status),
-  ).length;
-  const pending = orders.filter((o) => o.status.includes("pending")).length;
+  const [period, setPeriod] = useState("Last Month");
+  const [chartMode, setChartMode] = useState("RTO");
 
-  const kpis = [
-    { label: "Total Orders", value: total, color: "text-blue-600" },
-    { label: "Delivered", value: delivered, color: "text-green-600" },
-    { label: "Pending", value: pending, color: "text-yellow-500" },
-  ];
+  // ── Computed metrics ──────────────────────────────────────────────────────
+  const total = orders.length;
+  // const deliveredOrders = orders.filter((o) =>
+  //   ["delivered", "completed"].includes(o.status?.toLowerCase()),
+  // );
+  const rtoOrders = orders.filter((o) =>
+    ["shipped", "in_transit", "out_for_delivery"].includes(
+      o.status?.toLowerCase().replace(/\s+/g, "_"),
+    ),
+  );
+  const returnOrders = orders.filter((o) =>
+    o.status?.toLowerCase().includes("return"),
+  );
+
+  const rtoPercent =
+    total > 0 ? ((rtoOrders.length / total) * 100).toFixed(1) : "0.0";
+  const returnPercent =
+    total > 0 ? ((returnOrders.length / total) * 100).toFixed(1) : "0.0";
+
+  // Dispatch time buckets (mock split for demo — replace with real data fields)
+  const sameDayOrders = orders.filter((_, i) => i % 5 === 0);
+  const nextDayOrders = orders.filter((_, i) => i % 5 !== 0 && i % 7 !== 0);
+  const slaBreachers = orders.filter((_, i) => i % 7 === 0);
+
+  const safeRto = (arr) =>
+    arr.length > 0 ? ((rtoOrders.length / arr.length) * 100).toFixed(1) : "0.0";
+
+  // Product-level aggregation
+  const productMap = {};
+  orders.forEach((o) => {
+    (o.items_json || []).forEach((item) => {
+      const key = item.sku || item.title;
+      if (!productMap[key]) {
+        productMap[key] = {
+          title: item.title,
+          sku: item.sku,
+          image: item.image || null,
+          totalOrders: 0,
+          deliveredOrders: 0,
+          rtoOrders: 0,
+          returnOrders: 0,
+        };
+      }
+      productMap[key].totalOrders += 1;
+      const s = o.status?.toLowerCase().replace(/\s+/g, "_");
+      if (["delivered", "completed"].includes(s))
+        productMap[key].deliveredOrders += 1;
+      if (["shipped", "in_transit", "out_for_delivery"].includes(s))
+        productMap[key].rtoOrders += 1;
+      if (s?.includes("return")) productMap[key].returnOrders += 1;
+    });
+  });
+  const products = Object.values(productMap);
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* KPI + Chart row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {kpis.map((k) => (
-          <div
-            key={k.label}
-            className="bg-white border border-gray-200 rounded-xl p-5"
-          >
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-              {k.label}
-            </p>
-            <p className={`text-4xl font-extrabold ${k.color}`}>{k.value}</p>
+    <div className="flex flex-col gap-4">
+      {/* ── Summary Header ─────────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-800">Summary</h2>
+        <select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value)}
+          className="border border-gray-200 rounded px-3 py-1.5 text-xs text-gray-700 outline-none cursor-pointer bg-white"
+        >
+          {["Last Week", "Last Month", "Last 3 Months", "Last Year"].map(
+            (p) => (
+              <option key={p}>{p}</option>
+            ),
+          )}
+        </select>
+      </div>
+
+      {/* ── Top Row: Metrics + Chart ────────────────────────────────────────── */}
+      <div className="flex gap-4">
+        {/* Left: Metric cards */}
+        <div
+          className="flex flex-col gap-3 flex-shrink-0"
+          style={{ width: "420px" }}
+        >
+          {/* RTO % + Return % row */}
+          <div className="border border-gray-200 rounded-lg bg-white">
+            <div className="flex divide-x divide-gray-100">
+              <div className="px-5 py-4 flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-xs text-gray-500">RTO %</span>
+                  <span className="text-gray-300 text-xs cursor-pointer">
+                    ⓘ
+                  </span>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
+                  {rtoPercent}%
+                </p>
+              </div>
+              <div className="px-5 py-4 flex-1">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-xs text-gray-500">Return %</span>
+                  <span className="text-gray-300 text-xs cursor-pointer">
+                    ⓘ
+                  </span>
+                </div>
+                <p className="text-3xl font-bold text-gray-900">
+                  {returnPercent}%
+                </p>
+              </div>
+            </div>
           </div>
-        ))}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 col-span-1 md:col-span-1">
-          <div className="flex justify-between items-center mb-3">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              RTO Weekly Trend
-            </p>
-            <span className="bg-gray-900 text-white rounded-full px-3 py-0.5 text-xs font-semibold">
-              RTO
-            </span>
-          </div>
-          <MiniChart data={weeklyData} />
-          <div className="flex justify-between mt-1">
-            {weeklyData.map((d, i) => (
-              <span
-                key={i}
-                className="text-[9px] text-gray-400 text-center max-w-[60px]"
-              >
-                {d.week}
+
+          {/* RTO % by Dispatch Time */}
+          <div className="border border-gray-200 rounded-lg bg-white px-5 py-4">
+            <div className="flex items-center gap-1.5 mb-4">
+              <span className="text-xs font-semibold text-gray-700">
+                RTO % by Dispatch Time
               </span>
-            ))}
+              <span className="text-gray-300 text-xs cursor-pointer">ⓘ</span>
+            </div>
+            <div className="flex gap-8">
+              {/* Same Day */}
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Same Day (D0)</p>
+                <p className="text-2xl font-bold text-green-500">
+                  {safeRto(sameDayOrders)}%
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Orders:</p>
+                <p className="text-xs font-semibold text-gray-700">
+                  {sameDayOrders.length.toLocaleString("en-IN")}
+                </p>
+              </div>
+              {/* Next Day */}
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Next Day (D1)</p>
+                <p className="text-2xl font-bold text-orange-400">
+                  {safeRto(nextDayOrders)}%
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Orders:</p>
+                <p className="text-xs font-semibold text-gray-700">
+                  {nextDayOrders.length.toLocaleString("en-IN")}
+                </p>
+              </div>
+              {/* SLA Breached */}
+              <div>
+                <p className="text-xs text-gray-500 mb-1">SLA Breached</p>
+                <p className="text-2xl font-bold text-red-500">
+                  {safeRto(slaBreachers)}%
+                </p>
+                <p className="text-xs text-gray-400 mt-1">Orders:</p>
+                <p className="text-xs font-semibold text-gray-700">
+                  {slaBreachers.length.toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: RTO Weekly Chart */}
+        <div className="border border-gray-200 rounded-lg bg-white flex-1 px-5 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-gray-700">
+              RTO Weekly
+            </span>
+            <div className="flex gap-1">
+              <button
+                onClick={() => setChartMode("RTO")}
+                className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                  chartMode === "RTO"
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                RTO
+              </button>
+              <button
+                onClick={() => setChartMode("Returns")}
+                className={`px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-colors ${
+                  chartMode === "Returns"
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                Returns
+              </button>
+            </div>
+          </div>
+          <div className="pb-4">
+            <RTOChart data={weeklyData} mode={chartMode} />
           </div>
         </div>
       </div>
 
-      {/* Summary table */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100">
-          <span className="text-sm font-bold text-gray-800">
-            All Orders Summary
-          </span>
+      {/* ── Product Table ───────────────────────────────────────────────────── */}
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        {/* Pagination header */}
+        <div className="flex items-center justify-end px-5 py-2 border-b border-gray-100">
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <span>
+              Showing 1-{Math.min(50, products.length)} of {products.length}
+            </span>
+            <button className="p-1 rounded hover:bg-gray-100 cursor-pointer text-gray-400 disabled:opacity-30">
+              ‹
+            </button>
+            <button className="p-1 rounded hover:bg-gray-100 cursor-pointer text-gray-400">
+              ›
+            </button>
+          </div>
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="bg-gray-50">
-                {["Order", "Customer", "Items", "Total", "Status", "Date"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="px-4 py-3 text-left text-xs font-semibold text-gray-400 whitespace-nowrap"
-                    >
-                      {h}
-                    </th>
-                  ),
-                )}
+              <tr className="bg-white border-b border-gray-100">
+                {[
+                  "Product Details",
+                  "SKU ID",
+                  "Total Orders",
+                  "Delivered Orders",
+                  "RTO Orders",
+                  "Return Orders",
+                  "RTO %",
+                  "Return %",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="px-4 py-3 text-left text-xs font-semibold text-gray-600 whitespace-nowrap"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {orders.length === 0 ? (
+              {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-gray-400">
-                    No orders yet.
+                  <td
+                    colSpan={8}
+                    className="py-12 text-center text-gray-400 text-sm"
+                  >
+                    No product data available.
                   </td>
                 </tr>
               ) : (
-                orders.map((o, i) => (
-                  <tr
-                    key={o.order_id}
-                    className={`border-t border-gray-100 hover:bg-blue-50 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
-                  >
-                    <td className="px-4 py-3 font-bold text-blue-600">
-                      {o.shopify_order_name}
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      {o.customer_first_name} {o.customer_last_name}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
-                      {o.items_json
-                        .map((it) => `${it.title} ×${it.quantity}`)
-                        .join(", ")}
-                    </td>
-                    <td className="px-4 py-3 font-semibold text-gray-800">
-                      ₹{parseFloat(o.total_price).toLocaleString("en-IN")}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={o.status} />
-                    </td>
-                    <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
-                      {formatDate(o.createdAt)}
-                    </td>
-                  </tr>
-                ))
+                products.slice(0, 50).map((p, i) => {
+                  const rto =
+                    p.totalOrders > 0
+                      ? ((p.rtoOrders / p.totalOrders) * 100).toFixed(0)
+                      : 0;
+                  const ret =
+                    p.totalOrders > 0
+                      ? ((p.returnOrders / p.totalOrders) * 100).toFixed(0)
+                      : 0;
+                  return (
+                    <tr
+                      key={i}
+                      className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      {/* Product Details */}
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3 max-w-[260px]">
+                          {p.image ? (
+                            <img
+                              src={p.image}
+                              alt={p.title}
+                              className="w-10 h-10 object-cover rounded border border-gray-100 flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 bg-gray-100 rounded border border-gray-100 flex items-center justify-center flex-shrink-0 text-gray-300 text-lg">
+                              📦
+                            </div>
+                          )}
+                          <span className="text-xs text-gray-700 leading-snug line-clamp-2">
+                            {p.title}
+                          </span>
+                        </div>
+                      </td>
+                      {/* SKU ID */}
+                      <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">
+                        {p.sku || "—"}
+                      </td>
+                      {/* Total Orders */}
+                      <td className="px-4 py-3 text-xs text-gray-700 font-medium">
+                        {p.totalOrders}
+                      </td>
+                      {/* Delivered Orders */}
+                      <td className="px-4 py-3 text-xs text-gray-700">
+                        {p.deliveredOrders}
+                      </td>
+                      {/* RTO Orders */}
+                      <td className="px-4 py-3 text-xs text-gray-700">
+                        {p.rtoOrders}
+                      </td>
+                      {/* Return Orders */}
+                      <td className="px-4 py-3 text-xs text-gray-700">
+                        {p.returnOrders}
+                      </td>
+                      {/* RTO % */}
+                      <td className="px-4 py-3 text-xs font-semibold text-green-600">
+                        {rto}%
+                      </td>
+                      {/* Return % */}
+                      <td className="px-4 py-3 text-xs font-semibold text-green-600">
+                        {ret}%
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -347,7 +578,6 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                     key={order.order_id}
                     className={`border-t border-gray-100 hover:bg-blue-50 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                   >
-                    {/* Order */}
                     <td className="px-4 py-4 whitespace-nowrap">
                       <p className="font-bold text-blue-600">
                         {order.shopify_order_name}
@@ -356,8 +586,6 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                         #{order.shopify_order_id}
                       </p>
                     </td>
-
-                    {/* Customer */}
                     <td className="px-4 py-4">
                       <p className="font-semibold text-gray-800">
                         {order.customer_first_name} {order.customer_last_name}
@@ -373,8 +601,6 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                         </p>
                       )}
                     </td>
-
-                    {/* Items */}
                     <td className="px-4 py-4 max-w-[220px]">
                       {order.items_json.map((item, idx) => (
                         <div
@@ -405,8 +631,6 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                         </div>
                       ))}
                     </td>
-
-                    {/* Shipping Address */}
                     <td className="px-4 py-4 text-xs text-gray-500 max-w-[180px]">
                       <p>{order.shipping_address.address1}</p>
                       {order.shipping_address.address2 && (
@@ -421,8 +645,6 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                         {order.shipping_address.zip}
                       </p>
                     </td>
-
-                    {/* Tracking */}
                     <td className="px-4 py-4 whitespace-nowrap">
                       {order.tracking_number ? (
                         <div>
@@ -449,13 +671,9 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                         <span className="text-gray-300 text-xs">—</span>
                       )}
                     </td>
-
-                    {/* Total */}
                     <td className="px-4 py-4 font-bold text-gray-800 whitespace-nowrap">
                       ₹{parseFloat(order.total_price).toLocaleString("en-IN")}
                     </td>
-
-                    {/* Status */}
                     <td className="px-4 py-4">
                       <StatusBadge status={order.status} />
                       {order.dropshipper_order_status &&
@@ -468,8 +686,6 @@ function OrderTable({ orders, emptyMsg = "No orders found" }) {
                           </div>
                         )}
                     </td>
-
-                    {/* Date */}
                     <td className="px-4 py-4 text-xs text-gray-400 whitespace-nowrap">
                       {formatDate(order.createdAt)}
                     </td>
@@ -499,7 +715,7 @@ export default function ManageRTO() {
       try {
         setLoading(true);
         const res = await shopifyOrders();
-        if (Array.isArray(res.data?.data)) {
+        if (Array.isArray(res?.data?.data)) {
           setOrders(res?.data?.data);
         } else {
           setError("Unexpected response from server.");
@@ -527,23 +743,16 @@ export default function ManageRTO() {
   return (
     <div className="font-sans bg-gray-50 min-h-screen px-8 py-7 text-gray-800">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center text-xl">
-          📦
-        </div>
-        <h1 className="text-2xl font-extrabold tracking-tight m-0">
-          Manage RTO / Returns
-        </h1>
-      </div>
+      <h1 className="text-xl font-bold tracking-tight mb-5">
+        Manage RTO / Returns
+      </h1>
 
-      {/* Loading */}
       {loading && (
         <div className="text-center py-16 text-gray-400 text-sm">
           ⏳ Loading orders…
         </div>
       )}
 
-      {/* Error */}
       {!loading && error && (
         <div className="bg-red-50 text-red-600 rounded-xl px-5 py-4 text-sm font-semibold mb-5">
           ⚠️ {error}
@@ -553,7 +762,7 @@ export default function ManageRTO() {
       {!loading && !error && (
         <>
           {/* Tabs */}
-          <div className="flex border-b-2 border-gray-200 mb-6 gap-0">
+          <div className="flex border-b border-gray-200 mb-5 gap-0">
             {TABS.map((tab) => {
               const badge = tabBadges[tab];
               const active = tab === activeTab;
@@ -562,12 +771,12 @@ export default function ManageRTO() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    flex items-center gap-2 px-5 py-2.5 text-sm font-medium cursor-pointer border-b-2 -mb-0.5
+                    flex items-center gap-2 px-5 py-2.5 text-sm font-medium cursor-pointer border-b-2 -mb-px
                     transition-all duration-150 bg-transparent border-x-0 border-t-0
                     ${
                       active
-                        ? "border-b-gray-900 text-gray-900 font-bold"
-                        : "border-b-transparent text-gray-400 hover:text-gray-600"
+                        ? "border-b-gray-900 text-gray-900 font-semibold"
+                        : "border-b-transparent text-gray-500 hover:text-gray-700"
                     }
                   `}
                 >
