@@ -91,3 +91,7 @@ export const updateOrderStatus = async (orderId, status) => {
 export const createShipment = async (payload) => {
   return await api.post("velocity/shipment/forward", payload);
 };
+
+export const trackShipment = async (awbs) => {
+  return await api.post("velocity/track", { awbs });
+};
