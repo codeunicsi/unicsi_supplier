@@ -28,7 +28,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.post("/auth/login", form);
+      const res = await api.post("/auth/login", { ...form, loginAs: "SUPPLIER" });
       const { token, data } = res.data;
 
       // Save login data

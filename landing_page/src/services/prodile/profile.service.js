@@ -92,6 +92,23 @@ export const createShipment = async (payload) => {
   return await api.post("velocity/shipment/forward", payload);
 };
 
+export const generateLabel = async (shipmentId) => {
+  return await api.post("suppliers/stores/generate-label", { shipmentId });
+};
+
 export const trackShipment = async (awbs) => {
   return await api.post("velocity/track", { awbs });
+};
+
+export const ndrReattempt = async (awb, options = {}) => {
+  return await api.post("velocity/ndr/reattempt", { awb, ...options });
+};
+
+export const ndrRto = async (awb) => {
+  return await api.post("velocity/ndr/rto", { awb });
+};
+
+export const fetchNdrCases = async (params = {}) => {
+  const query = new URLSearchParams(params).toString();
+  return await api.get(`suppliers/stores/ndr-cases${query ? `?${query}` : ""}`);
 };
