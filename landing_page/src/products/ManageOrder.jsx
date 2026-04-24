@@ -412,7 +412,7 @@ export default function ManageOrder() {
       setBulkError(null);
       try {
         const res = await getBulkOrders();
-        setBulkOrders(res?.data?.data.orders ?? []);
+        setBulkOrders(res?.data?.data?.orders ?? []);
       } catch (err) {
         setBulkError(err?.message || "Failed to fetch bulk orders.");
       } finally {
