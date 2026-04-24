@@ -21,6 +21,7 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  CircularProgress,
 } from "@mui/material";
 import SaveIcon from "@mui/icons-material/Save";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
@@ -272,6 +273,7 @@ export default function SupplierSettings() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [pickupAddresses, setPickupAddresses] = useState([]);
+  const [loadingPickupAddresses, setLoadingPickupAddresses] = useState(true);
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [savingAddress, setSavingAddress] = useState(false);
   const [supplierId, setSupplierId] = useState(null);
@@ -289,6 +291,7 @@ export default function SupplierSettings() {
   });
 
   const fetchPickupAddresses = async () => {
+    setLoadingPickupAddresses(true);
     try {
       const res = await fetchAllAddresses();
       const raw = res?.data?.data ?? [];
@@ -296,6 +299,8 @@ export default function SupplierSettings() {
       setPickupAddresses(addresses.map((detail) => mapDetailToAddress(detail)));
     } catch (error) {
       console.error("Failed to fetch pickup addresses", error);
+    } finally {
+      setLoadingPickupAddresses(false);
     }
   };
 
@@ -706,7 +711,35 @@ export default function SupplierSettings() {
                   </Box>
                 </Box>
 
-                {pickupAddresses.length === 0 ? (
+                {loadingPickupAddresses ? (
+                  <Box
+                    sx={{
+                      p: 4,
+                      border: "2px dashed #b8e8f0",
+                      borderRadius: "12px",
+                      background: "#f8fdfe",
+                      textAlign: "center",
+                    }}
+                  >
+                    <CircularProgress
+                      size={32}
+                      sx={{ color: "#0097b2", mb: 1.5 }}
+                    />
+                    <Box
+                      sx={{
+                        fontSize: "0.9rem",
+                        fontWeight: 600,
+                        color: "#000",
+                        mb: 0.5,
+                      }}
+                    >
+                      Loading pickup addresses...
+                    </Box>
+                    <Box sx={{ fontSize: "0.825rem", color: "#777" }}>
+                      Please wait while we fetch your saved addresses.
+                    </Box>
+                  </Box>
+                ) : pickupAddresses.length === 0 ? (
                   <Box
                     sx={{
                       p: 4,

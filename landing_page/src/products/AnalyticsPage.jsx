@@ -741,9 +741,9 @@ export default function ManageRTO() {
   };
 
   return (
-    <div className="font-sans bg-gray-50 min-h-screen px-8 py-7 text-gray-800">
+    <div className="font-sans bg-gray-50 h-screen flex flex-col overflow-hidden px-4 py-5 md:px-8 md:py-7 text-gray-800">
       {/* Header */}
-      <h1 className="text-xl font-bold tracking-tight mb-5">
+      <h1 className="text-xl font-bold tracking-tight mb-5 flex-shrink-0">
         Manage RTO / Returns
       </h1>
 
@@ -760,9 +760,9 @@ export default function ManageRTO() {
       )}
 
       {!loading && !error && (
-        <>
+        <div className="flex flex-1 min-h-0 flex-col">
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-5 gap-0">
+          <div className="mb-5 flex gap-0 overflow-x-auto border-b border-gray-200 flex-shrink-0">
             {TABS.map((tab) => {
               const badge = tabBadges[tab];
               const active = tab === activeTab;
@@ -771,7 +771,7 @@ export default function ManageRTO() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    flex items-center gap-2 px-5 py-2.5 text-sm font-medium cursor-pointer border-b-2 -mb-px
+                    flex items-center gap-2 px-5 py-2.5 text-sm font-medium cursor-pointer border-b-2 -mb-px whitespace-nowrap
                     transition-all duration-150 bg-transparent border-x-0 border-t-0
                     ${
                       active
@@ -794,23 +794,25 @@ export default function ManageRTO() {
           </div>
 
           {/* Tab Content */}
-          {activeTab === "Overview" && <OverviewTab orders={orders} />}
-          {activeTab === "In Transit" && (
-            <OrderTable orders={inTransit} emptyMsg="No in-transit orders." />
-          )}
-          {activeTab === "Arriving Today" && (
-            <OrderTable
-              orders={arrivingToday}
-              emptyMsg="No pending orders today."
-            />
-          )}
-          {activeTab === "Delivered" && (
-            <OrderTable
-              orders={delivered}
-              emptyMsg="No delivered orders yet."
-            />
-          )}
-        </>
+          <div className="flex-1 min-h-0 overflow-y-auto pr-1 pb-2">
+            {activeTab === "Overview" && <OverviewTab orders={orders} />}
+            {activeTab === "In Transit" && (
+              <OrderTable orders={inTransit} emptyMsg="No in-transit orders." />
+            )}
+            {activeTab === "Arriving Today" && (
+              <OrderTable
+                orders={arrivingToday}
+                emptyMsg="No pending orders today."
+              />
+            )}
+            {activeTab === "Delivered" && (
+              <OrderTable
+                orders={delivered}
+                emptyMsg="No delivered orders yet."
+              />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
