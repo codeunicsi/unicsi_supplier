@@ -84,6 +84,14 @@ export const shopifyOrders = async () => {
   return await api.get("suppliers/stores/shopify-orders");
 };
 
+export const updateOrderStatus = async (orderId, status) => {
+  return await api.put(`suppliers/stores/shopify-orders/${orderId}/status`, { status });
+};
+
 export const createShipment = async (payload) => {
   return await api.post("velocity/shipment/forward", payload);
+};
+
+export const trackShipment = async (awbs) => {
+  return await api.post("velocity/track", { awbs });
 };

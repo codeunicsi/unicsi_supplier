@@ -5,7 +5,8 @@ import {
   getBulkOrders,
   uploadBiltiDetails,
   fetchAllAddresses,
-  createShipment, // ← add this export to your profile.service.js
+  createShipment,
+  updateOrderStatus,
 } from "../services/prodile/profile.service";
 import { shopifyOrders } from "../services/prodile/profile.service";
 
@@ -377,14 +378,12 @@ export default function ManageOrder() {
 
   const STATUS_MAP = {
     All: [],
-    "Pending": ["pending_supplier"],
-    "To Be Dispatched": ["confirmed"],
-    // Processing: ["processing"],
-    // Shipped: ["shipped"],
-    "In Transit": ["in_transit"],
-    Delivered: ["delivered"],
-    Cancelled: ["cancelled"],
-    Refunded: ["refunded"],
+    "Pending": ["Pending"],
+    "Dispatched": ["Dispatched"],
+    "In Transit": ["In_Transit"],
+    "Delivered": ["Delivered"],
+    "Cancelled": ["Cancelled"],
+    "Refunded": ["Refunded"],
   };
 
   const ORDER_TABS = Object.keys(STATUS_MAP).map((label) => ({ label }));
@@ -482,6 +481,22 @@ export default function ManageOrder() {
     console.log("Downloading orders data…");
   const handleDownloadHistory = () => console.log("Downloading history…");
   const handleDownloadTable = () => console.log("Downloading table…");
+
+  const [updatingOrders, setUpdatingOrders] = useState({});
+
+  const handleUpdateStatus = async (orderId, newStatus) => {
+    setUpdatingOrders((prev) => ({ ...prev, [orderId]: true }));
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      setOrders((prev) =>
+        prev.map((o) => (o.order_id === orderId ? { ...o, status: newStatus } : o)),
+      );
+    } catch (err) {
+      alert(err?.response?.data?.error || err?.message || "Failed to update order");
+    } finally {
+      setUpdatingOrders((prev) => ({ ...prev, [orderId]: false }));
+    }
+  };
 
   // Receives the fully-built payload from the modal
   const handleConfirmShipment = async (payload) => {
@@ -895,55 +910,49 @@ export default function ManageOrder() {
                                 </dd>
                               </div>
                             </dl>
-                            <div className="pt-1">
-                              {row.status === "processing" ? (
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              {row.status === "Pending" && (
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    if (row.labelUrl) {
-                                      window.open(row.labelUrl, "_blank");
-                                    } else {
-                                      alert("Label not available");
-                                    }
-                                  }}
-                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-green-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-green-700 sm:w-auto sm:py-2"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Dispatched")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-50 sm:w-auto sm:py-2"
                                 >
-                                  <svg
-                                    className="h-3 w-3 shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2.5}
-                                      d="M12 5v14m7-7H5"
-                                    />
-                                  </svg>
-                                  Download Label
+                                  {updatingOrders[row.orderId] ? "Updating..." : "Mark Dispatched"}
                                 </button>
-                              ) : (
+                              )}
+                              {row.status === "Dispatched" && (
                                 <button
                                   type="button"
-                                  onClick={() => setShipmentModal(row)}
-                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black sm:w-auto sm:py-2"
+                                  onClick={() => handleUpdateStatus(row.orderId, "In_Transit")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-indigo-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 sm:w-auto sm:py-2"
                                 >
-                                  <svg
-                                    className="h-3 w-3 shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2.5}
-                                      d="M5 13l4 4L19 7"
-                                    />
-                                  </svg>
-                                  Create Shipment
+                                  {updatingOrders[row.orderId] ? "Updating..." : "Mark In Transit"}
                                 </button>
+                              )}
+                              {row.status === "In_Transit" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Delivered")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-emerald-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 sm:w-auto sm:py-2"
+                                >
+                                  {updatingOrders[row.orderId] ? "Updating..." : "Mark Delivered"}
+                                </button>
+                              )}
+                              {!["Delivered", "Cancelled", "Refunded"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Cancelled")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-red-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 sm:w-auto sm:py-2"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Cancel"}
+                                </button>
+                              )}
+                              {(row.status === "Delivered" || row.status === "Cancelled" || row.status === "Refunded") && (
+                                <span className="text-xs text-gray-400 capitalize">{row.status}</span>
                               )}
                             </div>
                           </div>
@@ -1015,55 +1024,51 @@ export default function ManageOrder() {
                             —
                           </td>
                           <td className="px-2 py-3 sm:px-3">
-                            {row.status === "processing" ? (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (row.labelUrl) {
-                                    window.open(row.labelUrl, "_blank");
-                                  } else {
-                                    alert("Label not available");
-                                  }
-                                }}
-                                className="flex items-center gap-1.5 whitespace-nowrap rounded bg-green-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-green-700 sm:px-3"
-                              >
-                                <svg
-                                  className="h-3 w-3"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                            <div className="flex flex-wrap gap-1.5">
+                              {row.status === "Pending" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Dispatched")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-gray-900 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-50 sm:px-3"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2.5}
-                                    d="M12 5v14m7-7H5"
-                                  />
-                                </svg>
-                                Download Label
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={() => setShipmentModal(row)}
-                                className="flex items-center gap-1.5 whitespace-nowrap rounded bg-gray-900 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black sm:px-3"
-                              >
-                                <svg
-                                  className="h-3 w-3"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+                                  {updatingOrders[row.orderId] ? "..." : "Dispatch"}
+                                </button>
+                              )}
+                              {row.status === "Dispatched" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "In_Transit")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 sm:px-3"
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2.5}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                Create Shipment
-                              </button>
-                            )}
+                                  {updatingOrders[row.orderId] ? "..." : "In Transit"}
+                                </button>
+                              )}
+                              {row.status === "In_Transit" && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Delivered")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50 sm:px-3"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Delivered"}
+                                </button>
+                              )}
+                              {!["Delivered", "Cancelled", "Refunded"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Cancelled")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 sm:px-3"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Cancel"}
+                                </button>
+                              )}
+                              {(row.status === "Delivered" || row.status === "Cancelled" || row.status === "Refunded") && (
+                                <span className="text-xs text-gray-400 capitalize">{row.status}</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))
