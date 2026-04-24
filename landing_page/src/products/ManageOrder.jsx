@@ -6,7 +6,9 @@ import {
   uploadBiltiDetails,
   fetchAllAddresses,
   createShipment,
+  generateLabel,
   updateOrderStatus,
+  trackShipment,
 } from "../services/prodile/profile.service";
 import { shopifyOrders } from "../services/prodile/profile.service";
 
@@ -15,8 +17,8 @@ const ORDER_HEADERS = [
   "SKU",
   "Stock",
   "Status",
-  "Inventory Management",
-  "Weight (G)",
+  "AWB",
+  "Courier",
   "Actions",
 ];
 
@@ -378,13 +380,15 @@ export default function ManageOrder() {
 
   const STATUS_MAP = {
     All: [],
-    "Pending": ["Pending"],
+    "Pending": ["Pending", "pending_supplier"],
     "Dispatched": ["Dispatched"],
     "In Transit": ["In_Transit"],
     "Delivered": ["Delivered"],
     "Cancelled": ["Cancelled"],
     "Refunded": ["Refunded"],
   };
+
+  const isPending = (status) => status === "Pending" || status === "pending_supplier";
 
   const ORDER_TABS = Object.keys(STATUS_MAP).map((label) => ({ label }));
 
@@ -441,6 +445,10 @@ export default function ManageOrder() {
       price: item.price,
       variantTitle: item.variantTitle,
       labelUrl: order.label_url,
+      awbCode: order.awb_code,
+      trackingNumber: order.tracking_number,
+      courierName: order.tracking_carrier,
+      trackingUrl: order.tracking_url,
     })),
   );
 
@@ -500,8 +508,78 @@ export default function ManageOrder() {
 
   // Receives the fully-built payload from the modal
   const handleConfirmShipment = async (payload) => {
-    console.log("Shipment payload →", JSON.stringify(payload, null, 2));
-    await createShipment(payload);
+    const res = await createShipment(payload);
+    const data = res?.data?.data ?? res?.data;
+    const updatedOrder = data?.order;
+    if (updatedOrder) {
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.order_id === updatedOrder.order_id ? { ...o, ...updatedOrder } : o
+        )
+      );
+    } else {
+      // Fallback: at minimum update status so UI reflects the change
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.order_id === payload.order_id
+            ? { ...o, status: "Dispatched", label_url: data?.shipment?.label_url ?? o.label_url }
+            : o
+        )
+      );
+    }
+    return res;
+  };
+
+  // Generate / download shipping label for an order
+  const handleDownloadLabel = async (row) => {
+    if (row.labelUrl) {
+      window.open(row.labelUrl, "_blank");
+      return;
+    }
+    // If no label_url stored, try generating via AWB
+    try {
+      const awb = row.awbCode || row.trackingNumber;
+      if (!awb) {
+        alert("No AWB code found. Please create a shipment first.");
+        return;
+      }
+      const res = await generateLabel(awb);
+      const labelUrl = res?.data?.data?.label_url || res?.data?.label_url;
+      if (labelUrl) {
+        // Update local state with the label URL
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.order_id === row.orderId ? { ...o, label_url: labelUrl } : o
+          )
+        );
+        window.open(labelUrl, "_blank");
+      } else {
+        alert("Label not available yet. Please try again later.");
+      }
+    } catch (err) {
+      alert(err?.response?.data?.message || err?.message || "Failed to generate label.");
+    }
+  };
+
+  // ── AWB Tracking ──────────────────────────────────────────────────
+  const [trackingModal, setTrackingModal] = useState(null);
+  const [trackingData, setTrackingData] = useState(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
+
+  const handleTrackAWB = async (row) => {
+    const awb = row.awbCode || row.trackingNumber;
+    if (!awb) return alert("No AWB code found.");
+    setTrackingModal(awb);
+    setTrackingLoading(true);
+    setTrackingData(null);
+    try {
+      const res = await trackShipment([awb]);
+      setTrackingData(res.data?.data || res.data);
+    } catch (err) {
+      setTrackingData({ error: err.response?.data?.message || err.message });
+    } finally {
+      setTrackingLoading(false);
+    }
   };
 
   // ── Bulk upload handlers ──────────────────────────────────────────
@@ -909,16 +987,37 @@ export default function ManageOrder() {
                                   {row.status}
                                 </dd>
                               </div>
+                              {(row.awbCode || row.trackingNumber) && (
+                                <div className="min-w-0">
+                                  <dt className="text-gray-400">AWB</dt>
+                                  <dd className="break-all font-medium text-blue-600">
+                                    {row.trackingUrl ? (
+                                      <a href={row.trackingUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                                        {row.awbCode || row.trackingNumber}
+                                      </a>
+                                    ) : (
+                                      row.awbCode || row.trackingNumber
+                                    )}
+                                  </dd>
+                                </div>
+                              )}
+                              {row.courierName && (
+                                <div>
+                                  <dt className="text-gray-400">Courier</dt>
+                                  <dd className="font-medium text-gray-700">
+                                    {row.courierName}
+                                  </dd>
+                                </div>
+                              )}
                             </dl>
                             <div className="flex flex-wrap gap-2 pt-1">
-                              {row.status === "Pending" && (
+                              {isPending(row.status) && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "Dispatched")}
-                                  disabled={updatingOrders[row.orderId]}
-                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-gray-900 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-50 sm:w-auto sm:py-2"
+                                  onClick={() => setShipmentModal(row)}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-blue-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:w-auto sm:py-2"
                                 >
-                                  {updatingOrders[row.orderId] ? "Updating..." : "Mark Dispatched"}
+                                  Create Shipment
                                 </button>
                               )}
                               {row.status === "Dispatched" && (
@@ -941,17 +1040,35 @@ export default function ManageOrder() {
                                   {updatingOrders[row.orderId] ? "Updating..." : "Mark Delivered"}
                                 </button>
                               )}
-                              {!["Delivered", "Cancelled", "Refunded"].includes(row.status) && (
+                              {(row.awbCode || row.trackingNumber) && !["Delivered", "Cancelled", "Refunded", "Hold"].includes(row.status) && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "Cancelled")}
-                                  disabled={updatingOrders[row.orderId]}
-                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-red-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 sm:w-auto sm:py-2"
+                                  onClick={() => handleDownloadLabel(row)}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-teal-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-teal-700 sm:w-auto sm:py-2"
                                 >
-                                  {updatingOrders[row.orderId] ? "..." : "Cancel"}
+                                  Download Label
                                 </button>
                               )}
-                              {(row.status === "Delivered" || row.status === "Cancelled" || row.status === "Refunded") && (
+                              {(row.awbCode || row.trackingNumber) && !["Delivered", "Cancelled", "Refunded", "Hold"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleTrackAWB(row)}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-indigo-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 sm:w-auto sm:py-2"
+                                >
+                                  Track
+                                </button>
+                              )}
+                              {!["Delivered", "Cancelled", "Refunded", "Hold", "pending_supplier"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Hold")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex w-full items-center justify-center gap-1.5 rounded bg-amber-600 px-3 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-amber-700 disabled:opacity-50 sm:w-auto sm:py-2"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Hold"}
+                                </button>
+                              )}
+                              {["Delivered", "Cancelled", "Refunded", "Hold"].includes(row.status) && (
                                 <span className="text-xs text-gray-400 capitalize">{row.status}</span>
                               )}
                             </div>
@@ -1017,22 +1134,31 @@ export default function ManageOrder() {
                           <td className="px-2 py-3 text-gray-400 sm:px-3">
                             {row.status}
                           </td>
-                          <td className="px-2 py-3 text-gray-400 sm:px-3">
-                            —
+                          <td className="px-2 py-3 text-gray-600 sm:px-3">
+                            {row.awbCode || row.trackingNumber ? (
+                              row.trackingUrl ? (
+                                <a href={row.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs font-medium">
+                                  {row.awbCode || row.trackingNumber}
+                                </a>
+                              ) : (
+                                <span className="text-xs font-medium">{row.awbCode || row.trackingNumber}</span>
+                              )
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
                           </td>
-                          <td className="px-2 py-3 text-gray-400 sm:px-3">
-                            —
+                          <td className="px-2 py-3 text-gray-600 sm:px-3">
+                            {row.courierName || <span className="text-gray-400">—</span>}
                           </td>
                           <td className="px-2 py-3 sm:px-3">
                             <div className="flex flex-wrap gap-1.5">
-                              {row.status === "Pending" && (
+                              {isPending(row.status) && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "Dispatched")}
-                                  disabled={updatingOrders[row.orderId]}
-                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-gray-900 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-black disabled:opacity-50 sm:px-3"
+                                  onClick={() => setShipmentModal(row)}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-blue-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-blue-700 sm:px-3"
                                 >
-                                  {updatingOrders[row.orderId] ? "..." : "Dispatch"}
+                                  Create Shipment
                                 </button>
                               )}
                               {row.status === "Dispatched" && (
@@ -1055,17 +1181,35 @@ export default function ManageOrder() {
                                   {updatingOrders[row.orderId] ? "..." : "Delivered"}
                                 </button>
                               )}
-                              {!["Delivered", "Cancelled", "Refunded"].includes(row.status) && (
+                              {(row.awbCode || row.trackingNumber) && !["Delivered", "Cancelled", "Refunded", "Hold"].includes(row.status) && (
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateStatus(row.orderId, "Cancelled")}
-                                  disabled={updatingOrders[row.orderId]}
-                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-red-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 sm:px-3"
+                                  onClick={() => handleDownloadLabel(row)}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-teal-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-teal-700 sm:px-3"
                                 >
-                                  {updatingOrders[row.orderId] ? "..." : "Cancel"}
+                                  Download Label
                                 </button>
                               )}
-                              {(row.status === "Delivered" || row.status === "Cancelled" || row.status === "Refunded") && (
+                              {(row.awbCode || row.trackingNumber) && !["Delivered", "Cancelled", "Refunded", "Hold"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleTrackAWB(row)}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-indigo-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-indigo-700 sm:px-3"
+                                >
+                                  Track
+                                </button>
+                              )}
+                              {!["Delivered", "Cancelled", "Refunded", "Hold", "pending_supplier"].includes(row.status) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStatus(row.orderId, "Hold")}
+                                  disabled={updatingOrders[row.orderId]}
+                                  className="flex items-center gap-1.5 whitespace-nowrap rounded bg-amber-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-amber-700 disabled:opacity-50 sm:px-3"
+                                >
+                                  {updatingOrders[row.orderId] ? "..." : "Hold"}
+                                </button>
+                              )}
+                              {["Delivered", "Cancelled", "Refunded", "Hold"].includes(row.status) && (
                                 <span className="text-xs text-gray-400 capitalize">{row.status}</span>
                               )}
                             </div>
@@ -1242,6 +1386,104 @@ export default function ManageOrder() {
           )}
         </>
       )}
+      {/* AWB Tracking Modal */}
+      {trackingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-lg rounded-xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b px-5 py-4">
+              <h3 className="text-lg font-semibold text-gray-800">
+                Tracking — {trackingModal}
+              </h3>
+              <button
+                onClick={() => { setTrackingModal(null); setTrackingData(null); }}
+                className="text-2xl text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto p-5">
+              {trackingLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+                </div>
+              ) : trackingData?.error ? (
+                <p className="text-center text-red-500">{trackingData.error}</p>
+              ) : trackingData ? (
+                <TrackingTimeline data={trackingData} />
+              ) : (
+                <p className="text-center text-gray-500">No tracking data.</p>
+              )}
+            </div>
+            <div className="border-t px-5 py-3 text-right">
+              <button
+                onClick={() => { setTrackingModal(null); setTrackingData(null); }}
+                className="rounded bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TrackingTimeline({ data }) {
+  // Velocity returns: { result: { "<awb>": { tracking_data: { shipment_track_activities: [...] } } } }
+  let events = [];
+  let shipmentInfo = null;
+
+  if (data?.result) {
+    const awbKey = Object.keys(data.result)[0];
+    const awbData = data.result[awbKey]?.tracking_data;
+    if (awbData) {
+      events = awbData.shipment_track_activities || [];
+      shipmentInfo = awbData.shipment_track?.[0] || null;
+    }
+  } else if (Array.isArray(data)) {
+    events = data;
+  } else if (data?.tracking_data?.shipment_track_activities) {
+    events = data.tracking_data.shipment_track_activities;
+    shipmentInfo = data.tracking_data.shipment_track?.[0] || null;
+  }
+
+  if (events.length === 0 && !shipmentInfo) {
+    return <p className="text-center text-gray-500">No tracking events found.</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      {shipmentInfo && (
+        <div className="rounded-lg bg-gray-50 p-3 text-sm space-y-1">
+          <p><span className="font-medium text-gray-600">Status:</span> <span className="capitalize font-semibold text-gray-800">{shipmentInfo.current_status?.replace(/_/g, " ")}</span></p>
+          {shipmentInfo.origin && <p><span className="font-medium text-gray-600">Origin:</span> {shipmentInfo.origin}</p>}
+          {shipmentInfo.destination && <p><span className="font-medium text-gray-600">Destination:</span> {shipmentInfo.destination}</p>}
+          {shipmentInfo.consignee_name && <p><span className="font-medium text-gray-600">Consignee:</span> {shipmentInfo.consignee_name}</p>}
+        </div>
+      )}
+      <ol className="relative border-l-2 border-blue-200 ml-3">
+        {events.map((ev, i) => (
+          <li key={i} className="mb-6 ml-6">
+            <span className="absolute -left-2 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 ring-4 ring-white">
+              <span className="h-2 w-2 rounded-full bg-white" />
+            </span>
+            <div className="text-sm">
+              <p className="font-medium text-gray-800">
+                {ev.activity || ev.status || ev.Status || "Update"}
+              </p>
+              {(ev.location || ev.Location) && (
+                <p className="text-xs text-gray-500">{ev.location || ev.Location}</p>
+              )}
+              {(ev.date || ev.Date || ev["sr-status-date"]) && (
+                <p className="text-xs text-gray-400">
+                  {new Date(ev.date || ev.Date || ev["sr-status-date"]).toLocaleString()}
+                </p>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

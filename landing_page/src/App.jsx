@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import React from "react";
 
-import { Home } from "./pages/Home";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 import NotFound from "./pages/NotFound";
@@ -9,9 +8,8 @@ import NotFound from "./pages/NotFound";
 import ManageProducts from "./products/ManageProducts";
 import ManageOrders from "./products/ManageOrder";
 import Analytics from "./products/AnalyticsPage";
+import RtoReturnsPage from "./products/RtoReturnsPage";
 import ProductRequirement from "./products/ProductRequirementPage";
-// import SellerDashboard from "./pages/SellerDashboard";
-// import VendorDashboard from "./pages/VendorDashboard";
 import ProfilePage from "./pages/profile";
 
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -34,9 +32,6 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Public Routes */}
-          {/* <Route path="/" element={<Home />} /> */}
-
           {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
 
@@ -51,8 +46,6 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* <Route path="/seller" element={<SellerDashboard />} />
-          <Route path="/vendor" element={<VendorDashboard />} /> */}
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/order" element={<ManageOrders />} />
             <Route path="/products" element={<ProductsList />} />
@@ -72,7 +65,7 @@ function App() {
             />
             <Route path="/source-product" element={<ProductRequirement />} />
             <Route path="/reports" element={<ReportsTable />} />
-            <Route path="/rto-returns" element={<Analytics />} />
+            <Route path="/rto-returns" element={<RtoReturnsPage />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/supports" element={<SubmitTicket />} />
             <Route path="/payments" element={<PaymentsPage />} />
