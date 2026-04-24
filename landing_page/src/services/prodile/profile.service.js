@@ -93,7 +93,7 @@ export const createShipment = async (payload) => {
 };
 
 export const generateLabel = async (shipmentId) => {
-  return await api.post("suppliers/stores/generate-label", { shipmentId });
+  return await api.post("suppliers/stores/generate-label", { shipmentId }, { responseType: "blob" });
 };
 
 export const trackShipment = async (awbs) => {

@@ -532,11 +532,6 @@ export default function ManageOrder() {
 
   // Generate / download shipping label for an order
   const handleDownloadLabel = async (row) => {
-    if (row.labelUrl) {
-      window.open(row.labelUrl, "_blank");
-      return;
-    }
-    // If no label_url stored, try generating via AWB
     try {
       const awb = row.awbCode || row.trackingNumber;
       if (!awb) {
@@ -544,18 +539,12 @@ export default function ManageOrder() {
         return;
       }
       const res = await generateLabel(awb);
-      const labelUrl = res?.data?.data?.label_url || res?.data?.label_url;
-      if (labelUrl) {
-        // Update local state with the label URL
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.order_id === row.orderId ? { ...o, label_url: labelUrl } : o
-          )
-        );
-        window.open(labelUrl, "_blank");
-      } else {
-        alert("Label not available yet. Please try again later.");
-      }
+      // Backend returns PDF blob
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      // Clean up the blob URL after a delay
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (err) {
       alert(err?.response?.data?.message || err?.message || "Failed to generate label.");
     }
