@@ -1,230 +1,94 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  fetchReportOverview,
+  fetchSalesTimeSeries,
+  fetchTopProducts,
+} from "../services/reports/report.service";
 
 const GRADIENT = "linear-gradient(135deg, #0097b2 0%, #7ed957 100%)";
-const GRADIENT_HOVER = "linear-gradient(135deg, #007a91 0%, #65c040 100%)";
 
-type StatusType = "Completed" | "Processing" | "Failed";
-
-interface Report {
-  id: number;
-  name: string;
-  requestedOn: string;
-  status: StatusType;
+function formatCurrency(val) {
+  const n = Number(val) || 0;
+  return "₹" + n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
 }
 
-const REPORTS: Report[] = [];
-
-const PAGE_SIZE = 5;
-
-// ── Status Badge ──────────────────────────────────────────────────────────────
-const STATUS_STYLES: Record<
-  StatusType,
-  { background: string; color: string; border: string }
-> = {
-  Completed: {
-    background: "rgba(126,217,87,0.12)",
-    color: "#2e7d1e",
-    border: "1.5px solid rgba(126,217,87,0.45)",
-  },
-  Processing: {
-    background: "rgba(0,151,178,0.1)",
-    color: "#0097b2",
-    border: "1.5px solid rgba(0,151,178,0.35)",
-  },
-  Failed: {
-    background: "rgba(229,57,53,0.08)",
-    color: "#c62828",
-    border: "1.5px solid rgba(229,57,53,0.3)",
-  },
-};
-
-function StatusBadge({ status }: { status: StatusType }) {
-  const s = STATUS_STYLES[status] ?? STATUS_STYLES.Completed;
+function StatCard({ label, value, sub }) {
   return (
-    <span
+    <div
       style={{
-        ...s,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        padding: "4px 12px",
-        borderRadius: 20,
-        fontSize: "0.78rem",
-        fontWeight: 700,
-        letterSpacing: "0.01em",
+        background: "#fff",
+        borderRadius: 14,
+        border: "1.5px solid #e0f4f7",
+        padding: "20px 22px",
+        flex: "1 1 200px",
+        minWidth: 180,
+        boxShadow: "0 2px 12px rgba(0,151,178,0.06)",
       }}
     >
-      <span
-        style={{
-          width: 6,
-          height: 6,
-          borderRadius: "50%",
-          background: s.color,
-          flexShrink: 0,
-          boxShadow: `0 0 4px ${s.color}`,
-        }}
-      />
-      {status}
-    </span>
+      <div style={{ fontSize: "0.8rem", color: "#777", fontWeight: 600, marginBottom: 6 }}>
+        {label}
+      </div>
+      <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "#111" }}>{value}</div>
+      {sub && (
+        <div style={{ fontSize: "0.78rem", color: "#0097b2", fontWeight: 500, marginTop: 4 }}>
+          {sub}
+        </div>
+      )}
+    </div>
   );
 }
 
-// ── Download Button ───────────────────────────────────────────────────────────
-function DownloadButton({ onClick }: { onClick: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  const iconStroke = hovered ? "#ffffff" : "#0097b2";
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "7px 16px",
-        borderRadius: 9,
-        border: hovered ? "none" : "1.5px solid #0097b2",
-        background: hovered ? GRADIENT : "transparent",
-        color: hovered ? "#fff" : "#0097b2",
-        fontSize: "0.82rem",
-        fontWeight: 600,
-        cursor: "pointer",
-        transition: "all 0.2s ease",
-        boxShadow: hovered ? "0 3px 12px rgba(0,151,178,0.25)" : "none",
-        whiteSpace: "nowrap",
-      }}
-    >
-      <svg
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke={iconStroke}
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        style={{ transition: "stroke 0.2s ease", flexShrink: 0 }}
-      >
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-      </svg>
-      Download
-    </button>
-  );
-}
-
-// ── Nav arrow button ──────────────────────────────────────────────────────────
-function NavArrow({
-  arrow,
-  disabled,
-  onClick,
-}: {
-  arrow: string;
-  disabled: boolean;
-  onClick: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        width: 32,
-        height: 32,
-        borderRadius: 8,
-        border: "1.5px solid #d0eef3",
-        background: disabled ? "#f0f0f0" : hovered ? GRADIENT : "#fff",
-        color: disabled ? "#bbb" : hovered ? "#fff" : "#0097b2",
-        fontSize: "1rem",
-        fontWeight: 700,
-        cursor: disabled ? "default" : "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        transition: "all 0.2s",
-        boxShadow:
-          hovered && !disabled ? "0 2px 8px rgba(0,151,178,0.2)" : "none",
-      }}
-    >
-      {arrow}
-    </button>
-  );
-}
-
-// ── Page number button ────────────────────────────────────────────────────────
-function PageButton({
-  page,
-  active,
-  onClick,
-}: {
-  page: number;
-  active: boolean;
-  onClick: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        width: 34,
-        height: 34,
-        borderRadius: 9,
-        border: active ? "none" : "1.5px solid #d0eef3",
-        background: active
-          ? GRADIENT
-          : hovered
-            ? "rgba(0,151,178,0.08)"
-            : "#fff",
-        color: active ? "#fff" : hovered ? "#0097b2" : "#555",
-        fontSize: "0.82rem",
-        fontWeight: active ? 700 : 500,
-        cursor: "pointer",
-        transition: "all 0.2s",
-        boxShadow: active ? "0 2px 10px rgba(0,151,178,0.25)" : "none",
-      }}
-    >
-      {page}
-    </button>
-  );
-}
-
-// ── Main Component ────────────────────────────────────────────────────────────
 export default function ReportsTable() {
-  const [page, setPage] = useState(1);
-  const totalPages = Math.ceil(REPORTS.length / PAGE_SIZE);
-  const paginated = REPORTS.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const [overview, setOverview] = useState(null);
+  const [sales, setSales] = useState([]);
+  const [topProducts, setTopProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState({ start_date: "", end_date: "" });
+  const [groupBy, setGroupBy] = useState("day");
 
-  const handleDownload = (reportName: string) => {
-    const link = document.createElement("a");
-    link.href = "/GST_Report.zip"; // place your zip file inside the /public folder
-    link.download = `${reportName}.zip`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  async function loadData() {
+    setLoading(true);
+    try {
+      const params = {};
+      if (dateRange.start_date) params.start_date = dateRange.start_date;
+      if (dateRange.end_date) params.end_date = dateRange.end_date;
+
+      const [overviewRes, salesRes, productsRes] = await Promise.all([
+        fetchReportOverview(params),
+        fetchSalesTimeSeries({ ...params, group_by: groupBy }),
+        fetchTopProducts(params),
+      ]);
+
+      setOverview(overviewRes.data?.data || null);
+      setSales(salesRes.data?.data || []);
+      setTopProducts(productsRes.data?.data || []);
+    } catch {
+      // silently handle
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, [dateRange, groupBy]);
+
+  const orders = overview?.orders || {};
+  const revenue = overview?.revenue || {};
+  const products = overview?.products || {};
+  const returns = overview?.returns || {};
 
   return (
     <div
       style={{
         minHeight: "100vh",
         width: "100%",
-        maxWidth: "100%",
-        minWidth: 0,
         boxSizing: "border-box",
         background: "#f4fbfc",
         padding: "clamp(16px, 4vw, 28px) clamp(16px, 4vw, 32px)",
       }}
     >
-      {/* ── Header ── */}
+      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -236,190 +100,105 @@ export default function ReportsTable() {
         }}
       >
         <div>
-          <h1
-            style={{
-              fontSize: "1.75rem",
-              fontWeight: 800,
-              color: "#000",
-              margin: 0,
-              letterSpacing: "-0.02em",
-            }}
-          >
+          <h1 style={{ fontSize: "1.75rem", fontWeight: 800, color: "#000", margin: 0 }}>
             Reports
           </h1>
           <p style={{ color: "#555", margin: "4px 0 0", fontSize: "0.9rem" }}>
-            Find all your requested reports here in one place.
+            Overview of your store performance and sales data.
           </p>
         </div>
-
-        {/* Top pagination */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {REPORTS.length === 0 ? (
-            <span style={{ fontSize: "0.85rem", color: "#555" }}>
-              <strong style={{ color: "#000" }}>0</strong> reports
-            </span>
-          ) : (
-            <>
-              <span style={{ fontSize: "0.85rem", color: "#555" }}>
-                Showing{" "}
-                <strong style={{ color: "#000" }}>
-                  {(page - 1) * PAGE_SIZE + 1}–
-                  {Math.min(page * PAGE_SIZE, REPORTS.length)}
-                </strong>{" "}
-                Reports of{" "}
-                <strong style={{ color: "#000" }}>{REPORTS.length}</strong>
-              </span>
-              <div style={{ display: "flex", gap: 6 }}>
-                <NavArrow
-                  arrow="‹"
-                  disabled={page === 1 || totalPages === 0}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                />
-                <NavArrow
-                  arrow="›"
-                  disabled={page >= totalPages || totalPages === 0}
-                  onClick={() => setPage((p) => p + 1)}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* ── Table ── */}
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 16,
-          border: "1.5px solid #e0f4f7",
-          boxShadow: "0 2px 16px rgba(0,151,178,0.08)",
-          maxWidth: "100%",
-          minWidth: 0,
-        }}
-      >
-        <div
-          style={{
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
-            width: "100%",
-            maxWidth: "100%",
-          }}
-        >
-        {/* Header row */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 220px 160px 150px",
-            background: GRADIENT,
-            padding: "14px 24px",
-            gap: 16,
-            minWidth: 640,
-          }}
-        >
-          {["Report Name", "Requested On", "Status", "Actions"].map((h) => (
-            <span
-              key={h}
-              style={{
-                fontSize: "0.76rem",
-                fontWeight: 700,
-                color: "#fff",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-              }}
-            >
-              {h}
-            </span>
-          ))}
-        </div>
-
-        {/* Data rows */}
-        {REPORTS.length === 0 ? (
-          <div
-            style={{
-              padding: "48px 24px",
-              textAlign: "center",
-              fontSize: "0.9rem",
-              color: "#555",
-              fontWeight: 500,
-            }}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            type="date"
+            value={dateRange.start_date}
+            onChange={(e) => setDateRange((p) => ({ ...p, start_date: e.target.value }))}
+            style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #d0eef3", fontSize: "0.85rem", outline: "none" }}
+          />
+          <span style={{ color: "#999", fontSize: "0.85rem" }}>to</span>
+          <input
+            type="date"
+            value={dateRange.end_date}
+            onChange={(e) => setDateRange((p) => ({ ...p, end_date: e.target.value }))}
+            style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #d0eef3", fontSize: "0.85rem", outline: "none" }}
+          />
+          <select
+            value={groupBy}
+            onChange={(e) => setGroupBy(e.target.value)}
+            style={{ padding: "8px 12px", borderRadius: 8, border: "1.5px solid #d0eef3", fontSize: "0.85rem", outline: "none", cursor: "pointer" }}
           >
-            You don&apos;t have any reports to show.
-          </div>
-        ) : (
-          paginated.map((report, idx) => {
-            const isEven = idx % 2 === 0;
-            return (
-              <div
-                key={report.id}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 220px 160px 150px",
-                  padding: "18px 24px",
-                  gap: 16,
-                  alignItems: "center",
-                  minWidth: 640,
-                  background: isEven ? "#fff" : "#f8fdfe",
-                  borderBottom:
-                    idx < paginated.length - 1 ? "1px solid #e8f6f9" : "none",
-                  transition: "background 0.15s ease",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#edf8fb")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = isEven
-                    ? "#fff"
-                    : "#f8fdfe")
-                }
-              >
-                <span
-                  style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 500,
-                    color: "#000",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {report.name}
-                </span>
-                <span style={{ fontSize: "0.875rem", color: "#444" }}>
-                  {report.requestedOn}
-                </span>
-                <div>
-                  <StatusBadge status={report.status} />
-                </div>
-                <div>
-                  <DownloadButton onClick={() => handleDownload(report.name)} />
-                </div>
-              </div>
-            );
-          })
-        )}
+            <option value="day">Daily</option>
+            <option value="week">Weekly</option>
+            <option value="month">Monthly</option>
+          </select>
         </div>
       </div>
 
-      {/* ── Bottom Pagination ── */}
-      {totalPages > 0 && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 6,
-            marginTop: 20,
-          }}
-        >
-          {Array.from({ length: totalPages }, (_, i) => (
-            <PageButton
-              key={i}
-              page={i + 1}
-              active={page === i + 1}
-              onClick={() => setPage(i + 1)}
-            />
-          ))}
-        </div>
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 60, color: "#888" }}>Loading reports...</div>
+      ) : (
+        <>
+          {/* Stats Cards */}
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 28 }}>
+            <StatCard label="Total Orders" value={Number(orders.total_orders || 0).toLocaleString()} sub={`${orders.delivered || 0} delivered · ${orders.pending || 0} pending`} />
+            <StatCard label="Total Revenue" value={formatCurrency(revenue.total_revenue)} sub={`Avg: ${formatCurrency(revenue.avg_order_value)}`} />
+            <StatCard label="Your Payout" value={formatCurrency(revenue.total_payout)} sub={`Shipping: ${formatCurrency(revenue.total_shipping)}`} />
+            <StatCard label="Products" value={Number(products.total_products || 0).toLocaleString()} sub={`${products.approved || 0} approved · ${products.active || 0} active`} />
+            <StatCard label="Returns" value={Number(returns.total_returns || 0).toLocaleString()} sub={`Refunded: ${formatCurrency(returns.total_refund)}`} />
+          </div>
+
+          {/* Sales Time Series */}
+          <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e0f4f7", boxShadow: "0 2px 16px rgba(0,151,178,0.08)", marginBottom: 28, overflow: "hidden" }}>
+            <div style={{ background: GRADIENT, padding: "14px 24px", display: "grid", gridTemplateColumns: "1fr 100px 100px 100px 120px 120px", gap: 12, minWidth: 680 }}>
+              {["Period", "Orders", "Delivered", "Cancelled", "Revenue", "Payout"].map((h) => (
+                <span key={h} style={{ fontSize: "0.76rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</span>
+              ))}
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              {sales.length === 0 ? (
+                <div style={{ padding: "40px 24px", textAlign: "center", color: "#888", fontSize: "0.9rem" }}>No sales data for this period.</div>
+              ) : (
+                sales.map((row, i) => (
+                  <div key={row.period} style={{ display: "grid", gridTemplateColumns: "1fr 100px 100px 100px 120px 120px", gap: 12, padding: "12px 24px", background: i % 2 === 0 ? "#fff" : "#f8fdfe", borderTop: "1px solid #e0f4f7", minWidth: 680, fontSize: "0.88rem" }}>
+                    <span style={{ fontWeight: 600, color: "#333" }}>{row.period}</span>
+                    <span>{row.total_orders}</span>
+                    <span style={{ color: "#2e7d1e" }}>{row.delivered}</span>
+                    <span style={{ color: "#c62828" }}>{row.cancelled}</span>
+                    <span style={{ fontWeight: 600 }}>{formatCurrency(row.revenue)}</span>
+                    <span style={{ color: "#0097b2", fontWeight: 600 }}>{formatCurrency(row.payout)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Top Products */}
+          <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid #e0f4f7", boxShadow: "0 2px 16px rgba(0,151,178,0.08)", overflow: "hidden" }}>
+            <div style={{ padding: "18px 24px", borderBottom: "1.5px solid #e0f4f7" }}>
+              <h2 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 700, color: "#111" }}>Top Selling Products</h2>
+            </div>
+            <div style={{ background: GRADIENT, padding: "12px 24px", display: "grid", gridTemplateColumns: "2fr 120px 100px 120px 100px", gap: 12, minWidth: 600 }}>
+              {["Product", "SKU", "Qty Sold", "Revenue", "Orders"].map((h) => (
+                <span key={h} style={{ fontSize: "0.76rem", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</span>
+              ))}
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              {topProducts.length === 0 ? (
+                <div style={{ padding: "40px 24px", textAlign: "center", color: "#888", fontSize: "0.9rem" }}>No product data available.</div>
+              ) : (
+                topProducts.map((p, i) => (
+                  <div key={p.product_id || i} style={{ display: "grid", gridTemplateColumns: "2fr 120px 100px 120px 100px", gap: 12, padding: "12px 24px", background: i % 2 === 0 ? "#fff" : "#f8fdfe", borderTop: "1px solid #e0f4f7", minWidth: 600, fontSize: "0.88rem" }}>
+                    <span style={{ fontWeight: 600, color: "#333", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.product_title}</span>
+                    <span style={{ color: "#666", fontSize: "0.82rem" }}>{p.sku || "—"}</span>
+                    <span>{Number(p.total_qty_sold || 0).toLocaleString()}</span>
+                    <span style={{ fontWeight: 600 }}>{formatCurrency(p.total_revenue)}</span>
+                    <span>{p.order_count}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
-}
+}
