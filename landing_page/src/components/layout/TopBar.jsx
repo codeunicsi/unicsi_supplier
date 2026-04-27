@@ -1,11 +1,11 @@
 // components/layout/TopBar.jsx
 "use client";
 
-import notificationIcon from "../../assets/icons/ic_notifications.svg";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useAuth } from "../../auth/AuthContext";
+import NotificationDropdown from "./NotificationDropdown";
 
 const menuItems = [
   { name: "Manage Orders", path: "/order" },
@@ -99,33 +99,7 @@ export default function TopBar({ onMobileMenuClick }) {
       {/* Right: Actions */}
       <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
         {/* Notification Bell */}
-        <button
-          type="button"
-          className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-150 sm:h-9 sm:w-9"
-          style={{
-            background: "#f0fafc",
-            border: "1px solid #b8e8f0",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = GRADIENT;
-            e.currentTarget.style.border = "1px solid transparent";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#f0fafc";
-            e.currentTarget.style.border = "1px solid #b8e8f0";
-          }}
-        >
-          <img
-            src={notificationIcon}
-            alt="Notifications"
-            className="w-[18px] h-[18px]"
-          />
-          <span
-            className="absolute top-[7px] right-[7px] w-[7px] h-[7px] rounded-full"
-            style={{ background: "#7ed957", border: "1.5px solid #fff" }}
-          />
-        </button>
+        <NotificationDropdown />
 
         <div
           className="mx-0.5 hidden h-8 w-px shrink-0 sm:mx-1 sm:block"
