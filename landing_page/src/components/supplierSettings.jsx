@@ -657,7 +657,7 @@ export default function SupplierSettings() {
 
         <Grid container spacing={3}>
           {/* ── Pickup Addresses ── */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <SettingsCard
               icon={
                 <LocationOnIcon
@@ -797,7 +797,7 @@ export default function SupplierSettings() {
                         isToggling || (!address.isEnabled && anotherIsEnabled);
 
                       return (
-                        <Grid item xs={12} md={6} key={address.id}>
+                        <Grid size={{ xs: 12, md: 6 }} key={address.id}>
                           <Box
                             sx={{
                               p: 2.5,
@@ -1123,7 +1123,7 @@ export default function SupplierSettings() {
               ))}
 
               <Grid container spacing={1.5}>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <FieldLabel>City *</FieldLabel>
                   <TextField
                     fullWidth
@@ -1135,7 +1135,7 @@ export default function SupplierSettings() {
                     sx={fieldSx}
                   />
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={6}>
                   <FieldLabel>State</FieldLabel>
                   <TextField
                     fullWidth

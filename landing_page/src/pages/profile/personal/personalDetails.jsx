@@ -270,11 +270,10 @@ export default function PersonalDetails() {
           sx={{
             minWidth: 0,
             width: "100%",
-            "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
           }}
         >
           {/* Supplier ID — always disabled */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box
               sx={{
                 fontSize: "0.75rem",
@@ -298,7 +297,7 @@ export default function PersonalDetails() {
           </Grid>
 
           {/* Phone Number */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box
               sx={{
                 fontSize: "0.75rem",
@@ -323,7 +322,7 @@ export default function PersonalDetails() {
           </Grid>
 
           {/* Store Name */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box
               sx={{
                 fontSize: "0.75rem",
@@ -348,7 +347,7 @@ export default function PersonalDetails() {
           </Grid>
 
           {/* Store Email */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid size={{ xs: 12, sm: 6, md: 4 }}>
             <Box
               sx={{
                 fontSize: "0.75rem",
@@ -374,10 +373,7 @@ export default function PersonalDetails() {
 
           {/* Email verified badge */}
           <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
+            size={{ xs: 12, sm: 6, md: 4 }}
             sx={{ display: "flex", alignItems: "flex-end" }}
           >
             <Box

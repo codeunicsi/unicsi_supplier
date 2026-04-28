@@ -600,22 +600,21 @@ export default function BankDetails() {
           spacing={2}
           sx={{
             minWidth: 0,
-            "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
           }}
         >
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <DetailField
               label="Account Holder Name"
               value={bankData.holderName}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <DetailField
               label="Bank Account Number"
               value={maskedAccountNumber}
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <DetailField label="IFSC Code" value={bankData.ifsc} />
           </Grid>
         </Grid>
@@ -706,7 +705,6 @@ export default function BankDetails() {
         spacing={2.5}
         sx={{
           minWidth: 0,
-          "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
         }}
       >
         {[
@@ -741,7 +739,7 @@ export default function BankDetails() {
             onChange: handleIFSCChange,
           },
         ].map(({ label, name, value, error, helperText, onChange }) => (
-          <Grid item xs={12} sm={6} key={name}>
+          <Grid size={{ xs: 12, sm: 6 }} key={name}>
             <Box
               sx={{
                 fontSize: "0.75rem",
@@ -777,7 +775,7 @@ export default function BankDetails() {
           </Grid>
         ))}
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Box
             sx={{
               fontSize: "0.75rem",

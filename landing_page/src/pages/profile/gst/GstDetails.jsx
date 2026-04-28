@@ -646,10 +646,9 @@ export default function GstDetails() {
             sx={{
               mb: 0,
               minWidth: 0,
-              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
             }}
           >
-            <Grid item xs={12} sm={8}>
+            <Grid size={{ xs: 12, sm: 8 }}>
               <FieldLabel>GST Name</FieldLabel>
               <TextField
                 name="gstName"
@@ -694,10 +693,9 @@ export default function GstDetails() {
             alignItems="flex-end"
             sx={{
               minWidth: 0,
-              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
             }}
           >
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FieldLabel>GST ID</FieldLabel>
               <TextField
                 name="gstNumber"
@@ -711,7 +709,7 @@ export default function GstDetails() {
                 sx={fieldSx}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FileInput
                 name="gstCertificate"
                 label="GST Certificate"
@@ -751,10 +749,9 @@ export default function GstDetails() {
             spacing={2.5}
             sx={{
               minWidth: 0,
-              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
             }}
           >
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FieldLabel>PAN Card Number</FieldLabel>
               <TextField
                 name="panCardNumber"
@@ -770,9 +767,7 @@ export default function GstDetails() {
             </Grid>
             {/* ── PAN front + back ── */}
             <Grid
-              item
-              xs={12}
-              sm={3}
+              size={{ xs: 12, sm: 3 }}
               sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -789,9 +784,7 @@ export default function GstDetails() {
               />
             </Grid>
             <Grid
-              item
-              xs={12}
-              sm={3}
+              size={{ xs: 12, sm: 3 }}
               sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -840,10 +833,9 @@ export default function GstDetails() {
             spacing={2.5}
             sx={{
               minWidth: 0,
-              "& > .MuiGrid-item": { minWidth: 0, maxWidth: "100%" },
             }}
           >
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <FieldLabel>Aadhaar Card Number</FieldLabel>
               <TextField
                 name="adharCardNumber"
@@ -859,9 +851,7 @@ export default function GstDetails() {
             </Grid>
             {/* ── Aadhaar front + back ── */}
             <Grid
-              item
-              xs={12}
-              sm={3}
+              size={{ xs: 12, sm: 3 }}
               sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -878,9 +868,7 @@ export default function GstDetails() {
               />
             </Grid>
             <Grid
-              item
-              xs={12}
-              sm={3}
+              size={{ xs: 12, sm: 3 }}
               sx={{
                 display: "flex",
                 flexDirection: "column",
