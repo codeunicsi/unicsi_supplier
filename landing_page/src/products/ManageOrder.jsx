@@ -41,6 +41,46 @@ function formatOrderDate(isoString) {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
 }
 
+/**
+ * Validates the shipment payload before sending to the API.
+ * Returns an array of missing/invalid field names, or [] if valid.
+ */
+function validateShipmentPayload(payload) {
+  const required = [
+    { key: "order_id", label: "Order ID" },
+    { key: "order_date", label: "Order Date" },
+    { key: "billing_customer_name", label: "Customer Name" },
+    { key: "billing_address", label: "Billing Address" },
+    { key: "billing_city", label: "Billing City" },
+    { key: "billing_pincode", label: "Billing Pincode" },
+    { key: "billing_state", label: "Billing State" },
+    { key: "billing_country", label: "Billing Country" },
+    { key: "billing_phone", label: "Billing Phone" },
+    { key: "payment_method", label: "Payment Method" },
+    { key: "sub_total", label: "Sub Total" },
+    { key: "length", label: "Length" },
+    { key: "breadth", label: "Breadth" },
+    { key: "height", label: "Height" },
+    { key: "weight", label: "Weight" },
+    { key: "pickup_location", label: "Pickup Location" },
+    { key: "warehouse_id", label: "Warehouse ID (address not registered with courier)" },
+  ];
+
+  const missing = [];
+  for (const { key, label } of required) {
+    const val = payload[key];
+    if (val === undefined || val === null || val === "") {
+      missing.push(label);
+    }
+  }
+
+  if (!payload.order_items || payload.order_items.length === 0) {
+    missing.push("Order Items");
+  }
+
+  return missing;
+}
+
 function buildShipmentPayload(row, activeWarehouse, rtoSameAddress) {
   const sa = row.shippingAddress ?? {};
   const ba = row.billingAddress ?? {};
@@ -57,7 +97,7 @@ function buildShipmentPayload(row, activeWarehouse, rtoSameAddress) {
     billing_state: ba.province ?? sa.province ?? "",
     billing_country: ba.country ?? sa.country ?? "",
     billing_email: row.customerEmail ?? "",
-    billing_phone: ba.phone ?? sa.phone ?? row.customerPhone ?? "9999999999",
+    billing_phone: ba.phone || sa.phone || row.customerPhone || "9999999999",
     shipping_is_billing: true,
     print_label: true,
     order_items: [
@@ -78,13 +118,13 @@ function buildShipmentPayload(row, activeWarehouse, rtoSameAddress) {
     height: 10,
     weight: 1,
     pickup_location: "Primary",
-    warehouse_id: activeWarehouse?.warehouse_code ?? "",
+    warehouse_id: activeWarehouse?.warehouse_code || "",
     rto_warehouse_id: rtoSameAddress
       ? ""
-      : (activeWarehouse?.warehouse_code ?? ""),
+      : (activeWarehouse?.warehouse_code || ""),
     vendor_details: {
       email: row.customerEmail ?? "",
-      phone: ba.phone ?? sa.phone ?? row.customerPhone ?? "9999999999",
+      phone: ba.phone || sa.phone || row.customerPhone || "9999999999",
       name: `${ba.first_name ?? sa.first_name ?? ""} ${ba.last_name ?? sa.last_name ?? ""}`.trim(),
       address: ba.address1 ?? sa.address1 ?? "",
       address_2: ba.address2 ?? sa.address2 ?? "",
@@ -136,6 +176,17 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
         selectedAddress,
         rtoSameAddress,
       );
+
+      // Validate payload before sending to API
+      const missingFields = validateShipmentPayload(payload);
+      if (missingFields.length > 0) {
+        setError(
+          `Missing required information: ${missingFields.join(", ")}. Please ensure the order has complete address details.`
+        );
+        setConfirming(false);
+        return;
+      }
+
       await onConfirm(payload);
       setSuccess(true);
       setTimeout(() => onClose(), 1200);
@@ -241,7 +292,7 @@ function CreateShipmentModal({ row, onClose, onConfirm }) {
                     <p className="text-xs text-gray-400 mt-0.5">
                       Warehouse Code:{" "}
                       <span className="font-medium text-gray-600">
-                        {addr.warehouse_code}
+                        {addr.warehouse_code || <span className="text-amber-600 italic">Not registered with courier</span>}
                       </span>
                     </p>
                     <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-green-100 text-green-700">
